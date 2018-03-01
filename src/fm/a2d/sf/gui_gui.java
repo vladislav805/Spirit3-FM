@@ -975,8 +975,8 @@ Rotate counter by 0.75 MHz = 8.766 degrees
       } else if (v == m_iv_stop) {
         m_com_api.key_set("tuner_state", "Stop"); // Full power down/up
 
-      } else if (v == gui_gui.this.m_iv_record) {
-        gui_gui.this.m_com_api.key_set("audio_record_state", "Toggle");
+      } else if (v == m_iv_record) {
+        m_com_api.key_set("audio_record_state", "Toggle");
       } else if (v == m_iv_out) {                                          // Speaker/headset  NOT USED NOW
         m_com_api.key_set("audio_output", "toggle");
 

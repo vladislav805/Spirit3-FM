@@ -204,7 +204,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
 
       val = extras.getString("audio_record_state", "");
-      if (!val.equals("")) {
+      if (!val.isEmpty()) {
         m_svc_aap.audio_record_state_set(val);
       }
 

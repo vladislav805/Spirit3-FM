@@ -354,6 +354,8 @@ API level 17 / 4.2+
       at_min_size = 25344;
 
     com_uti.logd("at_min_size 2: " + at_min_size);
+
+    this.m_aud_rec = new aud_rec(this.m_context, this.m_samplerate, this.m_channels, this.m_com_api);
   }
 
   private void audio_start() {
@@ -417,29 +419,6 @@ API level 17 / 4.2+
     //audio_sessid_get ();                                                // Update audio_sessid
     //stopSelf ();                                                    // service is no longer necessary. Will be started again if needed.
   }
-
-
-/*
-  private void sink_state_handler (Intent intent) {
-            if (m_pwr_state){
-
-              int state = intent.getIntExtra ("android.bluetooth.a2dp.extra.SINK_STATE", BluetoothA2dp.STATE_DISCONNECTED);
-
-              if (state == BluetoothA2dp.STATE_CONNECTED || state == BluetoothA2dp.STATE_PLAYING) {
-                if (! m_over_a2dp) {
-                  mute_set (true);                                         // Restart audio
-                  mute_set (false);
-                }
-              }
-              else {
-                if (m_over_a2dp) {
-                  mute_set (true);                                         // Restart audio
-                  mute_set (false);
-                }
-              }
-            }
-  }
-*/
 
   // Headset listener:
 
@@ -640,7 +619,6 @@ if (intent != null)
 
   // PCM:
 
-
   private void pcm_stat_log(String prefix, int increment, int offset, int len, byte[] buf) {
     int max = -32768, min = 32769, avg = 0, max_avg = 0;
     int i = 0;
@@ -676,27 +654,12 @@ if (intent != null)
     }
   }
 
-/* !!
-private final int getAndIncrement(int modulo) {
-    for (;;) {
-        int current = atomicInteger.get();
-        int next = (current + 1) % modulo;
-        if (atomicInteger.compareAndSet(current, next))
-            return current;
-    }
-}
-*/
 
   // pcm_read -> pcm_write
   private final Runnable pcm_write_runnable = new Runnable() {
     public void run() {
       com_uti.logd("pcm_write_runnable run()");
-
-      if (com_uti.device == com_uti.DEV_SDR)
-        min_pcm_write_buffers = aud_buf_num / 4;    // ?? Change later to 2
-
       native_priority_set(pcm_priority);
-
       try {
 
         while (pcm_write_thread_active) { // While PCM Write Thread should be active...
@@ -711,23 +674,14 @@ private final int getAndIncrement(int modulo) {
           if (bufs < min_pcm_write_buffers) { // If minimum number of buffers is not ready... (Currently at least 2)
             try {
               pcm_write_thread_waiting = true;
-              //Thread.sleep (1);    // Wait ms milliseconds
-              //Thread.sleep (2000); // Wait ms milliseconds   More efficient
               Thread.sleep(3);  // Wait ms milliseconds    3 matches Spirit1
               pcm_write_thread_waiting = false;
             } catch (InterruptedException e) {
               pcm_write_thread_waiting = false;
-              //Thread.currentThread().interrupt();
-              //e.printStackTrace ();
             }
 
             write_ctr--;
-            continue;                                                 // Restart loop
-          }
-
-          // Here when at least 2 buffers are ready to write, so we write the 1st at the head...
-          if (com_uti.device == com_uti.DEV_SDR) {
-            min_pcm_write_buffers = 2;  // !!!!
+            continue; // Restart loop
           }
 
           //com_uti.loge ("pcm_write_runnable run() ready to write bufs: " + bufs + "  tail: " + aud_buf_tail + "  head: " + aud_buf_head);
@@ -735,40 +689,80 @@ private final int getAndIncrement(int modulo) {
           int len = aud_buf_len[aud_buf_head]; // Length of head buffer in bytes
           byte[] aud_buf = aud_buf_data[aud_buf_head]; // Pointer to head buffer
 
+          long curr_ms_start;
+          long curr_ms_time;
+
+          if (svc_aud.this.m_aud_rec != null) {
+            curr_ms_start = com_uti.tmr_ms_get();
+            svc_aud.this.m_aud_rec.audio_record_write(aud_buf, len);
+            curr_ms_time = com_uti.tmr_ms_get() - curr_ms_start;
+            if (curr_ms_time >= 100) {
+              com_uti.loge("run_pcm_write m_aud_rec.audio_record_write too long curr_ms_time: " + curr_ms_time + "  len: " + len + "  len_written: unk"  + "  aud_buf: " + aud_buf);
+            }
+          }
+
           int len_written = 0;
-          //com_uti.loge ("pcm_write_runnable run() ready to write bufs: " + bufs + "  len: " + len + "  tail: " + aud_buf_tail + "  head: " + aud_buf_head);
+          int new_len;
+
+          long total_ms_start = com_uti.tmr_ms_get();
+          curr_ms_time = -1;
+          long total_ms_time = -1;
+          len_written = 0;
 
           // Write head buffer to audiotrack  All parameters in bytes (but could be all in shorts)
-          len_written = m_audiotrack.write(aud_buf, 0, len);
+          while (pcm_write_thread_active && len_written < len && total_ms_time < 3000) {
 
-          //com_uti.loge ("pcm_write_runnable run() len_written: " + len_written);
+            if (total_ms_time >= 0) {
+              com_uti.ms_sleep(30);
+            }
 
-          bytes_processed += len; // Stats++
+            if (!pcm_write_thread_active) {
+              break;
+            }
 
-          // Largest value 0xFFFFFFFC = 4294967292 max total file size, so max data size = 4294967256 = 1073741814 samples (0x3FFFFFF6)
-          //wav_write_bytes (wav_header, 0x04, 4, audiorecorder_data_size + 36);
-          // Chunksize = total filesize - 8 = DataSize + 36
+            curr_ms_start = com_uti.tmr_ms_get();
 
-          int stats_frames = (2 * write_stats_seconds * m_samplerate * m_channels) / len;
-          if (writes_processed % stats_frames == 0) { // Every stats_seconds
-            pcm_stat_logs("Write", m_channels, len, aud_buf);
+            new_len = m_audiotrack.write(aud_buf, 0, len);
+            if (new_len > 0) {
+              len_written += new_len;
+            }
+
+            total_ms_time = com_uti.tmr_ms_get() - total_ms_start;
+            curr_ms_time = com_uti.tmr_ms_get() - curr_ms_start;
+
+            //com_uti.loge ("pcm_write_runnable run() len_written: " + len_written);
+
+            bytes_processed += len; // Stats++
+
+            // Largest value 0xFFFFFFFC = 4294967292 max total file size, so max data size = 4294967256 = 1073741814 samples (0x3FFFFFF6)
+            //wav_write_bytes (wav_header, 0x04, 4, audiorecorder_data_size + 36);
+            // Chunksize = total filesize - 8 = DataSize + 36
+
+            int stats_frames = (2 * write_stats_seconds * m_samplerate * m_channels) / len;
+            if (writes_processed % stats_frames == 0) { // Every stats_seconds
+              pcm_stat_logs("Write", m_channels, len, aud_buf);
+            }
+
+            writes_processed++; // Update pointers etc
+            aud_buf_head++;
+            if (aud_buf_head < 0 || aud_buf_head > aud_buf_num - 1) {
+              aud_buf_head &= aud_buf_num - 1;
+            }
           }
 
-          writes_processed++; // Update pointers etc
-          aud_buf_head++;
-          if (aud_buf_head < 0 || aud_buf_head > aud_buf_num - 1) {
-            aud_buf_head &= aud_buf_num - 1;
-          }
           // Restart loop
-        }   // while (...
+        }
 
         // Here when thread is finished...
         com_uti.logd("pcm_write_runnable run() done writes_processed: " + writes_processed);
-        rand_acc_file = null;
       } catch (Throwable e) {
         com_uti.loge("pcm_write_runnable run() throwable: " + e);
         e.printStackTrace();
       } // Fall through to terminate if exception
+
+      if (m_aud_rec != null) {
+        audio_record_state_set("Stop");
+      }
     }
   };
 
@@ -869,23 +863,26 @@ private final int getAndIncrement(int modulo) {
       native_priority_set(pcm_priority);
 
       try {
-        buf_errs = 0;                                         // Init stats, pointers, etc
-        aud_buf_tail = aud_buf_head = 0;                        // Drop all buffers
+        buf_errs = 0; // Init stats, pointers, etc
+        aud_buf_tail = aud_buf_head = 0; // Drop all buffers
         com_uti.logd("pcm_read_runnable run() m_samplerate: " + m_samplerate + "  m_channels: " + m_channels);
 
-        while (pcm_read_thread_active) {                                // While PCM Read Thread should be active...
-          if (aud_buf_read(m_samplerate, m_channels, m_hw_size)) {    // Fill a PCM read buffer, If filled...
+        while (pcm_read_thread_active) { // While PCM Read Thread should be active...
+          if (aud_buf_read(m_samplerate, m_channels, m_hw_size)) { // Fill a PCM read buffer, If filled...
             int bufs = aud_buf_tail - aud_buf_head;
             //com_uti.loge ("pcm_read_runnable run() bufs: " + bufs + "  tail: " + aud_buf_tail + "  head: " + aud_buf_head);
-            if (bufs < 0)
-              bufs += aud_buf_num;                                // Fix underflow
-            if (bufs >= min_pcm_write_buffers)                          // If minimum number of buffers is ready... (Currently at least 2)
-              if (pcm_write_thread != null)
-                if (pcm_write_thread_waiting)
-                  pcm_write_thread.interrupt();                          // Wake up pcm_write_thread sooner than usual
-          } else {                                                        // Else, if no data could be retrieved...
-            //loge ("pcm_read_runnable run() pcm_read NULL etc");
-            com_uti.ms_sleep(50);                                        // Wait 50 milli-seconds for errors to clear
+            if (bufs < 0) {
+              bufs += aud_buf_num; // Fix underflow
+            }
+            if (bufs >= min_pcm_write_buffers) { // If minimum number of buffers is ready... (Currently at least 2)
+              if (pcm_write_thread != null) {
+                if (pcm_write_thread_waiting) {
+                  pcm_write_thread.interrupt(); // Wake up pcm_write_thread sooner than usual
+                }
+              }
+            }
+          } else { // Else, if no data could be retrieved...
+            com_uti.ms_sleep(50); // Wait 50 milli-seconds for errors to clear
           }
         }
 
@@ -913,36 +910,41 @@ private final int getAndIncrement(int modulo) {
   }
 
   // All lengths in bytes; converting to shorts created problems.
-  private boolean aud_buf_read(int samplerate, int channels, int len_max) {    // Fill a PCM read buffer for PCM Read thread
+  private boolean aud_buf_read(int samplerate, int channels, int len_max) { // Fill a PCM read buffer for PCM Read thread
     int bufs = aud_buf_tail - aud_buf_head;
-    if (bufs < 0)                                                       // If underflowed...
-      bufs += aud_buf_num;                                        // Wrap
+
+    if (bufs < 0) { // If underflowed...
+      bufs += aud_buf_num; // Wrap
+    }
+
     //logd ("bufs: " + bufs + "  tail: " + aud_buf_tail + "  head: " + aud_buf_head);
 
-    if (bufs > max_bufs)                                                // If new maximum buffers in progress...
-      max_bufs = bufs;                                                  // Save new max
+    if (bufs > max_bufs) { // If new maximum buffers in progress...
+      max_bufs = bufs; // Save new max
+    }
 
-    if (bufs >= (aud_buf_num * 3) / 4)
+    if (bufs >= (aud_buf_num * 3) / 4) {
       com_uti.ms_sleep(300);     // 0.1s = 20KBytes @ 48k stereo  (2.5 8k buffers)
+    }
 
-    if (bufs >= aud_buf_num - 1) {                                // If NOT 6 or less buffers in progress, IE if room to write another (max = 7)
+    if (bufs >= aud_buf_num - 1) { // If NOT 6 or less buffers in progress, IE if room to write another (max = 7)
       com_uti.loge("Out of aud_buf");
       buf_errs++;
-      aud_buf_tail = aud_buf_head = 0;                        // Drop all buffers
+      aud_buf_tail = aud_buf_head = 0; // Drop all buffers
     }
 
     //int buf_tail = aud_buf_tail;  !!
-    int len = 0;
+    int len = -555;
 
     try {
-      //buf_tail = aud_buf_tail;
-      if (aud_buf_data[aud_buf_tail] == null)
-        aud_buf_data[aud_buf_tail] = new byte[pcm_size_max];    // Allocate memory to pcm_size_max. Could use len_max but that prevents live tuning unless re-allocate while running.
+      if (aud_buf_data[aud_buf_tail] == null) {
+        // Allocate memory to pcm_size_max. Could use len_max but that prevents live tuning unless re-allocate while running.
+        aud_buf_data[aud_buf_tail] = new byte[pcm_size_max];
+      }
 
-      if (m_audiorecorder != null)
+      if (m_audiorecorder != null) {
         len = m_audiorecorder.read(aud_buf_data[aud_buf_tail], 0, len_max);
-      else
-        len = -555;
+      }
     } catch (Throwable e) {
       e.printStackTrace();
     }
@@ -950,38 +952,42 @@ private final int getAndIncrement(int modulo) {
     if (len <= 0) {
       com_uti.loge("get error: " + len + "  tail index: " + aud_buf_tail);
       com_uti.ms_sleep(1000);
-      return (false);
+      return false;
     }
-///*
-    if (com_uti.device == com_uti.DEV_QCV && len > 0) {
-      int ctr = 0;
+
+    if (com_uti.device == com_uti.DEV_QCV) {
+      int ctr;
       for (ctr = 0; ctr < len; ctr++) {
-        if (aud_buf_data[aud_buf_tail][ctr] != 0)
+        if (aud_buf_data[aud_buf_tail][ctr] != 0) {
           break;
+        }
       }
       if (ctr >= len)
         audio_blank = true;
       else
         audio_blank = false;
     }
-//*/
+
     int stats_frames = (2 * read_stats_seconds * samplerate * channels) / len;
     int reads_processed = read_ctr;
     if (reads_processed % stats_frames == 0) {    // Every stats_seconds
       pcm_stat_logs("Read ", channels, len, aud_buf_data[aud_buf_tail]);
     }
 
-    if (aud_buf_tail < 0 || aud_buf_tail > aud_buf_num - 1)     // Protect from ArrayIndexOutOfBoundsException
+    // Protect from ArrayIndexOutOfBoundsException
+    if (aud_buf_tail < 0 || aud_buf_tail > aud_buf_num - 1) {
       aud_buf_tail &= aud_buf_num - 1;
+    }
 
-    if (len >= 0)
-      aud_buf_len[aud_buf_tail] = len;    // On shutdown: java.lang.ArrayIndexOutOfBoundsException: length=32; index=32
-    else
-      com_uti.loge("len: " + len);
+    // On shutdown: java.lang.ArrayIndexOutOfBoundsException: length=32; index=32
+    aud_buf_len[aud_buf_tail] = len;
 
     aud_buf_tail++;
-    if (aud_buf_tail < 0 || aud_buf_tail > aud_buf_num - 1)
+
+    if (aud_buf_tail < 0 || aud_buf_tail > aud_buf_num - 1) {
       aud_buf_tail &= aud_buf_num - 1;
+    }
+
     read_ctr++;
 
     //aud_buf_tail = buf_tail;

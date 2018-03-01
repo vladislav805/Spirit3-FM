@@ -38,12 +38,12 @@ public class aud_rec {
 
         public void run() {
             com_uti.logd("rec_write_runnable run()");
-            int cur_buf_tail = aud_rec.this.rec_buf_tail;
-            if (aud_rec.this.rec_buf_data == null) {
-                aud_rec.this.rec_buf_data = new byte[1048576];
+            int cur_buf_tail;
+            if (rec_buf_data == null) {
+                rec_buf_data = new byte[1048576];
             }
-            if (aud_rec.this.rec_buf_data == null) {
-                aud_rec.this.rec_write_thread_active = false;
+            if (rec_buf_data == null) {
+                rec_write_thread_active = false;
             }
             while (aud_rec.this.rec_write_thread_active) {
                 try {

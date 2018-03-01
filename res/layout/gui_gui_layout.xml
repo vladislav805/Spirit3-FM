@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+ android:background="#202020"
+-->
+<LinearLayout
+    android:orientation="vertical"
+    android:background="#303030"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+  <HorizontalScrollView
+      android:id="@+id/main_hsv"
+      android:layout_width="match_parent"
+      android:scrollbars="none"
+      android:fadingEdge="none"
+      android:layout_weight="7"
+      android:layout_height="0dip"
+      android:layout_marginLeft="0.0dip"
+      android:layout_marginTop="0.0dip"
+      android:layout_marginRight="0.0dip"
+      android:layout_marginBottom="0.0dip"
+      android:overScrollMode="ifContentScrolls">
+    <LinearLayout
+        android:id="@+id/main_hll"
+        android:layout_width="match_parent"
+        android:background="#00000000"
+        android:orientation="horizontal"
+        android:layout_height="match_parent">
+      <FrameLayout
+          android:id="@+id/new_fl"
+          android:layout_width="400dip"
+          android:layout_height="match_parent">
+        <include layout="@layout/gui_pg1_layout"/>
+      </FrameLayout>
+    </LinearLayout>
+  </HorizontalScrollView>
+
+  <View android:background="#000000" android:layout_width="match_parent" android:layout_height="1dip" />
+
+  <HorizontalScrollView
+      android:scrollbars="horizontal"
+      android:fadingEdge="none"
+      android:layout_width="match_parent"
+      android:layout_weight="1"
+      android:layout_height="wrap_content"
+      android:layout_marginLeft="0.0dip"
+      android:layout_marginTop="0.0dip"
+      android:layout_marginRight="0.0dip"
+      android:layout_marginBottom="0.0dip"
+      android:overScrollMode="ifContentScrolls">
+    <LinearLayout
+        android:id="@+id/preset_list"
+        android:orientation="horizontal"
+        android:layoutAnimation="@anim/ani_preset_layout"
+        android:layout_width="match_parent"
+        android:layout_height="56.0dip">
+
+
+
+
+    </LinearLayout>
+  </HorizontalScrollView>
+</LinearLayout>
+

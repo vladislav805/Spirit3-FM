@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+  <EditText
+      android:id="@+id/edit_number"
+      android:contentDescription="Frequency"
+      android:layout_height="wrap_content"
+      android:layout_width="match_parent"
+      android:scrollHorizontally="true"
+      android:hint="107.9"
+      android:textSize="28sp"
+      android:singleLine="true"
+      android:textAlignment="center"
+      android:layout_gravity="center"
+      android:gravity="center_horizontal"
+      android:inputType="numberDecimal"
+      android:textAppearance="?android:attr/textAppearanceMedium"
+      android:saveEnabled="false"/>
+
+</LinearLayout>

@@ -1,0 +1,30 @@
+#!/bin/bash
+export MY_KEYSTORE_FILE="/home/vlad805/git/androidkeystore.jks"
+export MY_KEYSTORE_PASS="myNadusik"
+export MY_KEY_NAME="alias"
+export WS="/home/vlad805/FM/spirit_versions/spirit2_2014_11_28"
+export PROJ="sf"
+#cd $WS/$PROJ
+
+rm -rf obj  # obj/local/armeabi/*
+rm -rf libs # libs/armeabi/
+
+mkdir libs
+mkdir libs/armeabi
+
+android update project --target android-20 --path . --name $PROJ
+
+
+echo /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build start
+time /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build 2>&1 | grep "error:"
+
+mv libs/armeabi/s2d libs/armeabi/libs2d.so
+mv libs/armeabi/ssd libs/armeabi/libssd.so
+
+ant -q clean release
+
+jarsigner -storepass $MY_KEYSTORE_PASS -sigalg MD5withRSA -digestalg SHA1 -keystore $MY_KEYSTORE_FILE -signedjar bin/$PROJ-release-unaligned.apk bin/$PROJ-release-unsigned.apk $MY_KEY_NAME
+zipalign -f 4 bin/$PROJ-release-unaligned.apk bin/$PROJ-release.apk
+
+adb install -r bin/$PROJ-release.apk
+adb shell am start -n fm.a2d.sf/fm.a2d.sf.gui_act

@@ -1,0 +1,3 @@
+/home/vlad805/FM/spirit_versions/spirit2_2014_11_28/jni/cmake-build-debug/CMakeFiles/rebuild_cache.dir
+/home/vlad805/FM/spirit_versions/spirit2_2014_11_28/jni/cmake-build-debug/CMakeFiles/edit_cache.dir
+/home/vlad805/FM/spirit_versions/spirit2_2014_11_28/jni/cmake-build-debug/CMakeFiles/jni.dir

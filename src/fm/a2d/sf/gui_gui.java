@@ -273,7 +273,7 @@ public class gui_gui implements gui_gap {
         }
 
         current = progress + 875;
-        m_tv_freq.setText(String.valueOf((float) current / 10));
+        setFrequencyText(String.valueOf((float) current / 10));
       }
 
       @Override
@@ -342,6 +342,15 @@ public class gui_gui implements gui_gap {
     tuner_stereo_load_prefs();
 
     return (true);
+  }
+
+
+  private void setFrequencyText(String s) {
+    if (s.length() == 4) {
+      s = " " + s;
+    }
+    m_tv_freq.setText(s);
+
   }
 
 
@@ -837,7 +846,7 @@ Rotate counter by 0.75 MHz = 8.766 degrees
       freq = ("" + (double) ifreq / 1000);
     }
     if (freq != null) {
-      m_tv_freq.setText(freq);
+      setFrequencyText(freq);
     }
     //need_freq_result = false;
     //last_dial_freq_change_start_time = -1;

@@ -138,7 +138,7 @@
     <SeekBar
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:id="@+id/sb_freq_seek"/>
+        android:id="@+id/sb_freq_seek" />
   </LinearLayout>
   <LinearLayout
           android:layout_width="match_parent"
@@ -160,16 +160,10 @@
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical|center_horizontal"
             android:singleLine="true" />
-<!--
-  PTYN
--->
+<!-- PTYN -->
   </LinearLayout>
 
-<!--
-  Frequency
-
-            android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal"
--->
+<!-- Frequency -->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="0dip"
@@ -221,13 +215,13 @@
       <TextView
           android:id="@+id/tv_freq"
           android:contentDescription="Frequency"
-          android:textSize="55sp"
+          android:textSize="65sp"
           android:gravity="center_vertical|center_vertical"
           android:layout_gravity="center_vertical|center_horizontal"
           android:textColor="#32b5e5"
           android:textAppearance="?android:attr/textAppearanceLarge"
           android:shadowColor="#00ccff"
-          android:shadowRadius="10"
+          android:shadowRadius="20"
           android:shadowDx="0"
           android:shadowDy="0"
           android:layout_width="wrap_content"

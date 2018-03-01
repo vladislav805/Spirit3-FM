@@ -102,12 +102,6 @@ public class svc_aud implements svc_aap, AudioManager.OnAudioFocusChangeListener
   private int m_channels = 2;
   private int m_samplerate = 44100;                               // Default = 8000 (Max w/ AMR)
 
-  private File m_record_file = null;
-  private String m_rec_directory = "/Music/fm";
-  private String m_rec_file_name = "fm_";
-  private FileOutputStream m_record_write_file_fos = null;
-  private BufferedOutputStream m_record_write_file_bos = null;
-
   private boolean need_record_finish = false;
   private int write_stats_seconds = 60;//10; // Over 11184 will overflow int in calcs of "stats_frames = (2 * write_stats_seconds * m_samplerate * m_channels) / len;"
   private int read_stats_seconds = 60;//00;//10; // Over 11184 will overflow int in calcs of "stats_frames = (2 *  read_stats_seconds * m_samplerate * m_channels) / len;"
@@ -692,9 +686,9 @@ if (intent != null)
           long curr_ms_start;
           long curr_ms_time;
 
-          if (svc_aud.this.m_aud_rec != null) {
+          if (m_aud_rec != null) {
             curr_ms_start = com_uti.tmr_ms_get();
-            svc_aud.this.m_aud_rec.audio_record_write(aud_buf, len);
+            m_aud_rec.audio_record_write(aud_buf, len);
             curr_ms_time = com_uti.tmr_ms_get() - curr_ms_start;
             if (curr_ms_time >= 100) {
               com_uti.loge("run_pcm_write m_aud_rec.audio_record_write too long curr_ms_time: " + curr_ms_time + "  len: " + len + "  len_written: unk"  + "  aud_buf: " + aud_buf);
@@ -962,10 +956,7 @@ if (intent != null)
           break;
         }
       }
-      if (ctr >= len)
-        audio_blank = true;
-      else
-        audio_blank = false;
+      audio_blank = ctr >= len;
     }
 
     int stats_frames = (2 * read_stats_seconds * samplerate * channels) / len;

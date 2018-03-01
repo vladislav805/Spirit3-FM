@@ -118,6 +118,10 @@ public class aud_rec {
     }
 
     public void audio_record_write(byte[] aud_buf, int len) {
+        if (!m_record_now) {
+            return;
+        }
+
         if (this.m_rec_data_size < 0 && (this.m_rec_data_size + len) + 36 > -4) {
             com_uti.loge("!!! Max m_rec_data_size: " + this.m_rec_data_size + "  len: " + len);
             this.m_com_api.audio_record_state = "Stop";
@@ -128,18 +132,22 @@ public class aud_rec {
         }
     }
 
+    private boolean m_record_now = false;
+
     public String audio_record_state_set(String state) {
         if (state.equals("Toggle")) {
-            if (this.m_com_api.audio_record_state.equals("Stop")) {
+            if (m_com_api.audio_record_state.equals("Stop")) {
                 state = "Start";
             } else {
                 state = "Stop";
             }
         }
         if (state.equals("Stop")) {
+            m_record_now = false;
             audio_record_stop();
         } else if (state.equals("Start")) {
             audio_record_start();
+            m_record_now = true;
         }
         return this.m_com_api.audio_record_state;
     }
@@ -366,5 +374,6 @@ public class aud_rec {
         } catch (Throwable e) {
             e.printStackTrace();
         }
+        rec_buf_data = null;
     }
 }

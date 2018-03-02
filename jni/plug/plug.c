@@ -424,7 +424,7 @@
   int rds_ok_dbg              = 1;  // PS, PT
   int rds_ok_extra_dbg        = 0;
 
-  int evt_dbg                 = 0;
+  int evt_dbg                 = 1;
 
   int af_ok_debug             = 0;
   int af_common_error_debug   = 0;
@@ -508,7 +508,7 @@ int freq_dn_get (int freq) {                                            // Calle
 }
 
 
-
+int rds_string_get(char*, int*);
 
   int RSSI_FACTOR = 16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
   int prev_freq = 0;
@@ -625,6 +625,10 @@ int freq_dn_get (int freq) {                                            // Calle
     if (evt_dbg)
       logd ("evt_get no event");
   }
+
+  /*char rt[64];
+  int rt_len = 0;
+  logd("RDS ======: %s", rds_string_get(rt, &rt_len));*/
 
   return (evt);
 
@@ -906,10 +910,10 @@ int freq_dn_get (int freq) {                                            // Calle
     return (0);
   }
   int set_rds_reception (void ** session_data, int use_rds) {
-    logd ("set_rds_reception: %d", use_rds);
+    /*logd ("set_rds_reception: %d", use_rds);
     if (use_rds == 0)
       pwr_rds = 0;
-    else
+    else*/
       pwr_rds = 1;
     return (0);
   }

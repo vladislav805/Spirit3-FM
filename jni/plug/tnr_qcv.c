@@ -1107,6 +1107,74 @@ logd("chip_imp_seek_stop IOCTL Si4709_SEEK_CANCEL success");*/
   v4l2_cap.
 }*/
 
+const int MAX_RT_LEN = 64;
+const int STD_BUF_SIZE = 256;
+const int RT_LEN_IND = 0;
+const char LAST_CTRL_CHAR = 31;
+const char FIRST_NON_PRNT_CHAR = 127;
+const char SPACE_CHAR = 32;
+const int RT_DATA_OFFSET_IND = 5;
+const int RT_A_B_FLAG_IND = 4;
+
+int rds_data_get(char* buff, unsigned int len, unsigned int index) {
+  int ret;
+  //struct v4l2_buffer v4l2_buf;
+
+  if ((len < STD_BUF_SIZE) || (buff == NULL)) {
+      return -1;
+  } else {
+    struct v4l2_buffer v4l2_buf;
+    memset(v4l2_buf.reserved, 0, sizeof(v4l2_buf.reserved));
+    v4l2_buf.index = index;
+    v4l2_buf.type = V4L2_BUF_TYPE_PRIVATE;
+    v4l2_buf.length = STD_BUF_SIZE;
+    v4l2_buf.m.userptr = (unsigned short) buff;
+    ret = ioctl(dev_hndl, VIDIOC_DQBUF, &v4l2_buf);
+    if (ret < 0) {
+        return -1;
+    } else {
+        return v4l2_buf.bytesused;
+    }
+  }
+}
+
+int rds_string_get(char* rt, int *rt_len) {
+  char raw_rds[STD_BUF_SIZE];
+  int len = 0;
+  int res;
+
+  res = rds_data_get(rt, 256, 2);
+
+  if (res < 0) {
+    return -1;
+  }
+
+  if ((raw_rds[RT_LEN_IND] > 0) && (raw_rds[RT_LEN_IND] <= MAX_RT_LEN)) {
+      for (len = 0; len < raw_rds[RT_LEN_IND]; len++) {
+         rt[len] = raw_rds[RT_DATA_OFFSET_IND + len];
+         logd("Rt byte[%d]: %d\n", len, rt[len]);
+         if ((rt[len] <= LAST_CTRL_CHAR) || (rt[len] >= FIRST_NON_PRNT_CHAR)) {
+             rt[len] = SPACE_CHAR;
+             continue;
+         }
+      }
+      if (len < (MAX_RT_LEN - 1)) {
+          rt[len] = '\0';
+          *rt_len = len + 1;
+      } else {
+          *rt_len = len;
+      }
+      logd("Rt is: %s\n", rt);
+      logd("RT text A / B: %d\n", raw_rds[RT_A_B_FLAG_IND]);
+
+      rt = *raw_rds;
+
+      return 0;
+  } else {
+      return -1;
+  }
+}
+
 /*
   int rbds_set (int rbds) {
     logd ("rbds_set: %3.3d", rbds);

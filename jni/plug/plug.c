@@ -508,7 +508,6 @@ int freq_dn_get (int freq) {                                            // Calle
 }
 
 
-int rds_string_get(char*, int*);
 
   int RSSI_FACTOR = 16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
   int prev_freq = 0;
@@ -662,8 +661,10 @@ int rds_string_get(char*, int*);
         }
         int seconds_disp = 60;
         int mod_factor = seconds_disp * (1010 / sleep_ms);
-        if (rx_thread_ctr % mod_factor == 0)                            // Every seconds_disp seconds...
-          logd ("rx_thread: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
+        if (rx_thread_ctr % mod_factor == 0) { // Every seconds_disp seconds...
+          logd("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
+          logd("capabilities = %d", rds_has_support_get());
+        }
       }
 
       if (! rx_thread_running) {
@@ -684,202 +685,246 @@ int rds_string_get(char*, int*);
   }
 
 
-  struct thread_info {                                                  // Argument to rx_thread ()
-    pthread_t  thread_id;                                               // ID returned by pthread_create ()
-    int        thread_num;                                              // Application-defined thread #
-    char     * argv_string;                                             // Test
-  };
+struct thread_info {   // Argument to rx_thread ()
+  pthread_t thread_id; // ID returned by pthread_create ()
+  int thread_num;      // Application-defined thread #
+  char * argv_string;  // Test
+};
 
-  struct thread_info * tinfo;
+struct thread_info * tinfo;
 
-  int rx_thread_start () {
-    int s, tnum, opt, num_threads = 1;
-    void * res;
+/**
+ * Старт потока
+ */
+int rx_thread_start() {
+  int s, tnum, opt, num_threads = 1;
+  void * res;
 
-    logd ("rx_thread_start");
+  logd("rx_thread_start");
 
-    // Initialize thread creation attributes
-    pthread_attr_t attr;
-    s = pthread_attr_init (& attr);
+  // Initialize thread creation attributes
+  pthread_attr_t attr;
+  s = pthread_attr_init(&attr);
+
+  if (s != 0) {
+    loge("pthread_attr_init error: %d", s);
+    return -1;
+  }
+
+  //s = pthread_attr_setstacksize (&attr, stack_size); Comment to use default stacksize
+  //if (s != 0)
+  //  handle_error_en (s, "pthread_attr_setstacksize");
+
+  // Allocate memory for pthread_create () arguments
+  tinfo = (struct thread_info *) calloc(num_threads, sizeof(struct thread_info));
+  if (tinfo == NULL) {
+    loge("calloc error");
+    return -1;
+  }
+
+  rx_thread_running = 1;
+
+  // Create thread(s)
+  for (tnum = 0; tnum < num_threads; tnum++) {
+    tinfo[tnum].thread_num = tnum + 1;
+    tinfo[tnum].argv_string = (char *) "test";
+
+    // The pthread_create() call stores the thread ID into corresponding element of tinfo []
+    s = pthread_create(&tinfo[tnum].thread_id, &attr, &rx_thread, &tinfo[tnum]);
     if (s != 0) {
-      loge ("pthread_attr_init error: %d", s);
-      return (-1);
+      loge("pthread_create error: %d", s);
+      return -1;
     }
+  }
 
-    //s = pthread_attr_setstacksize (&attr, stack_size); Comment to use default stacksize
-    //if (s != 0)
-    //  handle_error_en (s, "pthread_attr_setstacksize");
+  // Destroy the thread attributes object, since it is no longer needed
+  s = pthread_attr_destroy (& attr);
+  if (s != 0) {
+    loge("pthread_attr_destroy error: %d", s);
+    // Thread active so just continue
+    // return (-1);
+  }
 
-
-    // Allocate memory for pthread_create () arguments
-    tinfo = (struct thread_info *) calloc (num_threads, sizeof(struct thread_info));
-    if (tinfo == NULL) {
-      loge ("calloc error");
-      return (-1);
-    }
-
-    rx_thread_running = 1;
-
-    // Create thread(s)
-    for (tnum = 0; tnum < num_threads; tnum ++) {
-      tinfo [tnum].thread_num = tnum + 1;
-      tinfo [tnum].argv_string = (char *) "test";
-
-      // The pthread_create() call stores the thread ID into corresponding element of tinfo []
-      s = pthread_create ( & tinfo [tnum].thread_id, & attr, & rx_thread, & tinfo [tnum]);
-        if (s != 0) {
-          loge ("pthread_create error: %d", s);
-          return (-1);
-        }
-    }
-
-    // Destroy the thread attributes object, since it is no longer needed
-    s = pthread_attr_destroy (& attr);
-    if (s != 0) {
-      loge ("pthread_attr_destroy error: %d", s);
-//Thread active so just continue   return (-1);
-    }
-
-    // Join with each thread, and display its returned value
+  // Join with each thread, and display its returned value
 /*
-    for (tnum = 0; tnum < num_threads; tnum ++) {
-      s = pthread_join (tinfo [tnum].thread_id, & res);
-      if (s != 0)
-        handle_error_en (s, "pthread_join");
+  for (tnum = 0; tnum < num_threads; tnum ++) {
+    s = pthread_join (tinfo [tnum].thread_id, & res);
+    if (s != 0)
+      handle_error_en (s, "pthread_join");
 
-      printf ("Joined with thread %3.3d; returned value was %s\n", tinfo [tnum].thread_num, (char *) res);
-      free (res);      // Free memory allocated by thread
-    }
-    free (tinfo);
+    printf ("Joined with thread %3.3d; returned value was %s\n", tinfo [tnum].thread_num, (char *) res);
+    free (res);      // Free memory allocated by thread
+  }
+  free (tinfo);
 */
 
-    return (0);
+  return 0;
+}
+
+/**
+ * Остановка потока
+ */
+int rx_thread_stop() {
+  rx_thread_running = 0;
+  logd("rx_thread_running 1: %d  rx_thread_ctr: %d", rx_thread_running,  rx_thread_ctr);
+  return 0;
+}
+
+
+/**
+ * Старт из серверного API
+ * Minimum: rx_start or tx_start, pause, resume, reset
+ */
+int rx_start(void ** session_data, const struct fmradio_vendor_callbacks_t * callbacks, int low_freq, int high_freq, int default_freq, int grid) {
+  logd ("rx_start callbacks: %p  lo: %d  hi: %d  def: %d  grid: %d", callbacks, low_freq, high_freq, default_freq, grid);
+  if (callbacks) {
+    on_playing_in_stereo_changed  = callbacks->on_playing_in_stereo_changed;
+    on_rds_data_found             = callbacks->on_rds_data_found;
+    on_signal_strength_changed    = callbacks->on_signal_strength_changed;
+    on_automatic_switch           = callbacks->on_automatic_switch;
+    on_forced_reset               = callbacks->on_forced_reset; // Not used, but could call if fatal error
   }
-  int rx_thread_stop () {
 
-    //pthread_cancel (tinfo [0].thread_id);
-//    pthread_kill (tinfo [0].thread_id, SIGKILL);
-
-    rx_thread_running = 0;
-    logd ("rx_thread_running 1: %d  rx_thread_ctr: %d", rx_thread_running,  rx_thread_ctr);
-
-//    ms_sleep (200);
-//    logd ("rx_thread_running 2: %d  rx_thread_ctr: %d", rx_thread_running,  rx_thread_ctr);
-
-    return (0);
-  }
-
-
-    // Minimum: rx_start or tx_start, pause, resume, reset
-  int rx_start (void ** session_data, const struct fmradio_vendor_callbacks_t * callbacks, int low_freq, int high_freq, int default_freq, int grid) {
-    logd ("rx_start callbacks: %p  lo: %d  hi: %d  def: %d  grid: %d", callbacks, low_freq, high_freq, default_freq, grid);
-    if (callbacks) {
-      on_playing_in_stereo_changed  = callbacks->on_playing_in_stereo_changed;
-      on_rds_data_found             = callbacks->on_rds_data_found;
-      on_signal_strength_changed    = callbacks->on_signal_strength_changed;
-      on_automatic_switch           = callbacks->on_automatic_switch;
-      on_forced_reset               = callbacks->on_forced_reset;               // Not used, but could call if fatal error
-    }
-    int ret = chip_api_api_on (low_freq, high_freq, grid);
+  int ret = chip_api_api_on(low_freq, high_freq, grid);
+  if (ret == 0) {
+    ret = chip_api_pwr_on(pwr_rds);
     if (ret == 0) {
-      ret = chip_api_pwr_on (pwr_rds);
-      if (ret == 0) {
-        //chip_api_vol_set (16384);
-        chip_api_mute_set (0);                                              // Unmute
-      }
+      chip_api_mute_set(0); // Unmute
     }
-    if (ret == 0) {                                                     // If successful chip_api_pwr_on()
-      ret = rx_thread_start ();
-/*
-      if (ret) {                                                        // If thread start error
-        chip_api_pwr_off (pwr_rds);
-        chip_api_api_off ();
-      }
-*/
-    }
-    return (ret);
   }
-  int tx_start (void ** session_data, const struct fmradio_vendor_callbacks_t * callbacks, int low_freq, int high_freq, int default_freq, int grid) {
-    logd ("tx_start lo: %d  hi: %d  def: %d  grid: %d", low_freq, high_freq, default_freq, grid);
-    return (0);
+  if (ret == 0) { // If successful chip_api_pwr_on()
+    ret = rx_thread_start();
   }
-  int pause_CONFLICT (void ** session_data) {
-    logd ("pause");
-    chip_api_mute_set (1);                                                       // Mute
-    return (0);
-  }
-  int resume (void ** session_data) {
-    logd ("resume");
-    chip_api_mute_set (0);                                                       // Unmute
-    return (0);
-  }
-  int reset (void ** session_data) {
-    logd ("reset");
-    int ret = rx_thread_stop ();
-    ret = chip_api_pwr_off (pwr_rds);
-    ret = chip_api_api_off ();
-    return (ret);
-  }
+  return ret;
+}
 
-    // Optional Tx & Rx:
-  int set_frequency (void ** session_data, int frequency) {
-    logd ("set_frequency: %d", frequency);
-    int ret = chip_api_freq_set (frequency);
-    return (ret);
-  }
-  int get_frequency (void ** session_data) {
-    int freq = chip_api_freq_get ();
-    if (extra_log)
-      logd ("get_frequency: %d", freq);
-    return (freq);
-  }
-  int stop_scan (void ** session_data) {
-    logd ("stop_scan");
-    chip_api_seek_stop ();
-    return (0);
-  }
-  int send_extra_command (void ** session_data, const char * command, char ** parameters, struct fmradio_extra_command_ret_item_t ** out_parameters) {
-    if (command == NULL)
-      logd ("send_extra_command: NULL");
-    else {
-      logd ("send_extra_command: %s", command);
-      int ret = chip_api_extra_cmd (command, parameters);
-      logd ("send_extra_command ret: %d", ret);
-    }
-    return (0);
-  }
+// Не используется
+int tx_start(void ** session_data, const struct fmradio_vendor_callbacks_t * callbacks, int low_freq, int high_freq, int default_freq, int grid) {
+  logd ("tx_start lo: %d  hi: %d  def: %d  grid: %d", low_freq, high_freq, default_freq, grid);
+  return (0);
+}
 
-    // Optional Rx only:
-  int scan (void ** session_data, enum fmradio_seek_direction_t direction) {
-    logd ("scan: %d", direction);
-    int ret = chip_api_seek_start (direction);
-    need_seek_cmplt = 1;                                                // Seek is complete
-    if (ret > 0)
-      curr_freq_val = ret;
-    return (ret);
-  }
+int pause_CONFLICT(void ** session_data) {
+  logd("pause");
+  chip_api_mute_set(1); // Mute
+  return 0;
+}
 
-  int full_scan (void ** session_data, int ** found_freqs, int ** signal_strengths) {
-    logd ("full_scan");
-    return (-1);
+int resume(void ** session_data) {
+  logd("resume");
+  chip_api_mute_set(0); // Unmute
+  return 0;
+}
+
+int reset(void ** session_data) {
+  logd("reset");
+  int ret = rx_thread_stop();
+  ret = chip_api_pwr_off(pwr_rds);
+  ret = chip_api_api_off();
+  return (ret);
+}
+
+// Optional Tx & Rx:
+/**
+ * Изменение текущей частоты
+ * Вызывается из серверного API, session_data == NULL
+ */
+int set_frequency (void ** session_data, int frequency) {
+  logd("set_frequency: %d", frequency);
+  return chip_api_freq_set(frequency);
+}
+
+/**
+ * Получение текущей частоты
+ * session_data == NULL
+ */
+int get_frequency(void ** session_data) {
+  int freq = chip_api_freq_get();
+  if (extra_log) {
+    logd("get_frequency: %d", freq);
   }
-  int get_signal_strength (void ** session_data) {
-    //logd ("get_signal_strength");
-    curr_rssi = chip_api_rssi_get ();
-    int rssi = RSSI_FACTOR * curr_rssi;
-    if (extra_log)
-      logd ("get_signal_strength: %d", rssi);
-    return (rssi);
+  return freq;
+}
+
+/**
+ * Остановка поиска станции
+ * session_data == NULL
+ */
+int stop_scan(void ** session_data) {
+  logd("stop_scan");
+  chip_api_seek_stop();
+  return 0;
+}
+
+/**
+ * ???
+ * Вызывается в серверном API с command = "990" и "991" в блоке про tuner_band, остальное NULL
+ *
+ */
+int send_extra_command(void ** session_data, const char * command, char ** parameters, struct fmradio_extra_command_ret_item_t ** out_parameters) {
+  if (command == NULL) {
+    logd("send_extra_command: NULL");
+  } else {
+    logd("send_extra_command: %s", command);
+    int ret = chip_api_extra_cmd(command, parameters);
+    logd("send_extra_command ret: %d", ret);
   }
-  int is_playing_in_stereo (void ** session_data) {
-    //logd ("is_playing_in_stereo: %d", curr_stro_sig);
-    return (curr_stro_sig);
+  return 0;
+}
+
+// Optional Rx only:
+/**
+ * Сканирование
+ * direction = 0 или 1 (FMRADIO_SEEK_DOWN, FMRADIO_SEEK_UP соответственно)
+ * session_data == NULL
+ */
+int scan(void ** session_data, enum fmradio_seek_direction_t direction) {
+  logd ("scan: %d", direction);
+  int ret = chip_api_seek_start(direction);
+  need_seek_cmplt = 1; // Seek is complete
+  if (ret > 0) {
+    curr_freq_val = ret;
   }
-  int rds_data_supported = 1;
-  int is_rds_data_supported (void ** session_data) {
-    logd ("is_rds_data_supported: %d", rds_data_supported);
-    return (rds_data_supported);
+  return ret;
+}
+
+// Не используется
+int full_scan(void ** session_data, int ** found_freqs, int ** signal_strengths) {
+  logd("full_scan");
+  return (-1);
+}
+
+/**
+ * Получение качества сигнала
+ * Вызывается в серверном API
+ */
+int get_signal_strength(void ** session_data) {
+  curr_rssi = chip_api_rssi_get();
+  int rssi = RSSI_FACTOR * curr_rssi;
+  if (extra_log) {
+    logd ("get_signal_strength: %d", rssi);
   }
+  return rssi;
+}
+
+/**
+ * Стерео?
+ * Вызывается в серверном API
+ */
+int is_playing_in_stereo(void ** session_data) {
+  return curr_stro_sig;
+}
+
+int rds_data_supported = 1; // WTF?
+
+/**
+ * Проверка на поддержку RDS
+ */
+int is_rds_data_supported(void ** session_data) {
+  logd ("is_rds_data_supported: %d", rds_data_supported);
+  return (rds_data_supported);
+}
+
   int tuned_to_valid_channel = 1;
   int is_tuned_to_valid_channel (void ** session_data) {
     logd ("is_tuned_to_valid_channel: %d", tuned_to_valid_channel);
@@ -957,45 +1002,45 @@ char xfrm (char rds_char) {
       on_rds_data_found
       on_signal_strength_changed
       on_automatic_switch
-      on_forced_reset                                                   // Not used, but could call if fatal error
+      on_forced_reset  // Not used, but could call if fatal error
 */
 
-    // Init API:
+// Init API:
+//unsigned int magicVal = FMRADIO_SIGNATURE;
+struct fmradio_vendor_methods_t vendor_funcs = {
+  rx_start,                    // Set 5 callbacks, chip_api_api_on(), chip_api_pwr_on(), rx_thread_start().
+  tx_start,                    // --
+  pause_CONFLICT,              // chip_api_mute_set(1). Mute audio on chip. Could also set chip to low power. Name conflicts with C library pause()
+  resume,                      // chip_api_mute_set(0). Unmute "                                             "
+  reset,                       // AKA "off" or "rx_stop": rx_thread_stop(), chip_api_pwr_off(), chip_api_api_off()
+  set_frequency,               // Set freq: chip_api_freq_set(), rds_reset()
+  get_frequency,               // Get freq: chip_api_freq_get()
+  stop_scan,                   // Stop seek: chip_api_seek_stop()
+  send_extra_command,          // chip_api_extra_cmd()
+  scan,                        // chip_api_seek_start(), rds_reset()
+  full_scan,                   // --
+  get_signal_strength,         // chip_api_rssi_get()
+  is_playing_in_stereo,        // ? return (curr_stro_sig);
+  is_rds_data_supported,       // ? return (rds_data_supported); (1)
+  is_tuned_to_valid_channel,   // ? return (tuned_to_valid_channel); (1)
+  set_automatic_af_switching,  // cfg_af_mode = 0 or 3    // 0 = Disabled, 1 = Manual, 2 = RDS, 3 = Allow Regional  !! > 1 means need RDS so leave on even if screen off
+  set_automatic_ta_switching,  // --
+  set_force_mono,              // chip_api_stro_set()
+  get_threshold,               // return (thresh);
+  set_threshold,               // Test:     if (thresh >= 770 && thresh <= 785)     chip_api_vol_set ((thresh - 770) * 4096)
+  set_rds_reception,           // pwr_rds = 0 or 1
+  block_scan,                  // --
+  set_rds_data                 // --
+};
 
-  //unsigned int magicVal = FMRADIO_SIGNATURE;
-  struct fmradio_vendor_methods_t vendor_funcs = {
-    rx_start,                                                           // Set 5 callbacks, chip_api_api_on(), chip_api_pwr_on(), rx_thread_start().
-    tx_start,                                                           // --
-    pause_CONFLICT,                                                     // chip_api_mute_set(1). Mute audio on chip. Could also set chip to low power. Name conflicts with C library pause()
-    resume,                                                             // chip_api_mute_set(0). Unmute "                                             "
-    reset,                                                              // AKA "off" or "rx_stop": rx_thread_stop(), chip_api_pwr_off(), chip_api_api_off()
-    set_frequency,                                                      // Set freq: chip_api_freq_set(), rds_reset()
-    get_frequency,                                                      // Get freq: chip_api_freq_get()
-    stop_scan,                                                          // Stop seek: chip_api_seek_stop()
-    send_extra_command,                                                 // chip_api_extra_cmd()
-    scan,                                                               // chip_api_seek_start(), rds_reset()
-    full_scan,                                                          // --
-    get_signal_strength,                                                // chip_api_rssi_get()
-    is_playing_in_stereo,                                               // ? return (curr_stro_sig);
-    is_rds_data_supported,                                              // ? return (rds_data_supported); (1)
-    is_tuned_to_valid_channel,                                          // ? return (tuned_to_valid_channel); (1)
-    set_automatic_af_switching,                                         // cfg_af_mode = 0 or 3    // 0 = Disabled, 1 = Manual, 2 = RDS, 3 = Allow Regional  !! > 1 means need RDS so leave on even if screen off
-    set_automatic_ta_switching,                                         // --
-    set_force_mono,                                                     // chip_api_stro_set()
-    get_threshold,                                                      // return (thresh);
-    set_threshold,                                                      // Test:     if (thresh >= 770 && thresh <= 785)     chip_api_vol_set ((thresh - 770) * 4096)
-    set_rds_reception,                                                  // pwr_rds = 0 or 1
-    block_scan,                                                         // --
-    set_rds_data                                                        // --
-    };
-
-  int register_fmradio_functions (unsigned int * signature_p, struct fmradio_vendor_methods_t * vendor_funcs_p) {
-
-    if (signature_p)
-      *signature_p = FMRADIO_SIGNATURE;//magicVal;
-    if (vendor_funcs_p)
-      *vendor_funcs_p = vendor_funcs;
-
-    return (0);
+int register_fmradio_functions(unsigned int * signature_p, struct fmradio_vendor_methods_t * vendor_funcs_p) {
+  if (signature_p) {
+    *signature_p = FMRADIO_SIGNATURE;//magicVal;
   }
+
+  if (vendor_funcs_p) {
+    *vendor_funcs_p = vendor_funcs;
+  }
+  return (0);
+}
 

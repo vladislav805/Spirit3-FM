@@ -44,14 +44,13 @@ extern int extra_log;// = 0;
 int dev_hndl = -1;
 
 // Частоты
-int intern_band     =      0;   // 0 = EU, 1 = US
+// 0 = EU, 1 = US
+int intern_band = 0;
 
 extern int curr_freq_val;
 extern int curr_freq_inc;
 extern int curr_freq_lo;
 extern int curr_freq_hi;
-
-//extern struct v4l2_capability    v4l_cap;//     = {0};
 
 // #define V4L2_CAP_RDS_CAPTURE            0x00000100  /* RDS data capture */
     // #define V4L2_CAP_VIDEO_OUTPUT_OVERLAY   0x00000200  /* Can do video output overlay */
@@ -1022,12 +1021,6 @@ int chip_imp_seek_stop() {
     loge("dev_hndl <= 0");
     return -1;
   }
-/*  ret = ioctl (dev_hndl, Si4709_IOC_SEEK_CANCEL);   // !!!!
-if (ret < 0) {
-  loge("chip_imp_seek_stop IOCTL Si4709_SEEK_CANCEL error: %d", ret);
-  return -1;
-}
-logd("chip_imp_seek_stop IOCTL Si4709_SEEK_CANCEL success");*/
   return 0;
 }
 
@@ -1116,64 +1109,23 @@ const char SPACE_CHAR = 32;
 const int RT_DATA_OFFSET_IND = 5;
 const int RT_A_B_FLAG_IND = 4;
 
-int rds_data_get(char* buff, unsigned int len, unsigned int index) {
+int rds_has_support_get() {
   int ret;
-  //struct v4l2_buffer v4l2_buf;
 
-  if ((len < STD_BUF_SIZE) || (buff == NULL)) {
+  struct v4l2_capability v4l_cap;
+  //v4l_cap.tuner = 0; // Tuner index = 0
+  //v4l_cap.type = V4L2_TUNER_RADIO;
+  memset(v4l_cap.reserved, 0, sizeof(v4l_cap.reserved));
+
+  ret = ioctl(dev_hndl, VIDIOC_QUERYCAP, &v4l_cap);
+  if (ret < 0) {
       return -1;
   } else {
-    struct v4l2_buffer v4l2_buf;
-    memset(v4l2_buf.reserved, 0, sizeof(v4l2_buf.reserved));
-    v4l2_buf.index = index;
-    v4l2_buf.type = V4L2_BUF_TYPE_PRIVATE;
-    v4l2_buf.length = STD_BUF_SIZE;
-    v4l2_buf.m.userptr = (unsigned short) buff;
-    ret = ioctl(dev_hndl, VIDIOC_DQBUF, &v4l2_buf);
-    if (ret < 0) {
-        return -1;
-    } else {
-        return v4l2_buf.bytesused;
-    }
+      return v4l_cap.capabilities;
   }
 }
 
-int rds_string_get(char* rt, int *rt_len) {
-  char raw_rds[STD_BUF_SIZE];
-  int len = 0;
-  int res;
 
-  res = rds_data_get(rt, 256, 2);
-
-  if (res < 0) {
-    return -1;
-  }
-
-  if ((raw_rds[RT_LEN_IND] > 0) && (raw_rds[RT_LEN_IND] <= MAX_RT_LEN)) {
-      for (len = 0; len < raw_rds[RT_LEN_IND]; len++) {
-         rt[len] = raw_rds[RT_DATA_OFFSET_IND + len];
-         logd("Rt byte[%d]: %d\n", len, rt[len]);
-         if ((rt[len] <= LAST_CTRL_CHAR) || (rt[len] >= FIRST_NON_PRNT_CHAR)) {
-             rt[len] = SPACE_CHAR;
-             continue;
-         }
-      }
-      if (len < (MAX_RT_LEN - 1)) {
-          rt[len] = '\0';
-          *rt_len = len + 1;
-      } else {
-          *rt_len = len;
-      }
-      logd("Rt is: %s\n", rt);
-      logd("RT text A / B: %d\n", raw_rds[RT_A_B_FLAG_IND]);
-
-      rt = *raw_rds;
-
-      return 0;
-  } else {
-      return -1;
-  }
-}
 
 /*
   int rbds_set (int rbds) {

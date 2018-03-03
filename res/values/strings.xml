@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string name="header_cd_rssi">RSSI</string>
+  <string name="header_rssi_default">0</string>
+  <string name="header_record">Record</string>
+</resources>

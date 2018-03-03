@@ -3,6 +3,7 @@ package fm.a2d.sf.view;
 import android.content.Context;
 import android.view.ViewGroup;
 import android.widget.Button;
+import fm.a2d.sf.R;
 
 /**
  * vlad805 (c) 2018
@@ -10,23 +11,16 @@ import android.widget.Button;
 @SuppressWarnings("UnusedReturnValue")
 public class PresetView extends Button {
 
-  private Context mContext;
-
-  private float mDensity;
-
   private int mIndex;
   private String mFrequency;
 
   public PresetView(Context context) {
     super(context);
 
-    mContext = context;
-
-    mDensity = context.getResources().getDisplayMetrics().density;
-
-    setLayoutParams(new ViewGroup.LayoutParams((int) (80 * mDensity), ViewGroup.LayoutParams.MATCH_PARENT));
+    setLayoutParams(new ViewGroup.LayoutParams((int) context.getResources().getDimension(R.dimen.preset_item_width), ViewGroup.LayoutParams.MATCH_PARENT));
 
     setHapticFeedbackEnabled(true);
+    setTextSize(context.getResources().getDimension(R.dimen.preset_item_text_size));
   }
 
 

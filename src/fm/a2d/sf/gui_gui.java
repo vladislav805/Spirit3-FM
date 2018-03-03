@@ -26,6 +26,7 @@ import fm.a2d.sf.view.PresetView;
 
 import java.util.Locale;
 
+import static android.view.View.GONE;
 import static android.view.View.ROTATION_Y;
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
@@ -465,7 +466,7 @@ public class gui_gui implements gui_gap {
       }
     });
 
-
+    m_dial.setVisibility(GONE);
   }
 
 /*  Original top  =   0 degrees =  97.0 MHz

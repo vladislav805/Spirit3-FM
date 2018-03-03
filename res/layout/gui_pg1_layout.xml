@@ -6,56 +6,43 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
-<!--
-  Top display area: record button/indicator top left, volume (speaker image) top right, PS, RT
--->
+    xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/fm.a2d.sf">
+<!-- Top display area: record button/indicator top left, volume (speaker image) top right, PS, RT -->
   <LinearLayout
           android:layout_width="match_parent"
-          android:layout_height="0dip"
-          android:layout_weight="2"
+          android:layout_height="@dimen/header_height"
           android:layout_gravity="center"
           android:orientation="horizontal">
 <!-- RSSI -->
     <LinearLayout
+        android:layout_marginStart="@dimen/header_horizontal_margin"
+        android:layout_marginEnd="@dimen/header_horizontal_margin"
         android:orientation="horizontal"
-        android:layout_weight="4"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent">
-      <TextView
-          android:id="@+id/tv_rssi"
-          android:contentDescription="RSSI"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-
-          android:textSize="16sp"
-          android:textStyle="normal"
-          android:textColor="#ffcbcbcb"
-          android:gravity="center_vertical|center_horizontal"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:singleLine="true" />
       <ImageView
           android:id="@+id/iv_signal"
           android:src="@drawable/ic_signal_off"
-          android:layout_marginStart="4dp"
+          android:layout_marginEnd="@dimen/header_horizontal_margin"
           android:layout_gravity="center_vertical"
-          android:layout_width="25dp"
-          android:layout_height="25dp"
-          android:contentDescription="Signal stretch" />
+          android:layout_width="@dimen/header_icons_size"
+          android:layout_height="@dimen/header_icons_size"
+          android:contentDescription="@string/header_cd_rssi" />
+      <TextView
+          android:id="@+id/tv_rssi"
+          android:contentDescription="@string/header_cd_rssi"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:text="@string/header_rssi_default"
+          android:textSize="@dimen/header_rssi_text_size"
+          android:textStyle="normal"
+          android:textColor="@color/header_grey"
+          android:fontFamily="monospace"
+          android:gravity="center_vertical|center_horizontal"
+          android:layout_gravity="center_vertical|center_horizontal"
+          android:maxLines="1" />
     </LinearLayout>
 
-<!-- Record -->
-    <ImageView
-            android:id="@+id/iv_record"
-            android:contentDescription="Record"
-            android:focusable="true"
-            android:clickable="true"
-            android:layout_weight="2"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:src="@drawable/sel_record"
-            android:scaleType="center"
-            android:layout_centerInParent="true" />
 <!-- PS -->
     <TextView
             android:id="@+id/tv_ps"
@@ -74,6 +61,7 @@
 
 <!-- Volume & Mute/unmute display -->
     <ImageView
+        android:visibility="gone"
             android:id="@+id/iv_mute"
             android:contentDescription="Volume"
             android:src="@drawable/btn_volume"
@@ -86,6 +74,7 @@
 
 <!-- Stereo -->
     <TextView
+        android:visibility="gone"
             android:id="@+id/tv_most"
             android:contentDescription="Mono / Stereo"
             android:layout_width="0dip"
@@ -97,6 +86,16 @@
             android:gravity="center_vertical|center_horizontal"
             android:layout_gravity="center_vertical|center_horizontal"
             android:singleLine="true" />
+    <!-- Record -->
+    <ImageView
+        android:id="@+id/iv_record"
+        android:contentDescription="@string/header_record"
+        android:focusable="true"
+        android:clickable="true"
+        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/header_height"
+        android:layout_height="@dimen/header_height"
+        android:src="@drawable/sel_record" />
   </LinearLayout>
 
 <!--
@@ -130,45 +129,13 @@
 
   </LinearLayout>
 
-  <LinearLayout
-      android:layout_weight="3"
-      android:orientation="horizontal"
-      android:layout_width="match_parent"
-      android:layout_height="0dp">
-    <SeekBar
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/sb_freq_seek" />
-  </LinearLayout>
-  <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="0dip"
-          android:layout_weight="0"
-          android:layout_gravity="center"
-          android:orientation="horizontal">
-<!--
-  PICL
--->
-    <TextView
-            android:id="@+id/tv_blank"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_weight="2"
-            android:textSize="10sp"
-            android:textStyle="normal"
-            android:textColor="#ffa3a3a3"
-            android:gravity="center_vertical|center_horizontal"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:singleLine="true" />
-<!-- PTYN -->
-  </LinearLayout>
 
 <!-- Frequency -->
   <LinearLayout
       android:layout_width="match_parent"
-      android:layout_height="0dip"
-      android:layout_weight="6"
-      android:orientation="horizontal">
+      android:layout_height="wrap_content"
+      android:orientation="horizontal"
+      android:baselineAligned="false">
 
     <LinearLayout
         android:layout_width="0dip"
@@ -182,7 +149,7 @@
           android:contentDescription="RDS PI"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:textSize="10dip"
+          android:textSize="8sp"
           android:textStyle="normal"
           android:textColor="#ffa3a3a3"
           android:gravity="center_vertical|center_horizontal"
@@ -198,8 +165,6 @@
           android:clickable="true"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:layout_marginTop="2dp"
-          android:layout_marginBottom="4dp"
           android:layout_marginRight="2dp"
           android:layout_marginLeft="2dp"
           android:scaleType="center" />
@@ -209,7 +174,7 @@
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="5"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal">
       <TextView
@@ -218,12 +183,25 @@
           android:textSize="65sp"
           android:gravity="center_vertical|center_vertical"
           android:layout_gravity="center_vertical|center_horizontal"
-          android:textColor="#32b5e5"
+          android:textColor="@color/primary_blue"
           android:textAppearance="?android:attr/textAppearanceLarge"
-          android:shadowColor="#00ccff"
+          android:shadowColor="@color/primary_blue_shadow"
           android:shadowRadius="20"
           android:shadowDx="0"
           android:shadowDy="0"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+      <TextView
+          android:textSize="30sp"
+          android:gravity="center_vertical|bottom"
+          android:layout_gravity="center_vertical|bottom"
+          android:text="MHz"
+          android:textColor="@color/primary_blue"
+          android:shadowColor="@color/primary_blue_shadow"
+          android:shadowRadius="10"
+          android:shadowDx="0"
+          android:shadowDy="0"
+          android:layout_marginBottom="1dp"
           android:layout_width="wrap_content"
           android:layout_height="wrap_content" />
     </LinearLayout>
@@ -262,6 +240,23 @@
           android:layout_marginLeft="2dip"
           android:scaleType="center" />
     </LinearLayout>
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_weight="3"
+      android:orientation="horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="0dp">
+    <!--suppress AndroidUnknownAttribute -->
+    <SeekBar
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/seekbar_style"
+        android:thumb="@drawable/custom_thumb"
+        android:splitTrack="false"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/sb_freq_seek" />
   </LinearLayout>
 
   <LinearLayout android:layout_width="match_parent" android:layout_height="0dip" android:layout_weight="1" android:layout_gravity="center" android:orientation="horizontal" >
@@ -320,9 +315,9 @@
           android:contentDescription="Frequency Dial"
           android:layout_width="match_parent"
           android:layout_height="match_parent"
-          android:visibility="invisible"
+          android:visibility="gone"
           android:src="@drawable/dial_frequency"
-          android:layout_centerInParent="true" />
+          android:layout_centerInParent="true"/>
 
       <LinearLayout
           android:id="@+id/vis"

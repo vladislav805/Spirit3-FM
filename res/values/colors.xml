@@ -1,5 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="btn_preset_press">#55000000</color>
-    <color name="btn_preset_focus">#33000000</color>
+
+  <color name="btn_preset_press">#55000000</color>
+  <color name="btn_preset_focus">#33000000</color>
+
+  <color name="header_grey">#ffcbcbcb</color>
+
+  <color name="primary_blue">#32b5e5</color>
+  <color name="primary_blue_shadow">#00ccff</color>
+
 </resources>

@@ -68,8 +68,12 @@ extern int curr_freq_hi;
 
 // #define V4L2_CAP_DEVICE_CAPS            0x80000000  /* sets device capabilities field */
 
+#define FM_RX_RDS_GRP_RT_EBL 1
+#define FM_RX_RDS_GRP_PS_EBL 2
+#define FM_RX_RDS_GRP_AF_EBL 4
+#define FM_RX_RDS_GRP_PS_SIMPLE_EBL 16
 
-  #include <sys/system_properties.h>
+#include <sys/system_properties.h>
 
 int sys_run(char * cmd) {
   int ret = system(cmd);
@@ -268,6 +272,69 @@ enum v4l2_cid_iris_private_iris_t {
   V4L2_CID_PRIVATE_IRIS_READ_DEFAULT = 0x00980928,
   V4L2_CID_PRIVATE_IRIS_WRITE_DEFAULT,
   V4L2_CID_PRIVATE_IRIS_SET_CALIBRATION,
+};
+
+//V4L2 CONTROLS FOR FM DRIVER
+enum FM_V4L2_PRV_CONTROLS
+{
+    V4L2_CID_PRV_BASE = 0x8000000,
+    V4L2_CID_PRV_SRCHMODE,
+    V4L2_CID_PRV_SCANDWELL,
+    V4L2_CID_PRV_SRCHON,
+    V4L2_CID_PRV_STATE,
+    V4L2_CID_PRV_TRANSMIT_MODE,
+    V4L2_CID_PRV_RDSGROUP_MASK,
+    V4L2_CID_PRV_REGION,
+    V4L2_CID_PRV_SIGNAL_TH,
+    V4L2_CID_PRV_SRCH_PTY,
+    V4L2_CID_PRV_SRCH_PI,
+    V4L2_CID_PRV_SRCH_CNT,
+    V4L2_CID_PRV_EMPHASIS,
+    V4L2_CID_PRV_RDS_STD,
+    V4L2_CID_PRV_CHAN_SPACING,
+    V4L2_CID_PRV_RDSON,
+    V4L2_CID_PRV_RDSGROUP_PROC,
+    V4L2_CID_PRV_LP_MODE,
+    V4L2_CID_PRV_INTDET = V4L2_CID_PRV_BASE + 25,
+    V4L2_CID_PRV_AF_JUMP = V4L2_CID_PRV_BASE + 27,
+    V4L2_CID_PRV_SOFT_MUTE = V4L2_CID_PRV_BASE + 30,
+    V4L2_CID_PRV_AUDIO_PATH = V4L2_CID_PRV_BASE + 41,
+    V4L2_CID_PRV_SINR = V4L2_CID_PRV_BASE + 44,
+    V4L2_CID_PRV_ON_CHANNEL_THRESHOLD = V4L2_CID_PRV_BASE + 0x2D,
+    V4L2_CID_PRV_OFF_CHANNEL_THRESHOLD,
+    V4L2_CID_PRV_SINR_THRESHOLD,
+    V4L2_CID_PRV_SINR_SAMPLES,
+    V4L2_CID_PRV_SPUR_FREQ,
+    V4L2_CID_PRV_SPUR_FREQ_RMSSI,
+    V4L2_CID_PRV_SPUR_SELECTION,
+    V4L2_CID_PRV_AF_RMSSI_TH = V4L2_CID_PRV_BASE + 0x36,
+    V4L2_CID_PRV_AF_RMSSI_SAMPLES,
+    V4L2_CID_PRV_GOOD_CH_RMSSI_TH,
+    V4L2_CID_PRV_SRCHALGOTYPE,
+    V4L2_CID_PRV_CF0TH12,
+    V4L2_CID_PRV_SINRFIRSTSTAGE,
+    V4L2_CID_PRV_RMSSIFIRSTSTAGE,
+    V4L2_CID_PRV_SOFT_MUTE_TH,
+    V4L2_CID_PRV_IRIS_RDSGRP_RT,
+    V4L2_CID_PRV_IRIS_RDSGRP_PS_SIMPLE,
+    V4L2_CID_PRV_IRIS_RDSGRP_AFLIST,
+    V4L2_CID_PRV_IRIS_RDSGRP_ERT,
+    V4L2_CID_PRV_IRIS_RDSGRP_RT_PLUS,
+    V4L2_CID_PRV_IRIS_RDSGRP_3A,
+
+    V4L2_CID_PRV_IRIS_READ_DEFAULT = V4L2_CTRL_CLASS_USER + 0x928,
+    V4L2_CID_PRV_IRIS_WRITE_DEFAULT,
+    V4L2_CID_PRV_SET_CALIBRATION = V4L2_CTRL_CLASS_USER + 0x92A,
+    HCI_FM_HELIUM_SET_SPURTABLE = 0x0098092D,
+    HCI_FM_HELIUM_GET_SPUR_TBL  = 0x0098092E,
+    V4L2_CID_PRV_IRIS_FREQ,
+    V4L2_CID_PRV_IRIS_SEEK,
+    V4L2_CID_PRV_IRIS_UPPER_BAND,
+    V4L2_CID_PRV_IRIS_LOWER_BAND,
+    V4L2_CID_PRV_IRIS_AUDIO_MODE,
+    V4L2_CID_PRV_IRIS_RMSSI,
+
+    V4L2_CID_PRV_ENABLE_SLIMBUS = 0x00980940,
 };
 
 
@@ -1108,6 +1175,166 @@ const char FIRST_NON_PRNT_CHAR = 127;
 const char SPACE_CHAR = 32;
 const int RT_DATA_OFFSET_IND = 5;
 const int RT_A_B_FLAG_IND = 4;
+
+int chip_imp_rds_rt_get(char *rt, int *rt_len) {
+  int ret = 0;
+  int len = 0;
+  char raw_rds[STD_BUF_SIZE];
+
+  ret = iris_buf_get(raw_rds, STD_BUF_SIZE, RT_IND);
+  if (ret <= 0) {
+      return FM_FAILURE;
+  } else {
+      if (rt != NULL) {
+          if ((raw_rds[RT_LEN_IND] > 0) && (raw_rds[RT_LEN_IND] <= MAX_RT_LEN)) {
+              for (len = 0; len < raw_rds[RT_LEN_IND]; len++) {
+                 rt[len] = raw_rds[RT_DATA_OFFSET_IND + len];
+                 logd("Rt byte[%d]: %d\n", len, rt[len]);
+                 if ((rt[len] <= LAST_CTRL_CHAR) || (rt[len] >= FIRST_NON_PRNT_CHAR)) {
+                     rt[len] = SPACE_CHAR;
+                     continue;
+                 }
+              }
+              if (len < (MAX_RT_LEN - 1)) {
+                  rt[len] = '\0';
+                  *rt_len = len + 1;
+              } else {
+                  *rt_len = len;
+              }
+              logd("Rt is: %s\n", rt);
+              logd("RT text A / B: %d\n", raw_rds[RT_A_B_FLAG_IND]);
+          } else {
+              return FM_FAILURE;
+          }
+      } else {
+          return FM_FAILURE;
+      }
+  }
+  need_pt_chngd = false;
+  logd("%s, [rt_len=%d]\n", __func__, *rt_len);
+  return FM_SUCCESS;
+}
+
+int chip_set_control(int id, int val) {
+  int ret;
+  struct v4l2_control control;
+
+  control.value = val;
+  control.id = id;
+
+  for(int i = 0; i < 3; i++) {
+    ret = ioctl(dev_hndl, VIDIOC_S_CTRL, &control);
+    if (ret < IOCTL_SUCC) {
+      ret = FM_FAILURE;
+    } else {
+      ret = FM_SUCCESS;
+      break;
+    }
+  }
+  return ret;
+}
+
+int chip_get_control(int id, long &val) {
+    int ret;
+    struct v4l2_control control;
+
+    control.id = id;
+    ret = ioctl(dev_hndl, VIDIOC_G_CTRL, &control);
+    if (ret < IOCTL_SUCC) {
+        return FM_FAILURE;
+    } else {
+        val = control.value;
+        return FM_SUCCESS;
+    }
+}
+
+//enable, disable value to receive data of a RDS group
+//return FM_SUCCESS on success, FM_FAILURE on failure
+int rds_processing_group_set(int grps) {
+    int ret;
+    long mask;
+
+    if (dev_hndl) {
+       ret = get_control(V4L2_CID_PRV_RDSGROUP_PROC, mask);
+
+       if (ret < 0) {
+          return -1;
+       }
+
+       mask &= 0xC7;
+       mask |= ((grps & 0x07) << 3);
+
+       ret = set_control(V4L2_CID_PRV_RDSGROUP_PROC, (int) mask);
+    } else {
+       ret = -1;
+    }
+    return ret;
+}
+
+int enable_rds() {
+    int ret = -1;
+
+    logd("enable_rds");
+    if (dev_hndl) {
+        ret = set_control(V4L2_CID_PRV_RDSON, 1);
+
+        if (ret < 0) {
+            logd("RDS ON failed\n");
+            return -1;
+        }
+
+        ret = rds_processing_group_set(FM_RX_RDS_GRP_RT_EBL);
+        if (ret < 0) {
+            logd("Set RDS grp processing\n");
+            return -1;
+        }
+
+        ret = 1;
+        rds_enabled = 1;
+    } else {
+        logd("enable_rds: not in proper state cur_fm_state = ");
+        return ret;
+    }
+    return ret;
+}
+
+//Disable all RDS data processing
+//RT, ERT, RT PLUS, PS
+int disable_rds(void) {
+    int ret = -1;
+
+    if (dev_hndl) {
+        ret = set_control(V4L2_CID_PRV_RDSON, 2);
+        if (ret < 0) {
+            logd("Disable RDS failed");
+            return -1;
+        }
+
+        ret = 0;
+        rds_enabled = 0;
+    }
+
+    return ret;
+}
+
+int toggle_rds(int onoff) {
+    int ret = 0;
+
+    if (onoff) {
+        ret = enable_rds();
+    } else {
+        ret = disable_rds();
+    }
+
+    if (ret < 0) {
+        logd("%s, failed\n", __func__);
+    }
+
+    logd("%s, [onoff=%d] [ret=%d]\n", __func__, onoff, ret);
+    return ret;
+}
+
+
 
 int rds_has_support_get() {
   int ret;

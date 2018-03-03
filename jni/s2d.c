@@ -772,267 +772,57 @@ int tuner_init() {
     return (ret);
   }
   static int cached_sys_run (char * new_cmd) {                          // Additive single string w/ commit version
-    char cmd [512] = {0};
-    if (strlen (sys_cmd) == 0)                                          // If first command since commit
+    char cmd[512] = {0};
+    if (strlen(sys_cmd) == 0)                                          // If first command since commit
       snprintf (cmd, sizeof (cmd), "%s", new_cmd);
     else
       snprintf (cmd, sizeof (cmd), " ; %s", new_cmd);
-    strncat (sys_cmd, cmd, sizeof (sys_cmd));
+    strncat(sys_cmd, cmd, sizeof (sys_cmd));
     int ret = sys_commit ();                                            // Commit every command now, due to GS3/Note problems
-    return (ret);
+    return ret;
   }
 
+static char * codec_reg = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
 
+int qcv_digital_input_on() {
+  alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
+  alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 0); // Turn off microphone path
+  ms_sleep(100);
+  return 0;
+}
+int qcv_digital_input_off() {
+  alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
+  ms_sleep(100);
+  return 0;
+}
 
-    //RADIO_L -> IN2LN / DMICDAT1
-    //RADIO_R -> IN2RN / DMICDAT2
-
-  int gs1_digital_input_on () {
-
-    //cached_sys_run ("echo 0 > /sys//devices/virtual/misc/voodoo_sound/recording_preset 2>/dev/null");
-
-    //cached_sys_run ("echo -n 0039  0000 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = 0068 !!
-    //cached_sys_run ("echo -n  0700 8100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = a101 !!
-
-    cached_sys_run ("echo -n   300 4010 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = C010 !!
-
-    cached_sys_run ("echo -n   410    0 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = 2800 !!
-    //cached_sys_run ("echo -n   410 1800 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // 0410 = 1800 to remove dc offset w/ hifi, cf = 4 hz at 44K, 3.7 @ 44.1
-
-
-    cached_sys_run ("echo -n    2  63a0 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n    4  0303 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // Default 3003
-
-    cached_sys_run ("echo -n   18    80 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 8b  Raises volume         80 mutes
-    cached_sys_run ("echo -n   19   14d > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 4b
-    cached_sys_run ("echo -n   1a    80 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 8b                        80 mutes
-    cached_sys_run ("echo -n   1b   14d > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 4b
-
-    cached_sys_run ("echo -n   28    44 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n   29   100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n   2a   100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-
-    cached_sys_run ("echo -n  606     2 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // ADC1L_TO_AIF1ADC1L   Def 0
-    //if (gs1_optional)
-      cached_sys_run ("echo -n  607     2 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // ADC1R_TO_AIF1ADC1R   Def 0
-    sys_commit ();
-
-    return (0);
+int dev_digital_input_on() {
+  switch (curr_radio_device_int) {
+    case DEV_QCV:
+      return qcv_digital_input_on();
   }
-  int gs1_digital_input_off () {
-    return (0);
+  return -1;
+}
+
+int dev_digital_input_off() {
+  switch (curr_radio_device_int) {
+    case DEV_QCV:
+      return qcv_digital_input_off();
   }
+  return -1;
+}
 
-    // C1YMU823 / MC-1N2
-    // /sys/kernel/debug/asoc/U1-YMU823/mc1n2.6-003a/codec_reg
-  int gs2_digital_input_on () {
-    alsa_bool_set ("ADCL MIXER Mic2 Switch", 1);    // !!  Must first switch ON, then OFF !!
-    alsa_bool_set ("ADCR MIXER Mic2 Switch", 1);
-    alsa_bool_set ("ADCL MIXER Mic2 Switch", 0);
-    alsa_bool_set ("ADCR MIXER Mic2 Switch", 0);
-
-    alsa_bool_set ("ADCL MIXER Mic1 Switch", 1);    // Same for Mic1 when using CAMCORDER
-    alsa_bool_set ("ADCR MIXER Mic1 Switch", 1);
-    alsa_bool_set ("ADCL MIXER Mic1 Switch", 0);
-    alsa_bool_set ("ADCR MIXER Mic1 Switch", 0);
-
-    alsa_bool_set ("ADCL MIXER Line Switch", 0);
-    alsa_bool_set ("ADCR MIXER Line Switch", 0);
-    alsa_bool_set ("ADCL MIXER Line Switch", 1);
-    alsa_bool_set ("ADCR MIXER Line Switch", 1);
-
-    alsa_int_set ("AD Analog Volume", 22);
-    return (0);
+int chmod_need = 1;
+char * set_radio_dai_state(char * dai_state) {
+  if (!strncasecmp(dai_state, "Start", 5)) {
+    logd("dai Start: %d", dev_digital_input_on());
+  } else if (!strncasecmp(dai_state, "Stop", 4)) {
+    logd("dai Stop: %d", dev_digital_input_off());
+  } else {
+    logd("dai Unknown: %s", dai_state);
   }
-  int gs2_digital_input_off () {
-    alsa_bool_set ("ADCL MIXER Line Switch", 0);
-    alsa_bool_set ("ADCR MIXER Line Switch", 0);
-    return (0);
-  }
-
-    // GT-N7100 Note2:
-    // FM Left     IN2RP       OK but popping
-    // FM Right    IN2RN       Very Low
-    // GT-I9300 Galaxy S3:
-    //FM Left     IN2RP
-    //FM Right    IN2RN
-
-    //FM Left IN2RP -> MIXINL via RXVOICE:
-    //RXVOICE = IN2RP (FM Left) - IN2LP (EAR_MIC_N)
-    //-> MIXINL / MIXINR:     6 steps:    -12, -9, -6, -3, 0, +3, +6
-
-    //- FM Right IN2RN -> MIXINR via IN2R PGA:
-    //IN2R = -16.5 to +30 * ( 0/IN2RP (FM Left) - 0/IN2RN (FM Right) )
-    //-> MIXINR:  0, +30      = -16.5 to +30 or  13.5 to +60                  */
-
-  static char * codec_reg          = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
-  static char * codec_reg_esc      = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";    // Space Escaped
-
-  static char * codec_reg_omni     = "/sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg";  // OmniROM 9300 has codec_reg_sa44, but read-only.
-  static char * codec_reg_cm11     = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
-
-//Read-only on Nameless Lollipop:
-  static char * codec_reg_sa44     = "/sys/devices/platform/soc-audio/WM8994 AIF1/codec_reg";      // Only access on stock, additional on CM11 unofficial for N7100
-  static char * codec_reg_sa44_esc = "/sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg";     // Space Escaped
-  
-
-  int gs3_digital_input_on () {
-
-    //Right:
-    alsa_int_set ("MIXINR IN2R Volume", 0);                       // +0         Default = 1
-    alsa_int_set ("IN2R Volume", 15); // STUCK low bug  Default = 11                            // 0-31 : +6        15 is actually max, not 31  Total right: 0 + 6 = +6 db
-
-    alsa_bool_set ("MIXINR IN2R Switch", 1);
-
-    alsa_bool_set ("MIXINR IN1R Switch", 0);    // Needed for Camcorder mic
-
-    //alsa_int_set ("MIXINL IN2L Volume", 0);   //!!!!
-
-    alsa_bool_set ("IN2R PGA IN2RP Switch", 0);                    // Off, or would be FM Left - FM Right
-//    alsa_bool_set ("IN2R PGA IN2RN Switch", 1);                    // On for -FM Right
-//    alsa_bool_set ("IN2R Switch", 1);                              // Added because was off on stock XXEMA2, but same as power on default.
-
-
-        //Left:
-    alsa_int_set ("MIXINL Direct Voice Volume", 7);               // Highest (+1) = +6 db on left ?? 7 is louder than "Max" of 6 ?
-    alsa_bool_set ("MIXINL IN1L Switch", 0);
-    alsa_bool_set ("MIXINL IN2L Switch", 0);
-
-    alsa_bool_set ("AIF1ADC1 HPF Switch", 0);   // Or "AIF1ADC1 HPF Mode" = 0 = HiFi
-
-
-    if (file_get (codec_reg_omni)) {
-       codec_reg = codec_reg_omni;
-       codec_reg_esc = codec_reg_omni;
-    }
-    else if (file_get (codec_reg_cm11)) {
-       codec_reg = codec_reg_cm11;
-       codec_reg_esc = codec_reg_cm11;
-    }
-    else if (file_get (codec_reg_sa44)) {
-       codec_reg = codec_reg_sa44;
-       codec_reg_esc = codec_reg_sa44_esc;
-    }
-
-    if (/*is_note2 () &&*/ file_get (codec_reg)) {                    // !! Should verify N7100 better, but should be benign anyway
-      if (file_get (codec_reg_omni))
-        cached_sys_run ("echo -n    2 2320 > /sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else if (file_get (codec_reg_cm11))
-        cached_sys_run ("echo -n    2 2320 > /sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else
-        cached_sys_run ("echo -n    2 2320 > /sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg 2>/dev/null");
-      sys_commit ();
-
-      if (file_get (codec_reg_omni))
-        cached_sys_run ("echo -n   18  116 > /sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else if (file_get (codec_reg_cm11))
-        cached_sys_run ("echo -n   18  116 > /sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else
-        cached_sys_run ("echo -n   18  116 > /sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg 2>/dev/null");
-      sys_commit ();
-    }
-
-    return (0);
-  }
-  int gs3_digital_input_off () {                                     // Set back to assumed defaults
-    return (0);
-  }
-
-  boolean do_ssd = true;        // LG G2 w/ CM 11 needs at least one "ssd 4 0" command, so might as well use binary SSD
-
-  int lg2_digital_input_on () {
-    alsa_enum_set ("FM Radio", 0);
-    alsa_bool_set ("MultiMedia1 Mixer TERT_MI2S_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    return (-1);
-  }
-  int lg2_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer TERT_MI2S_TX", 0);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 1);
-    return (-1);
-  }
-
-
-  int one_digital_input_on () {
-    alsa_bool_set ("MultiMedia1 Mixer PRI_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    ms_sleep (100);
-    return (-1);
-  }
-  int one_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer PRI_TX", 0);
-    ms_sleep (100);
-    return (-1);
-  }
-
-  int qcv_digital_input_on () {
-    alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    ms_sleep (100);
-    return (0);
-  }
-  int qcv_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
-    ms_sleep (100);
-    return (0);
-  }
-
-
-
-  int xz2_digital_input_on () {
-    return (0);
-  }
-
-  int xz2_digital_input_off () {
-    return (0);
-  }
-
-  int dev_digital_input_on () {
-    switch (curr_radio_device_int) {
-      case DEV_UNK: return (-1);
-      case DEV_GEN: return (-1);
-
-      case DEV_GS1: return (gs1_digital_input_on ());
-      case DEV_GS2: return (gs2_digital_input_on ());
-      case DEV_GS3: return (gs3_digital_input_on ());
-      case DEV_QCV: return (qcv_digital_input_on ());
-      case DEV_ONE: return (one_digital_input_on ());
-      case DEV_LG2: return (lg2_digital_input_on ());
-      case DEV_XZ2: return (xz2_digital_input_on ());
-
-      case DEV_SDR: return (-1);
-    }
-    return (-1);
-  }
-  int dev_digital_input_off () {
-    switch (curr_radio_device_int) {
-      case DEV_UNK: return (-1);
-      case DEV_GEN: return (-1);
-
-      case DEV_GS1: return (gs1_digital_input_off ());
-      case DEV_GS2: return (gs2_digital_input_off ());
-      case DEV_GS3: return (gs3_digital_input_off ());
-      case DEV_QCV: return (qcv_digital_input_off ());
-      case DEV_ONE: return (one_digital_input_off ());
-      case DEV_LG2: return (lg2_digital_input_off ());
-      case DEV_XZ2: return (xz2_digital_input_off ());
-
-      case DEV_SDR: return (-1);
-    }
-    return (-1);
-  }
-
-  int chmod_need = 1;
-  char * set_radio_dai_state (char * dai_state) {
-    if (! strncasecmp (dai_state, "Start", 5))
-      logd ("dai Start: %d", dev_digital_input_on ());
-    else if (! strncasecmp (dai_state, "Stop", 4))
-      logd ("dai Stop: %d", dev_digital_input_off ());
-    else
-      logd ("dai Unknown: %s", dai_state);
-
-    return (dai_state);
-  }
+  return dai_state;
+}
 
 int server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
   s2d_cmd_log = !!file_get ("/mnt/sdcard/sf/s2d_log");
@@ -1041,10 +831,10 @@ int server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_b
     logd ("server_work_func cmd_len: %d  cmd_buf: \"%s\"", cmd_len, cmd_buf);
   }
 
-  int res_len = tuner_server_work_func (cmd_buf, cmd_len, res_buf, res_max);
+  int res_len = tuner_server_work_func(cmd_buf, cmd_len, res_buf, res_max);
 
   if (s2d_cmd_log) {
-    logd ("res_len: %d  res_buf: \"%s\"", res_len, res_buf);
+    logd("res_len: %d  res_buf: \"%s\"", res_len, res_buf);
   }
 
   return res_len;

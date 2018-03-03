@@ -12,7 +12,7 @@ export PROJ="sf"
 #mkdir libs
 #mkdir libs/armeabi
 
-#android update project --target android-20 --path . --name $PROJ
+#android update project --target android-21 --path . --name $PROJ
 
 
 #echo /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build start

@@ -268,12 +268,14 @@
     } while (err < 0 && errno == EINTR);
   }
 */
-  int ms_sleep (int ms) {
-    if (ms > 10 && ms != 101)
-      loge ("ms_sleep ms: %d", ms);
-    usleep (ms * 1000);                                                 // ?? Use nanosleep to avoid SIGALRM ??
-    return (0);
+
+int ms_sleep(int ms) {
+  if (ms > 10 && ms != 101) {
+    loge ("ms_sleep ms: %d", ms);
   }
+  usleep(ms * 1000); // ?? Use nanosleep to avoid SIGALRM ??
+  return 0;
+}
 
 
   long ms_get () {
@@ -367,70 +369,82 @@
 
 
 
-    // FM support:
+/***
+  *
+  * FM support:
+  *
+  */
 
-  int curr_rssi = -7;
+int curr_rssi = -7;
 
-  int af_count_get ();
-  int af_confidence_get (int idx);
-  int evt_get (int just_poll);
+int af_count_get ();
+int af_confidence_get (int idx);
+int evt_get (int just_poll);
 
-    // Callbacks we call from rx_thread:
-
-  void (* on_playing_in_stereo_changed)  (int is_stereo);
-  void (* on_rds_data_found)             (struct fmradio_rds_bundle_t * rds_bundle, int frequency);
-  void (* on_signal_strength_changed)    (int new_level);
-  void (* on_automatic_switch)           (int new_freq, enum fmradio_switch_reason_t reason);
-  void (* on_forced_reset)               (enum fmradio_reset_reason_t reason);
-
-
-
-    //
-
-  int pwr_rds = 1;
-
-  int next_rssi_get_per = 5000;         // Next RSSI get period: Get new RSSI every 5 seconds
-  int next_rssi_get_ms = 0;             // Time for next rssi_get in ms_get () milliseconds
-  int next_display_test_per = 10000;    // Next RDS test periond: New rds test every 1 seconds   1 hour
-  int next_display_em_ms = 0;           // For emulator mode
-
-    // Seek
-  int seek_in_progress    = 0;
-
-    // Event flags requiring callback:
-  int need_freq_chngd     = 0;
-  int need_seek_cmplt     = 0;
-  int need_pi_chngd       = 0;
-  int need_pt_chngd       = 0;
-  int need_ps_chngd       = 0;
-  int need_rt_chngd       = 0;
+/**
+ * Callbacks we call from rx_thread:
+ */
+void (* on_playing_in_stereo_changed)  (int is_stereo);
+void (* on_rds_data_found)             (struct fmradio_rds_bundle_t * rds_bundle, int frequency);
+void (* on_signal_strength_changed)    (int new_level);
+void (* on_automatic_switch)           (int new_freq, enum fmradio_switch_reason_t reason);
+void (* on_forced_reset)               (enum fmradio_reset_reason_t reason);
 
 
-  int curr_freq_val     =  88500;
-  int curr_freq_lo      =  87500;
-  int curr_freq_hi      = 108000;
-  int curr_freq_inc     =    100;
+/**
+ * RDS
+ */
+int pwr_rds = 1;
 
-    // Current values
-  int curr_stro_sig = 0; //1=stereo, 0=mono
-  int prev_stro_sig = 0;
+/**
+ * RSSI
+ */
+int next_rssi_get_per = 5000;         // Next RSSI get period: Get new RSSI every 5 seconds
+int next_rssi_get_ms = 0;             // Time for next rssi_get in ms_get () milliseconds
+int next_display_test_per = 10000;    // Next RDS test periond: New rds test every 1 seconds   1 hour
+int next_display_em_ms = 0;           // For emulator mode
+
+/**
+ * Seek
+ */
+int seek_in_progress    = 0;
+
+/**
+ * Event flags requiring callback
+ */
+int need_freq_chngd     = 0;
+int need_seek_cmplt     = 0;
+int need_pi_chngd       = 0;
+int need_pt_chngd       = 0;
+int need_ps_chngd       = 0;
+int need_rt_chngd       = 0;
+
+
+int curr_freq_val     =  88500;
+int curr_freq_lo      =  87500;
+int curr_freq_hi      = 108000;
+int curr_freq_inc     =    100;
+
+  // Current values
+int curr_stro_sig = 0; //1=stereo, 0=mono
+int prev_stro_sig = 0;
 
 
 
     // RDS:
 
-    // Debug:
-  int rds_dbg                 = 1;  // RT                                              // 1 = But do log counts every 10, 000 blocks
-  int rds_ok_dbg              = 1;  // PS, PT
-  int rds_ok_extra_dbg        = 0;
+  // Debug:
+int rds_dbg                 = 1;  // RT // 1 = But do log counts every 10, 000 blocks
+int rds_ok_dbg              = 1;  // PS, PT
+int rds_ok_extra_dbg        = 0;
 
-  int evt_dbg                 = 1;
+int evt_dbg                 = 1;
 
-  int af_ok_debug             = 0;
-  int af_common_error_debug   = 0;
+int af_ok_debug             = 0;
+int af_common_error_debug   = 0;
 
-  int af_common_error_num     = 0;
-  int af_general_error_num    = 0;
+int af_common_error_num     = 0;
+int af_general_error_num    = 0;
 
 
 
@@ -509,181 +523,168 @@ int freq_dn_get (int freq) {                                            // Calle
 
 
 
-  int RSSI_FACTOR = 16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
-  int prev_freq = 0;
-  int stro_evt_enable = 0;//1;
-  int rssi_evt_enable = 0;//1;
-  int curr_pwr = 1;
-  int low_pwr_mode = 0;
-  int pre2_stro_sig = 0;
+int RSSI_FACTOR = 16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
+int prev_freq = 0;
+int stro_evt_enable = 0;//1;
+int rssi_evt_enable = 0;//1;
+int curr_pwr = 1;
+int low_pwr_mode = 0;
+int pre2_stro_sig = 0;
 
 
-    // Event getter:
-  int evt_get (int just_poll) { // Called only from af_switch() w/ just_poll=1 or rx_thread() w/ just_poll=0
-    //evt_dbg = 1;
-    int evt = -1, stro_sig = 0;//, evt_freq = 0;
+// Event getter:
+int evt_get(int just_poll) { // Called only from af_switch() w/ just_poll=1 or rx_thread() w/ just_poll=0
+  int evt = -1;
+  int stro_sig = 0;
 
-    if (! curr_pwr)                                                     // If no power...
-      return (0);                                                       // Return w/ no event
+  if (!curr_pwr) { // If no power...
+    return 0;       // Return w/ no event
+  }
 
-    if (seek_in_progress)                                               // If seeking with Broadcom HCI API...
-      return (0);                                                       // Return w/ no event
+  if (seek_in_progress) { // If seeking with Broadcom HCI API...
+    return 0;             // Return w/ no event
+  }
 
-    int curr_s = ms_get () / 1000;
+  int curr_s = ms_get() / 1000;
 
-    if (! low_pwr_mode) {                                               // If normal / not low power mode w/ no RDS...
-// stro_get() before events_process() to avoid si4709 problem ?
-      if (stro_evt_enable) {                                            // If stereo events enabled...
-        int st = chip_api_stro_get ();
-        if (st)                                                         // If stereo mode...
-          stro_sig = 1;
-        else
-          stro_sig = 0;
-        //logd ("evt_get stro_sig: %3.3d  curr_stro_sig: %3.3d  prev_stro_sig: %3.3d  pre2_stro_sig: %3.3d", stro_sig, curr_stro_sig, prev_stro_sig, pre2_stro_sig);
-
-                                                                        // Only change stereo indication if two consecutive of old value followed by two consecutive of new (different)
-        if (! stro_sig && ! curr_stro_sig && prev_stro_sig && pre2_stro_sig)
-          on_playing_in_stereo_changed (0);
-        else if (stro_sig && curr_stro_sig && ! prev_stro_sig && ! pre2_stro_sig)
-          on_playing_in_stereo_changed (1);
-
-        pre2_stro_sig = prev_stro_sig;                                  // Age
-        prev_stro_sig = curr_stro_sig;                                  // Age
-        curr_stro_sig = stro_sig;                                       // Previous = current
+  if (!low_pwr_mode) { // If normal / not low power mode w/ no RDS...
+    // stro_get() before events_process() to avoid si4709 problem ?
+    if (stro_evt_enable) { // If stereo events enabled...
+      int st = chip_api_stro_get();
+      if (st) { // If stereo mode...
+        stro_sig = 1;
+      } else {
+        stro_sig = 0;
       }
 
-    }
+      // Only change stereo indication if two consecutive of old value followed by two consecutive of new (different)
+      if (!stro_sig && !curr_stro_sig && prev_stro_sig && pre2_stro_sig) {
+        on_playing_in_stereo_changed(0);
+      } else if (stro_sig && curr_stro_sig && !prev_stro_sig && !pre2_stro_sig) {
+        on_playing_in_stereo_changed(1);
+      }
 
-  if (rssi_evt_enable && ! seek_in_progress) {                          // If not seeking with Broadcom HCI API...
-    if (ms_get () >= next_rssi_get_ms) {                                // If time for another RSSI check...
-      next_rssi_get_ms = ms_get () + next_rssi_get_per;                 // Set next RSSI check time
+      pre2_stro_sig = prev_stro_sig; // Age
+      prev_stro_sig = curr_stro_sig; // Age
+      curr_stro_sig = stro_sig;      // Previous = current
+    }
+  }
+
+  if (rssi_evt_enable && !seek_in_progress) { // If not seeking with Broadcom HCI API...
+    if (ms_get() >= next_rssi_get_ms) {       // If time for another RSSI check...
+      next_rssi_get_ms = ms_get() + next_rssi_get_per; // Set next RSSI check time
       int old_rssi = curr_rssi;
-      curr_rssi = chip_api_rssi_get ();
-      if (curr_rssi != old_rssi) {                                      // If RSSI changed
-        if (evt_dbg)
-          logd ("evt_get  new rssi: %3.3d", curr_rssi);
-        on_signal_strength_changed (RSSI_FACTOR * curr_rssi);                         // Signal RSSI changed event
-      }
-      else {
-        if (evt_dbg)
-          logd ("evt_get same rssi: %3.3d", curr_rssi);
+      curr_rssi = chip_api_rssi_get();
+
+      if (curr_rssi != old_rssi) { // If RSSI changed
+        on_signal_strength_changed(RSSI_FACTOR * curr_rssi); // Signal RSSI changed event
       }
     }
   }
 
+  if (just_poll) {
+    evt_dbg && logd("evt_get just_poll");
+    evt = 0;
+  } else if (seek_in_progress && need_seek_cmplt) {
+    evt_dbg && logd("evt_get seek_in_progress && need_seek_cmplt");
 
-  if (! curr_pwr) {
-    if (evt_dbg)
-      logd ("evt_get ! curr_pwr");
-    evt = 0;
-  }
-  else if (just_poll) {
-    if (evt_dbg)
-      logd ("evt_get just_poll");
-    evt = 0;
-  }
-  else if (seek_in_progress && need_seek_cmplt) {
-    if (evt_dbg)
-      logd ("evt_get seek_in_progress && need_seek_cmplt");
     seek_in_progress = 0;
     need_seek_cmplt = 0;
-    evt = curr_freq_val + 1000000;                                      // SEEK_COMPLETE_EVENT
-  }
-  else if (need_freq_chngd) {
-    if (evt_dbg)
-      logd ("evt_get need_freq_chngd");
+    evt = curr_freq_val + 1000000; // SEEK_COMPLETE_EVENT
+
+  } else if (need_freq_chngd) {
+    evt_dbg && logd("evt_get need_freq_chngd");
+
     need_freq_chngd = 0;
-    evt = curr_freq_val;                                                // TUNE_EVENT
-  }
-  else if (need_pi_chngd) {
-    if (evt_dbg)
-      logd ("evt_get need_pi_chngd");
-    //logd ("evt need_pi_chngd");
+    evt = curr_freq_val; // TUNE_EVENT
+
+  } else if (need_pi_chngd) {
+    evt_dbg && logd("evt_get need_pi_chngd");
+
     need_pi_chngd = 0;
     evt = 3;
-  }
-  else if (need_pt_chngd) {
-    if (evt_dbg)
-      logd ("evt_get need_pt_chngd");
+
+  } else if (need_pt_chngd) {
+    evt_dbg && logd ("evt_get need_pt_chngd");
+
     need_pt_chngd = 0;
     evt = 4;
-  }
-  else if (need_ps_chngd) {
-    if (evt_dbg)
-      logd ("evt_get need_ps_chngd");
+
+  } else if (need_ps_chngd) {
+    evt_dbg && logd ("evt_get need_ps_chngd");
+
     need_ps_chngd = 0;
     evt = 5;
-  }
-  else if (need_rt_chngd) {
-    if (evt_dbg)
-      logd ("evt_get need_rt_chngd");
+
+  } else if (need_rt_chngd) {
+    evt_dbg && logd ("evt_get need_rt_chngd");
+
     need_rt_chngd = 0;
     evt = 6;
+
+  } else {
+    evt_dbg && logd("evt_get no event");
   }
-  else {
-    if (evt_dbg)
-      logd ("evt_get no event");
-  }
 
-  /*char rt[64];
-  int rt_len = 0;
-  logd("RDS ======: %s", rds_string_get(rt, &rt_len));*/
-
-  return (evt);
-
+  return evt;
 }
 
 
 
-    // Rx thread:
+// Rx thread:
 
-  int spirit2_light     = 0;
-  int rx_thread_running = 0;
-  int rx_thread_ctr     = 0;
-  static void * rx_thread (void * arg) {
+int rx_thread_running = 0;
+int rx_thread_ctr = 0;
 
-    logd ("rx_thread: %p", arg);
-    int ret = 0;
-    int stereo = 0;
-    int sleep_ms = 101;
-    while (rx_thread_running) {                                         // Loop while running
-      int ctr = 0;
-      int evt = 1;
-      while (! seek_in_progress && evt > 0 && ctr ++ < 8) {             // While NOT seeking with Broadcom HCI API AND starting or had an event AND less than 8 events processed...
-        if (! rx_thread_running) {
-          logd ("rx_thread done 1 rx_thread_ctr: %d", rx_thread_ctr);
-          return (NULL);
-        }
-        evt = evt_get (0);
-        if (! rx_thread_running) {
-          logd ("rx_thread done 2 rx_thread_ctr: %d", rx_thread_ctr);
-          return (NULL);
-        }
-        int seconds_disp = 60;
-        int mod_factor = seconds_disp * (1010 / sleep_ms);
-        if (rx_thread_ctr % mod_factor == 0) { // Every seconds_disp seconds...
-          logd("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
-          logd("capabilities = %d", rds_has_support_get());
-        }
+static void * rx_thread(void * arg) {
+  logd("rx_thread: %p", arg);
+  int ret = 0;
+  int stereo = 0;
+  int sleep_ms = 101;
+  int seconds_disp = 60;
+
+  while (rx_thread_running) { // Loop while running
+    int ctr = 0;
+    int evt = 1;
+
+    // While NOT seeking with Broadcom HCI API AND starting or had an event AND less than 8 events processed...
+    while (!seek_in_progress && evt > 0 && ctr++ < 8) {
+      if (!rx_thread_running) {
+        logd("rx_thread done 1 rx_thread_ctr: %d", rx_thread_ctr);
+        return NULL;
       }
 
-      if (! rx_thread_running) {
-        logd ("rx_thread done 3 rx_thread_ctr: %d", rx_thread_ctr);
-        return (NULL);
+      evt = evt_get(0);
+
+      if (!rx_thread_running) {
+        logd("rx_thread done 2 rx_thread_ctr: %d", rx_thread_ctr);
+        return NULL;
       }
 
-      if (! rx_thread_running) {
-        logd ("rx_thread done 4 rx_thread_ctr: %d", rx_thread_ctr);
-        return (NULL);
+      int mod_factor = seconds_disp * (1010 / sleep_ms);
+      if (rx_thread_ctr % mod_factor == 0) { // Every seconds_disp seconds...
+        logd("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
+        logd("capabilities = %d", rds_has_support_get());
       }
-
-      rx_thread_ctr ++;
-      ms_sleep (sleep_ms);                                              // 100 ms = poll 10 times per second, to maintain current fixed timing constants
     }
-    logd ("rx_thread done 5 rx_thread_ctr: %d", rx_thread_ctr);
-    return (NULL);
+
+    if (!rx_thread_running) {
+      logd("rx_thread done 3 rx_thread_ctr: %d", rx_thread_ctr);
+      return NULL;
+    }
+
+    if (!rx_thread_running) {
+      logd ("rx_thread done 4 rx_thread_ctr: %d", rx_thread_ctr);
+      return NULL;
+    }
+
+    rx_thread_ctr++;
+    ms_sleep(sleep_ms); // 100 ms = poll 10 times per second, to maintain current fixed timing constants
   }
 
+  logd("rx_thread done 5 rx_thread_ctr: %d", rx_thread_ctr);
+  return NULL;
+}
 
 struct thread_info {   // Argument to rx_thread ()
   pthread_t thread_id; // ID returned by pthread_create ()

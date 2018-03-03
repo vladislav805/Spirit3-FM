@@ -221,121 +221,121 @@ int sock_rx_tmo_set(int fd, int tmo) { // tmo = timeout in milliseconds
 
 // IPC API
 int client_cmd(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
-    logd("CS_PORT: %d  cmd_buf: \"%s\"  cmd_len: %d", CS_PORT, cmd_buf, cmd_len);
-    static int sockfd = -1;
-    int res_len, written;
-    static socklen_t srv_len;
-    #ifdef CS_AF_UNIX
-        static struct sockaddr_un  srv_addr;
-        #ifdef CS_DGRAM
-            #define CS_DGRAM_UNIX
-            struct sockaddr_un  cli_addr; // Unix datagram sockets must be bound; no ephemeral sockets.
-            socklen_t cli_len;
-        #endif
-    #else
-        //struct hostent *hp;
-        struct sockaddr_in  srv_addr,cli_addr;
-        socklen_t cli_len;
-    #endif
-
-    if (sockfd < 0) {
-      if ((sockfd = socket (CS_FAM, CS_SOCK_TYPE, 0)) < 0) { // Get an ephemeral, unbound socket
-        loge("client_cmd: socket errno: %d", errno);
-        return 0; // "Error socket";
-      }
-      #ifdef CS_DGRAM_UNIX // Unix datagram sockets must be bound; no ephemeral sockets.
-        unlink(api_clisock); // Remove any lingering client socket
-        bzero((char *) & cli_addr, sizeof(cli_addr));
-        cli_addr.sun_family = AF_UNIX;
-        strncpy(cli_addr.sun_path, api_clisock, sizeof(cli_addr.sun_path));
-        cli_len = strlen(cli_addr.sun_path) + sizeof(cli_addr.sun_family);
-
-        if (bind(sockfd, (struct sockaddr *) & cli_addr,cli_len) < 0) {
-          loge("client_cmd: bind errno: %d", errno);
-          close(sockfd);
-          sockfd = -1;
-          return 0; // "Error bind"
-          // OK to continue w/ Internet Stream but since this is Unix Datagram and we ran unlink (), let's fail
-        }
+  logd("CS_PORT: %d  cmd_buf: \"%s\"  cmd_len: %d", CS_PORT, cmd_buf, cmd_len);
+  static int sockfd = -1;
+  int res_len, written;
+  static socklen_t srv_len;
+  #ifdef CS_AF_UNIX
+      static struct sockaddr_un  srv_addr;
+      #ifdef CS_DGRAM
+          #define CS_DGRAM_UNIX
+          struct sockaddr_un  cli_addr; // Unix datagram sockets must be bound; no ephemeral sockets.
+          socklen_t cli_len;
       #endif
+  #else
+      //struct hostent *hp;
+      struct sockaddr_in  srv_addr,cli_addr;
+      socklen_t cli_len;
+  #endif
+
+  if (sockfd < 0) {
+    if ((sockfd = socket (CS_FAM, CS_SOCK_TYPE, 0)) < 0) { // Get an ephemeral, unbound socket
+      loge("client_cmd: socket errno: %d", errno);
+      return 0; // "Error socket";
     }
-    //!! Can move inside above
-    // Setup server address
-    bzero((char *)&srv_addr, sizeof(srv_addr));
-    #ifdef CS_AF_UNIX
-      srv_addr.sun_family = AF_UNIX;
-      strlcpy(srv_addr.sun_path, api_srvsock, sizeof(srv_addr.sun_path));
-      srv_len = strlen(srv_addr.sun_path) + sizeof(srv_addr.sun_family);
-    #else
-      srv_addr.sin_family = AF_INET;
-      srv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
-      srv_addr.sin_port = htons(CS_PORT);
-      srv_len = sizeof(struct sockaddr_in);
+    #ifdef CS_DGRAM_UNIX // Unix datagram sockets must be bound; no ephemeral sockets.
+      unlink(api_clisock); // Remove any lingering client socket
+      bzero((char *) & cli_addr, sizeof(cli_addr));
+      cli_addr.sun_family = AF_UNIX;
+      strncpy(cli_addr.sun_path, api_clisock, sizeof(cli_addr.sun_path));
+      cli_len = strlen(cli_addr.sun_path) + sizeof(cli_addr.sun_family);
+
+      if (bind(sockfd, (struct sockaddr *) & cli_addr,cli_len) < 0) {
+        loge("client_cmd: bind errno: %d", errno);
+        close(sockfd);
+        sockfd = -1;
+        return 0; // "Error bind"
+        // OK to continue w/ Internet Stream but since this is Unix Datagram and we ran unlink (), let's fail
+      }
     #endif
+  }
+  //!! Can move inside above
+  // Setup server address
+  bzero((char *)&srv_addr, sizeof(srv_addr));
+  #ifdef CS_AF_UNIX
+    srv_addr.sun_family = AF_UNIX;
+    strlcpy(srv_addr.sun_path, api_srvsock, sizeof(srv_addr.sun_path));
+    srv_len = strlen(srv_addr.sun_path) + sizeof(srv_addr.sun_family);
+  #else
+    srv_addr.sin_family = AF_INET;
+    srv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+    srv_addr.sin_port = htons(CS_PORT);
+    srv_len = sizeof(struct sockaddr_in);
+  #endif
 
 
-    // Send cmd_buf and get res_buf
-    #ifdef CS_DGRAM
-      written = sendto(sockfd, cmd_buf, cmd_len, 0, (const struct sockaddr *)&srv_addr,srv_len);
-      if (written != cmd_len) {  // Dgram buffers should not be segmented
-        loge ("client_cmd: sendto errno: %d", errno);
-        #ifdef CS_DGRAM_UNIX
-          unlink(api_clisock);
-        #endif
-        close(sockfd);
-        sockfd = -1;
-        return 0; // Error sendto
-      }
-
-      sock_rx_tmo_set(sockfd, CS_RX_TMO);
-      res_len = recvfrom(sockfd, res_buf, res_max, 0, (struct sockaddr *)&srv_addr, &srv_len);
-      if (res_len <= 0) {
-        loge("client_cmd: recvfrom errno: %d", errno);
-        #ifdef  CS_DGRAM_UNIX
-          unlink(api_clisock);
-        #endif
-        close(sockfd);
-        sockfd = -1;
-        return -1;
-        // return (0); // Error recvfrom
-      }
-      #ifndef CS_AF_UNIX
-        // !! ?? Don't need this ?? If srv_addr still set from sendto, should restrict recvfrom to localhost anyway ?
-        if (srv_addr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
-          loge("client_cmd: Unexpected suspicious packet from host");// %s", inet_ntop(srv_addr.sin_addr.s_addr)); //inet_ntoa(srv_addr.sin_addr.s_addr));
-        }
+  // Send cmd_buf and get res_buf
+  #ifdef CS_DGRAM
+    written = sendto(sockfd, cmd_buf, cmd_len, 0, (const struct sockaddr *)&srv_addr,srv_len);
+    if (written != cmd_len) {  // Dgram buffers should not be segmented
+      loge ("client_cmd: sendto errno: %d", errno);
+      #ifdef CS_DGRAM_UNIX
+        unlink(api_clisock);
       #endif
-    #else
-      if (connect(sockfd, (struct sockaddr *) &srv_addr, srv_len) < 0) {
-        loge("client_cmd: connect errno: %d", errno);
-        close(sockfd);
-        sockfd = -1;
-        return 0; // Error connect
-      }
-      written = write(sockfd, cmd_buf, cmd_len); // Write the command packet
-      if (written != cmd_len) { // Small buffers under 256 bytes should not be segmented ?
-        loge("client_cmd: write errno: %d", errno);
-        close(sockfd);
-        sockfd = -1;
-        return 0; // Error write
-      }
+      close(sockfd);
+      sockfd = -1;
+      return 0; // Error sendto
+    }
 
-      sock_rx_tmo_set(sockfd, CS_RX_TMO);
-
-      res_len = read(sockfd, res_buf, res_max)); // Read response
-      if (res_len <= 0) {
-        loge("client_cmd: read errno: %d", errno);
-        close(sockfd);
-        sockfd = -1;
-        return 0; // Error read
+    sock_rx_tmo_set(sockfd, CS_RX_TMO);
+    res_len = recvfrom(sockfd, res_buf, res_max, 0, (struct sockaddr *)&srv_addr, &srv_len);
+    if (res_len <= 0) {
+      loge("client_cmd: recvfrom errno: %d", errno);
+      #ifdef  CS_DGRAM_UNIX
+        unlink(api_clisock);
+      #endif
+      close(sockfd);
+      sockfd = -1;
+      return -1;
+      // return (0); // Error recvfrom
+    }
+    #ifndef CS_AF_UNIX
+      // !! ?? Don't need this ?? If srv_addr still set from sendto, should restrict recvfrom to localhost anyway ?
+      if (srv_addr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
+        loge("client_cmd: Unexpected suspicious packet from host");// %s", inet_ntop(srv_addr.sin_addr.s_addr)); //inet_ntoa(srv_addr.sin_addr.s_addr));
       }
     #endif
-    //hex_dump ("", 32, res_buf, n);
-    #ifdef CS_DGRAM_UNIX
-      unlink(api_clisock);
-    #endif
-    //close(sockfd);
-    return res_len;
+  #else
+    if (connect(sockfd, (struct sockaddr *) &srv_addr, srv_len) < 0) {
+      loge("client_cmd: connect errno: %d", errno);
+      close(sockfd);
+      sockfd = -1;
+      return 0; // Error connect
+    }
+    written = write(sockfd, cmd_buf, cmd_len); // Write the command packet
+    if (written != cmd_len) { // Small buffers under 256 bytes should not be segmented ?
+      loge("client_cmd: write errno: %d", errno);
+      close(sockfd);
+      sockfd = -1;
+      return 0; // Error write
+    }
+
+    sock_rx_tmo_set(sockfd, CS_RX_TMO);
+
+    res_len = read(sockfd, res_buf, res_max)); // Read response
+    if (res_len <= 0) {
+      loge("client_cmd: read errno: %d", errno);
+      close(sockfd);
+      sockfd = -1;
+      return 0; // Error read
+    }
+  #endif
+  //hex_dump ("", 32, res_buf, n);
+  #ifdef CS_DGRAM_UNIX
+    unlink(api_clisock);
+  #endif
+  //close(sockfd);
+  return res_len;
 }
 
 #define HD_MW 256
@@ -370,254 +370,228 @@ static void hex_dump(const char * prefix, int width, unsigned char * buf, int le
 
 
 
-  int exiting = 0;
+int exiting = 0;
 
-  #define   RES_DATA_MAX  1280
+#define RES_DATA_MAX 1280
 
-  int server_work () {                                                  // Run until exiting != 0, passing incoming commands to server_work_func() and responding with the results
-    int sockfd = -1, newsockfd = -1, cmd_len = 0, ctr = 0;
-    socklen_t cli_len = 0, srv_len = 0;
+/**
+ * Run until exiting != 0, passing incoming commands to server_work_func() and responding with the results
+ */
+int server_work() {
+  int sockfd = -1;
+  int newsockfd = -1;
+  int cmd_len = 0;
+  int ctr = 0;
+  socklen_t cli_len = 0, srv_len = 0;
+
   #ifdef  CS_AF_UNIX
-    struct sockaddr_un  cli_addr = {0}, srv_addr = {0};
+    struct sockaddr_un cli_addr = {0}, srv_addr = {0};
     srv_len = strlen (srv_addr.sun_path) + sizeof (srv_addr.sun_family);
   #else
     struct sockaddr_in  cli_addr = {0}, srv_addr = {0};
     //struct hostent *hp;
   #endif
-    unsigned char cmd_buf [DEF_BUF] ={0};
-  
-    //system("chmod 666 /dev");            // !! Need su if in JNI
-    //system("chmod 666 /dev/socket");
-  
-  #ifdef  CS_AF_UNIX
-    unlink (api_srvsock);
+
+  unsigned char cmd_buf[DEF_BUF] = {0};
+
+  // system("chmod 666 /dev");            // !! Need su if in JNI
+  // system("chmod 666 /dev/socket");
+
+  #ifdef CS_AF_UNIX
+    unlink(api_srvsock);
   #endif
-    if ((sockfd = socket (CS_FAM, CS_SOCK_TYPE, 0)) < 0) {
-      loge ("server_work socket  errno: %d", errno);
-      return (-1);
-    }
-  
-    bzero ((char *) & srv_addr, sizeof (srv_addr));
-  #ifdef  CS_AF_UNIX
+
+  if ((sockfd = socket(CS_FAM, CS_SOCK_TYPE, 0)) < 0) {
+    loge("server_work socket  errno: %d", errno);
+    return -1;
+  }
+
+  bzero((char *) &srv_addr, sizeof(srv_addr));
+
+  #ifdef CS_AF_UNIX
     srv_addr.sun_family = AF_UNIX;
-    strncpy (srv_addr.sun_path, api_srvsock, sizeof (srv_addr.sun_path));
-    srv_len = strlen (srv_addr.sun_path) + sizeof (srv_addr.sun_family);
+    strncpy(srv_addr.sun_path, api_srvsock, sizeof(srv_addr.sun_path));
+    srv_len = strlen(srv_addr.sun_path) + sizeof(srv_addr.sun_family);
   #else
     srv_addr.sin_family = AF_INET;
-    srv_addr.sin_addr.s_addr = htonl (INADDR_LOOPBACK); //INADDR_ANY;
-    //hp = gethostbyname("localhost");
-    //if (hp== 0) {
-    //  loge ("Error gethostbyname  errno: %d", errno);
-    //  return (-2);
-    //}
-    //bcopy((char *)hp->h_addr, (char *)&srv_addr.sin_addr, hp->h_length);
-    srv_addr.sin_port = htons (CS_PORT);
-    srv_len = sizeof (struct sockaddr_in);
-  #endif
-  
-  #ifdef  CS_AF_UNIX
-  logd ("srv_len: %d  fam: %d  path: %s", srv_len, srv_addr.sun_family, srv_addr.sun_path);
-  #else
-  logd ("srv_len: %d  fam: %d  addr: 0x%x  port: %d", srv_len, srv_addr.sin_family, ntohl (srv_addr.sin_addr.s_addr), ntohs (srv_addr.sin_port));
-  #endif
-    if (bind (sockfd, (struct sockaddr *) & srv_addr, srv_len) < 0) {
-      loge ("Error bind  errno: %d", errno);
-  #ifdef  CS_AF_UNIX
-      return (-3);
-  #endif
-  #ifdef CS_DGRAM
-      return (-3);
-  #endif
-      loge ("Inet stream continuing despite bind error");      // OK to continue w/ Internet Stream
+    srv_addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK); //INADDR_ANY;
+    /*hp = gethostbyname("localhost");
+    if (hp== 0) {
+      loge ("Error gethostbyname  errno: %d", errno);
+      return (-2);
     }
-  
+    bcopy((char *)hp->h_addr, (char *)&srv_addr.sin_addr, hp->h_length);*/
+    srv_addr.sin_port = htons(CS_PORT);
+    srv_len = sizeof(struct sockaddr_in);
+  #endif
+
+  #ifdef CS_AF_UNIX
+    logd("srv_len: %d  fam: %d  path: %s", srv_len, srv_addr.sun_family, srv_addr.sun_path);
+  #else
+    logd("srv_len: %d  fam: %d  addr: 0x%x  port: %d", srv_len, srv_addr.sin_family, ntohl (srv_addr.sin_addr.s_addr), ntohs (srv_addr.sin_port));
+  #endif
+
+  if (bind(sockfd, (struct sockaddr *) &srv_addr, srv_len) < 0) {
+    loge ("Error bind  errno: %d", errno);
+
+    #ifdef CS_AF_UNIX
+      return -3;
+    #endif
+
+    #ifdef CS_DGRAM
+      return -3;
+    #endif
+
+    loge("Inet stream continuing despite bind error"); // OK to continue w/ Internet Stream
+  }
+
   // Get command from client
   #ifndef CS_DGRAM
-    if (listen (sockfd, 5)) {                           // Backlog= 5; likely don't need this
-      loge ("Error listen  errno: %d", errno);
-      return (-4);
+    if (listen(sockfd, 5)) { // Backlog= 5; likely don't need this
+      loge("Error listen errno: %d", errno);
+      return -4;
     }
   #endif
-  
-    logd ("server_work Ready");
-  
-    while (! exiting) {
-      bzero ((char *) & cli_addr, sizeof (cli_addr));                        // ?? Don't need this ?
-      //cli_addr.sun_family = CS_FAM;                                     // ""
-      cli_len = sizeof (cli_addr);
-  
-      //logd ("ms_get: %d",ms_get ());
-  #ifdef  CS_DGRAM
-      cmd_len = recvfrom (sockfd, cmd_buf, sizeof (cmd_buf), 0, (struct sockaddr *) & cli_addr, & cli_len);
+
+  logd ("server_work Ready");
+
+  while (!exiting) {
+    bzero((char *) &cli_addr, sizeof(cli_addr)); // ?? Don't need this ?
+    //cli_addr.sun_family = CS_FAM;
+    cli_len = sizeof(cli_addr);
+
+    #ifdef CS_DGRAM
+      cmd_len = recvfrom(sockfd, cmd_buf, sizeof(cmd_buf), 0, (struct sockaddr *) &cli_addr, &cli_len);
       if (cmd_len <= 0) {
-        loge ("Error recvfrom  errno: %d", errno);
-        ms_sleep (100);   // Sleep 0.1 second
+        loge("Error recvfrom  errno: %d", errno);
+        ms_sleep(100); // Sleep 0.1 second
         continue;
       }
-    #ifndef CS_AF_UNIX
-  // !! 
-      if ( cli_addr.sin_addr.s_addr != htonl (INADDR_LOOPBACK) ) {
-        //loge ("Unexpected suspicious packet from host %s", inet_ntop (cli_addr.sin_addr.s_addr));
-        loge ("Unexpected suspicious packet from host");// %s", inet_ntoa (cli_addr.sin_addr.s_addr));
-      }
-    #endif
-  #else
-      newsockfd = accept (sockfd, (struct sockaddr *) & cli_addr, & cli_len);
+      #ifndef CS_AF_UNIX
+        if (cli_addr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
+          //loge ("Unexpected suspicious packet from host %s", inet_ntop (cli_addr.sin_addr.s_addr));
+          loge("Unexpected suspicious packet from host");// %s", inet_ntoa (cli_addr.sin_addr.s_addr));
+        }
+      #endif
+    #else
+      newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &cli_len);
       if (newsockfd < 0) {
-        loge ("Error accept  errno: %d", errno);
-        ms_sleep (100);   // Sleep 0.1 second
+        loge("Error accept  errno: %d", errno);
+        ms_sleep(100); // Sleep 0.1 second
         continue;
       }
-    #ifndef  CS_AF_UNIX
-  // !! 
-      if ( cli_addr.sin_addr.s_addr != htonl (INADDR_LOOPBACK) ) {
-        //loge ("Unexpected suspicious packet from host %s", inet_ntop (cli_addr.sin_addr.s_addr));
-        loge ("Unexpected suspicious packet from host");// %s", inet_ntoa (cli_addr.sin_addr.s_addr));
+      #ifndef CS_AF_UNIX
+        if (cli_addr.sin_addr.s_addr != htonl(INADDR_LOOPBACK) ) {
+          loge ("Unexpected suspicious packet from host");// %s", inet_ntoa (cli_addr.sin_addr.s_addr));
+        }
+      #endif
+      cmd_len = read(newsockfd, cmd_buf, sizeof(cmd_buf));
+      if (cmd_len <= 0) {
+        loge("Error read errno: %d", errno);
+        ms_sleep(100);   // Sleep 0.1 second
+        close(newsockfd);
+        ms_sleep(100);   // Sleep 0.1 second
+        continue;
       }
     #endif
-      cmd_len = read (newsockfd, cmd_buf, sizeof (cmd_buf));
-      if (cmd_len <= 0) {
-        loge ("Error read  errno: %d", errno);
-        ms_sleep (100);   // Sleep 0.1 second
-        close (newsockfd);
-        ms_sleep (100);   // Sleep 0.1 second
-        continue;
-      }
-  #endif
-  
-  #ifdef  CS_AF_UNIX
-      //logd ("cli_len: %d  fam: %d  path: %s",cli_len,cli_addr.sun_family,cli_addr.sun_path);
-  #else
-      //logd ("cli_len: %d  fam: %d  addr: 0x%x  port: %d",cli_len,cli_addr.sin_family, ntohl (cli_addr.sin_addr.s_addr), ntohs (cli_addr.sin_port));
-  #endif
-      //hex_dump ("", 32, cmd_buf, n);
-  
-      unsigned char res_buf [RES_DATA_MAX] = {0};
-      int res_len = 0;
 
-      cmd_buf [cmd_len] = 0;    // Null terminate for string usage
-      res_len = server_work_func ( cmd_buf, cmd_len, res_buf, sizeof (res_buf));    // Do server command function and provide response
+    unsigned char res_buf[RES_DATA_MAX] = {0};
+    int res_len = 0;
 
-//      logd ("server_work server_work_func res_len: %d", res_len);
-      if (res_len < 0) {  // If error
-        res_len = 2;
-        res_buf [0] = '?';
-        res_buf [1] = '\n';
-        res_buf [2] = 0;
-      }
-//      hex_dump ("", 32, res_buf, res_len);
-  
-  
-  // Send response
-  #ifdef  CS_DGRAM
-      if (sendto (sockfd, res_buf, res_len, 0, (struct sockaddr *) & cli_addr, cli_len) != res_len) {
+    cmd_buf[cmd_len] = 0; // Null terminate for string usage
+    res_len = server_work_func(cmd_buf, cmd_len, res_buf, sizeof(res_buf)); // Do server command function and provide response
+
+    if (res_len < 0) { // If error
+      res_len = 2;
+      res_buf[0] = '?';
+      res_buf[1] = '\n';
+      res_buf[2] = 0;
+    }
+
+    // Send response
+    #ifdef CS_DGRAM
+      if (sendto(sockfd, res_buf, res_len, 0, (struct sockaddr *) &cli_addr, cli_len) != res_len) {
         loge ("Error sendto  errno: %d  res_len: %d", errno, res_len);
-        ms_sleep (100);   // Sleep 0.1 second
+        ms_sleep(100); // Sleep 0.1 second
       }
-  #else
-      if (write (newsockfd, res_buf, res_len) != res_len) {
+    #else
+      if (write(newsockfd, res_buf, res_len) != res_len) {
         loge ("Error write  errno: %d", errno);
-        ms_sleep (100);   // Sleep 0.1 second
+        ms_sleep(100); // Sleep 0.1 second
       }
-      close (newsockfd);
+      close(newsockfd);
+    #endif
+  }
+  close(sockfd);
+  #ifdef CS_AF_UNIX
+    unlink(api_srvsock);
   #endif
-    }
-    close (sockfd);
-  #ifdef  CS_AF_UNIX
-    unlink (api_srvsock);
-  #endif
-  
-    return (0);
+
+  return 0;
+}
+
+
+int freq_inc = 100;   // EU
+
+int curr_tuner_freq_int         = -7;
+int curr_tuner_rssi_int         = -7;
+int curr_tuner_stereo_int       = 0;
+int curr_tuner_rds_pi_int       = -7;
+int curr_tuner_rds_pt_int       = -7; // was -7
+
+char curr_radio_dai_state    [16]= "Stop";
+char curr_tuner_band         [16]= "EU";
+
+char curr_tuner_state        [16]= "Stop";
+char curr_tuner_scan_state   [16]= "Stop";
+char curr_tuner_rds_state    [16]= "Stop";
+char curr_tuner_rds_af_state [16]= "Stop";
+
+char curr_tuner_freq         [16]= "-7";//"107900";
+char curr_tuner_stereo       [16]= "Mono";
+char curr_tuner_thresh       [16]= "-7";
+char curr_tuner_rssi         [16]= "RSSI";
+char curr_tuner_most         [16]= "-7";
+
+char curr_tuner_rds_pi       [16]= "-7";//"";
+char curr_tuner_rds_pt       [16]= "-7";//"-";
+char curr_tuner_rds_ps       [16]= "RDS PS";//"-";
+char curr_tuner_rds_rt       [96]= "RDS RT";//"-";
+
+void cb_tuner_change(char * key, char * val) {
+//  logd ("cb_tuner_change key: %s  val: %s", key, val);
+}
+
+char cval[16] = "-3";
+char * itoa(int val) {
+  snprintf(cval, sizeof(cval) - 1, "%d", val);
+  return cval;
+}
+
+char * space_trim(char * str) {
+  char * end;
+  // Trim trailing space
+  end = str + strlen (str) - 1;
+  while (end > str && isspace(*end)) {
+    end--;
   }
+  // Write new null terminator
+  *(end + 1) = 0;
+  return str;
+}
 
+char * itostereo(int stereo) {
+  return stereo ? "Stereo" : "Mono";
+}
 
-
-    //
-
-  int freq_inc = 100;   // EU
-
-  int   curr_tuner_freq_int         = -7;
-  int   curr_tuner_rssi_int         = -7;
-  int   curr_tuner_stereo_int       = 0;
-  int   curr_tuner_rds_pi_int       = -7;
-  int   curr_tuner_rds_pt_int       = -7; // was -7
-
-  char  curr_radio_dai_state    [16]= "Stop";
-  char  curr_tuner_band         [16]= "EU";
-
-  char  curr_tuner_state        [16]= "Stop";
-  char  curr_tuner_scan_state   [16]= "Stop";
-  char  curr_tuner_rds_state    [16]= "Stop";
-  char  curr_tuner_rds_af_state [16]= "Stop";
-
-  char  curr_tuner_freq         [16]= "-7";//"107900";
-  char  curr_tuner_stereo       [16]= "Mono";
-  char  curr_tuner_thresh       [16]= "-7";
-  char  curr_tuner_rssi         [16]= "RSSI";
-  char  curr_tuner_most         [16]= "-7";
-
-  char  curr_tuner_rds_pi       [16]= "-7";//"";
-  char  curr_tuner_rds_pt       [16]= "-7";//"-";
-  char  curr_tuner_rds_ps       [16]= "RDS PS";//"-";
-  char  curr_tuner_rds_rt       [96]= "RDS RT";//"-";
-
-  void cb_tuner_change (char * key, char * val) {
-//    logd ("cb_tuner_change key: %s  val: %s", key, val);
+void cb_tnr_stereo(int stereo) {
+  //logd ("cb_tnr_stereo stereo: %d", stereo);
+  if (curr_tuner_stereo_int != stereo) {
+    curr_tuner_stereo_int = stereo;
+    strncpy(curr_tuner_stereo, itostereo(stereo), sizeof(curr_tuner_stereo));
+    cb_tuner_change("tuner_stereo", curr_tuner_stereo);
   }
-
-  char cval [16] = "-3";
-  char * itoa (int val) {
-    snprintf(cval, sizeof(cval) - 1, "%d", val);
-    return (cval);
-  }
-
-    // Store the trimmed input string into the given output buffer, which must be large enough to store the result.  If it is too small, the output is truncated.
-  size_t space_trim2 (char * out, size_t len, const char * str) {
-    if(len == 0)
-      return 0;
-
-    const char * end;
-    size_t out_size;
-
-    // Trim trailing space
-    end = str + strlen(str) - 1;
-    while( end > str && isspace (* end)) end --;
-    end ++;
-
-    // Set output size to minimum of trimmed string length and buffer size minus 1
-    out_size = (end - str) < len-1 ? (end - str) : len-1;
-
-    // Copy trimmed string and add null terminator
-    memcpy (out, str, out_size);
-    out [out_size] = 0;
-    return (out_size);
-  }
-
-  char * space_trim (char * str) {
-    char * end;
-        // Trim trailing space
-    end = str + strlen (str) - 1;
-    while (end > str && isspace (* end))
-      end --;
-      // Write new null terminator
-    * (end + 1) = 0;
-    return str;
-  }
-
-  char * itostereo (int stereo) {
-    if (stereo)
-      return ("Stereo");
-    else
-      return ("Mono");
-  }
-  void cb_tnr_stereo (int stereo) {
-    //logd ("cb_tnr_stereo stereo: %d", stereo);
-    if (curr_tuner_stereo_int != stereo) {
-      curr_tuner_stereo_int = stereo;
-      strncpy (curr_tuner_stereo, itostereo (stereo), sizeof (curr_tuner_stereo));
-      cb_tuner_change ("tuner_stereo", curr_tuner_stereo);
-    }
-  }
+}
 
 void cb_tnr_rds(struct fmradio_rds_bundle_t * rb, int freq) {
   //logd ("cb_tnr_rds rds_bundle psn: \"%s\"  rt: \"%s\"  ct: \"%d\"  ptyn: \"%d\"", rb->psn, rb->rt, rb->ct, rb->ptyn);
@@ -641,11 +615,13 @@ void cb_tnr_rds(struct fmradio_rds_bundle_t * rb, int freq) {
     strncpy(curr_tuner_rds_pi, itoa(curr_tuner_rds_pi_int), sizeof(curr_tuner_rds_pi));
     cb_tuner_change("tuner_rds_pi", curr_tuner_rds_pi);
   }
+
   if (curr_tuner_rds_pt_int != rb->pty) {
     curr_tuner_rds_pt_int = rb->pty;
     strncpy(curr_tuner_rds_pt, itoa(curr_tuner_rds_pt_int), sizeof(curr_tuner_rds_pt));
     cb_tuner_change("tuner_rds_pt", curr_tuner_rds_pt);
   }
+
   if (strncmp(curr_tuner_rds_ps, rb->psn, sizeof(curr_tuner_rds_ps))) {
     strncpy(curr_tuner_rds_ps, rb->psn, sizeof(curr_tuner_rds_ps));
     cb_tuner_change("tuner_rds_ps", rb->psn);
@@ -661,7 +637,7 @@ void cb_tnr_rds(struct fmradio_rds_bundle_t * rb, int freq) {
 }
 
 void cb_tnr_rssi(int rssi) {
-  logd("cb_tnr_rssi rssi: %d", rssi);        // rssi: (760 - 347) / 19 = 21.74. Thus internal range thus is 0 - 46
+  logd("cb_tnr_rssi rssi: %d", rssi); // rssi: (760 - 347) / 19 = 21.74. Thus internal range thus is 0 - 46
   if (curr_tuner_rssi_int != rssi) {
     curr_tuner_rssi_int = rssi;
     strncpy(curr_tuner_rssi, itoa(curr_tuner_rssi_int), sizeof(curr_tuner_rssi));
@@ -783,256 +759,51 @@ int tuner_init() {
   }
 
 
-
-    //RADIO_L -> IN2LN / DMICDAT1
-    //RADIO_R -> IN2RN / DMICDAT2
-
-  int gs1_digital_input_on () {
-
-    //cached_sys_run ("echo 0 > /sys//devices/virtual/misc/voodoo_sound/recording_preset 2>/dev/null");
-
-    //cached_sys_run ("echo -n 0039  0000 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = 0068 !!
-    //cached_sys_run ("echo -n  0700 8100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = a101 !!
-
-    cached_sys_run ("echo -n   300 4010 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = C010 !!
-
-    cached_sys_run ("echo -n   410    0 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");  // Else default = 2800 !!
-    //cached_sys_run ("echo -n   410 1800 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // 0410 = 1800 to remove dc offset w/ hifi, cf = 4 hz at 44K, 3.7 @ 44.1
-
-
-    cached_sys_run ("echo -n    2  63a0 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n    4  0303 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // Default 3003
-
-    cached_sys_run ("echo -n   18    80 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 8b  Raises volume         80 mutes
-    cached_sys_run ("echo -n   19   14d > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 4b
-    cached_sys_run ("echo -n   1a    80 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 8b                        80 mutes
-    cached_sys_run ("echo -n   1b   14d > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // default: 4b
-
-    cached_sys_run ("echo -n   28    44 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n   29   100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-    cached_sys_run ("echo -n   2a   100 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");
-
-    cached_sys_run ("echo -n  606     2 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // ADC1L_TO_AIF1ADC1L   Def 0
-    //if (gs1_optional)
-      cached_sys_run ("echo -n  607     2 > /sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg 2>/dev/null");    // ADC1R_TO_AIF1ADC1R   Def 0
-    sys_commit ();
-
-    return (0);
-  }
-  int gs1_digital_input_off () {
-    return (0);
-  }
-
-    // C1YMU823 / MC-1N2
-    // /sys/kernel/debug/asoc/U1-YMU823/mc1n2.6-003a/codec_reg
-  int gs2_digital_input_on () {
-    alsa_bool_set ("ADCL MIXER Mic2 Switch", 1);    // !!  Must first switch ON, then OFF !!
-    alsa_bool_set ("ADCR MIXER Mic2 Switch", 1);
-    alsa_bool_set ("ADCL MIXER Mic2 Switch", 0);
-    alsa_bool_set ("ADCR MIXER Mic2 Switch", 0);
-
-    alsa_bool_set ("ADCL MIXER Mic1 Switch", 1);    // Same for Mic1 when using CAMCORDER
-    alsa_bool_set ("ADCR MIXER Mic1 Switch", 1);
-    alsa_bool_set ("ADCL MIXER Mic1 Switch", 0);
-    alsa_bool_set ("ADCR MIXER Mic1 Switch", 0);
-
-    alsa_bool_set ("ADCL MIXER Line Switch", 0);
-    alsa_bool_set ("ADCR MIXER Line Switch", 0);
-    alsa_bool_set ("ADCL MIXER Line Switch", 1);
-    alsa_bool_set ("ADCR MIXER Line Switch", 1);
-
-    alsa_int_set ("AD Analog Volume", 22);
-    return (0);
-  }
-  int gs2_digital_input_off () {
-    alsa_bool_set ("ADCL MIXER Line Switch", 0);
-    alsa_bool_set ("ADCR MIXER Line Switch", 0);
-    return (0);
-  }
-
-    // GT-N7100 Note2:
-    // FM Left     IN2RP       OK but popping
-    // FM Right    IN2RN       Very Low
-    // GT-I9300 Galaxy S3:
-    //FM Left     IN2RP
-    //FM Right    IN2RN
-
-    //FM Left IN2RP -> MIXINL via RXVOICE:
-    //RXVOICE = IN2RP (FM Left) - IN2LP (EAR_MIC_N)
-    //-> MIXINL / MIXINR:     6 steps:    -12, -9, -6, -3, 0, +3, +6
-
-    //- FM Right IN2RN -> MIXINR via IN2R PGA:
-    //IN2R = -16.5 to +30 * ( 0/IN2RP (FM Left) - 0/IN2RN (FM Right) )
-    //-> MIXINR:  0, +30      = -16.5 to +30 or  13.5 to +60                  */
-
   static char * codec_reg          = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
-  static char * codec_reg_esc      = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";    // Space Escaped
 
-  static char * codec_reg_omni     = "/sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg";  // OmniROM 9300 has codec_reg_sa44, but read-only.
-  static char * codec_reg_cm11     = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
-
-//Read-only on Nameless Lollipop:
-  static char * codec_reg_sa44     = "/sys/devices/platform/soc-audio/WM8994 AIF1/codec_reg";      // Only access on stock, additional on CM11 unofficial for N7100
-  static char * codec_reg_sa44_esc = "/sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg";     // Space Escaped
   
 
-  int gs3_digital_input_on () {
-
-    //Right:
-    alsa_int_set ("MIXINR IN2R Volume", 0);                       // +0         Default = 1
-    alsa_int_set ("IN2R Volume", 15); // STUCK low bug  Default = 11                            // 0-31 : +6        15 is actually max, not 31  Total right: 0 + 6 = +6 db
-
-    alsa_bool_set ("MIXINR IN2R Switch", 1);
-
-    alsa_bool_set ("MIXINR IN1R Switch", 0);    // Needed for Camcorder mic
-
-    //alsa_int_set ("MIXINL IN2L Volume", 0);   //!!!!
-
-    alsa_bool_set ("IN2R PGA IN2RP Switch", 0);                    // Off, or would be FM Left - FM Right
-//    alsa_bool_set ("IN2R PGA IN2RN Switch", 1);                    // On for -FM Right
-//    alsa_bool_set ("IN2R Switch", 1);                              // Added because was off on stock XXEMA2, but same as power on default.
 
 
-        //Left:
-    alsa_int_set ("MIXINL Direct Voice Volume", 7);               // Highest (+1) = +6 db on left ?? 7 is louder than "Max" of 6 ?
-    alsa_bool_set ("MIXINL IN1L Switch", 0);
-    alsa_bool_set ("MIXINL IN2L Switch", 0);
+int qcv_digital_input_on () {
+  alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
+  alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
+  ms_sleep (100);
+  return (0);
+}
+int qcv_digital_input_off () {
+  alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
+  ms_sleep (100);
+  return (0);
+}
 
-    alsa_bool_set ("AIF1ADC1 HPF Switch", 0);   // Or "AIF1ADC1 HPF Mode" = 0 = HiFi
-
-
-    if (file_get (codec_reg_omni)) {
-       codec_reg = codec_reg_omni;
-       codec_reg_esc = codec_reg_omni;
-    }
-    else if (file_get (codec_reg_cm11)) {
-       codec_reg = codec_reg_cm11;
-       codec_reg_esc = codec_reg_cm11;
-    }
-    else if (file_get (codec_reg_sa44)) {
-       codec_reg = codec_reg_sa44;
-       codec_reg_esc = codec_reg_sa44_esc;
-    }
-
-    if (/*is_note2 () &&*/ file_get (codec_reg)) {                    // !! Should verify N7100 better, but should be benign anyway
-      if (file_get (codec_reg_omni))
-        cached_sys_run ("echo -n    2 2320 > /sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else if (file_get (codec_reg_cm11))
-        cached_sys_run ("echo -n    2 2320 > /sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else
-        cached_sys_run ("echo -n    2 2320 > /sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg 2>/dev/null");
-      sys_commit ();
-
-      if (file_get (codec_reg_omni))
-        cached_sys_run ("echo -n   18  116 > /sys/kernel/debug/asoc/Midas_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else if (file_get (codec_reg_cm11))
-        cached_sys_run ("echo -n   18  116 > /sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg 2>/dev/null");
-      else
-        cached_sys_run ("echo -n   18  116 > /sys/devices/platform/soc-audio/WM8994\\ AIF1/codec_reg 2>/dev/null");
-      sys_commit ();
-    }
-
-    return (0);
+int dev_digital_input_on() {
+  switch (curr_radio_device_int) {
+    case DEV_QCV:
+      return qcv_digital_input_on();
   }
-  int gs3_digital_input_off () {                                     // Set back to assumed defaults
-    return (0);
+  return -1;
+}
+
+int dev_digital_input_off() {
+  switch (curr_radio_device_int) {
+    case DEV_QCV:
+      return qcv_digital_input_off ();
   }
+  return -1;
+}
 
-  boolean do_ssd = true;        // LG G2 w/ CM 11 needs at least one "ssd 4 0" command, so might as well use binary SSD
-
-  int lg2_digital_input_on () {
-    alsa_enum_set ("FM Radio", 0);
-    alsa_bool_set ("MultiMedia1 Mixer TERT_MI2S_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    return (-1);
+int chmod_need = 1;
+char * set_radio_dai_state(char * dai_state) {
+  if (!strncasecmp(dai_state, "Start", 5)) {
+    logd("dai Start: %d", dev_digital_input_on());
+  } else if (!strncasecmp(dai_state, "Stop", 4)) {
+    logd("dai Stop: %d", dev_digital_input_off());
+  } else {
+    logd("dai Unknown: %s", dai_state);
   }
-  int lg2_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer TERT_MI2S_TX", 0);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 1);
-    return (-1);
-  }
-
-
-  int one_digital_input_on () {
-    alsa_bool_set ("MultiMedia1 Mixer PRI_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    ms_sleep (100);
-    return (-1);
-  }
-  int one_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer PRI_TX", 0);
-    ms_sleep (100);
-    return (-1);
-  }
-
-  int qcv_digital_input_on () {
-    alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
-    alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-    ms_sleep (100);
-    return (0);
-  }
-  int qcv_digital_input_off () {
-    alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
-    ms_sleep (100);
-    return (0);
-  }
-
-
-
-  int xz2_digital_input_on () {
-    return (0);
-  }
-
-  int xz2_digital_input_off () {
-    return (0);
-  }
-
-  int dev_digital_input_on () {
-    switch (curr_radio_device_int) {
-      case DEV_UNK: return (-1);
-      case DEV_GEN: return (-1);
-
-      case DEV_GS1: return (gs1_digital_input_on ());
-      case DEV_GS2: return (gs2_digital_input_on ());
-      case DEV_GS3: return (gs3_digital_input_on ());
-      case DEV_QCV: return (qcv_digital_input_on ());
-      case DEV_ONE: return (one_digital_input_on ());
-      case DEV_LG2: return (lg2_digital_input_on ());
-      case DEV_XZ2: return (xz2_digital_input_on ());
-
-      case DEV_SDR: return (-1);
-    }
-    return (-1);
-  }
-  int dev_digital_input_off () {
-    switch (curr_radio_device_int) {
-      case DEV_UNK: return (-1);
-      case DEV_GEN: return (-1);
-
-      case DEV_GS1: return (gs1_digital_input_off ());
-      case DEV_GS2: return (gs2_digital_input_off ());
-      case DEV_GS3: return (gs3_digital_input_off ());
-      case DEV_QCV: return (qcv_digital_input_off ());
-      case DEV_ONE: return (one_digital_input_off ());
-      case DEV_LG2: return (lg2_digital_input_off ());
-      case DEV_XZ2: return (xz2_digital_input_off ());
-
-      case DEV_SDR: return (-1);
-    }
-    return (-1);
-  }
-
-  int chmod_need = 1;
-  char * set_radio_dai_state (char * dai_state) {
-    if (! strncasecmp (dai_state, "Start", 5))
-      logd ("dai Start: %d", dev_digital_input_on ());
-    else if (! strncasecmp (dai_state, "Stop", 4))
-      logd ("dai Stop: %d", dev_digital_input_off ());
-    else
-      logd ("dai Unknown: %s", dai_state);
-
-    return (dai_state);
-  }
+  return dai_state;
+}
 
 int server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
   s2d_cmd_log = !!file_get ("/mnt/sdcard/sf/s2d_log");
@@ -1272,8 +1043,6 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     return strlen(res_buf);
   }
 
-  //strncpy (res_buf, cmd_buf, res_max);
-  //strncat (res_buf, " -555", res_max);
   strncpy(res_buf, "-555", res_max);
   return strlen(res_buf);
 }
@@ -1338,13 +1107,13 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
  */
 int main(int argc, char ** argv) {
   if (argc > 1) {
-    strncpy (logtag, "s2d......", sizeof (logtag));
+    strncpy(logtag, "s2d......", sizeof(logtag));
   } else {
-    strncpy (logtag, "s2c......", sizeof (logtag));
+    strncpy(logtag, "s2c......", sizeof(logtag));
   }
 
-  logd ("Spirit FM Radio s2d utility version 2014, Nov 2"); // !! Need automatic version
-  logd (copyright);                                         // Copyright
+  logd("Spirit FM Radio s2d utility version 2014, Nov 2"); // !! Need automatic version
+  logd(copyright);                                         // Copyright
 
   exiting = 0;
 

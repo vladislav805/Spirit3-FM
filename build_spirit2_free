@@ -6,20 +6,20 @@ export WS="/home/vlad805/FM/spirit_versions/spirit2_2014_11_28"
 export PROJ="sf"
 #cd $WS/$PROJ
 
-rm -rf obj  # obj/local/armeabi/*
-rm -rf libs # libs/armeabi/
+#rm -rf obj
+#rm -rf libs
 
-mkdir libs
-mkdir libs/armeabi
+#mkdir libs
+#mkdir libs/armeabi
 
-android update project --target android-20 --path . --name $PROJ
+#android update project --target android-20 --path . --name $PROJ
 
 
-echo /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build start
-time /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build 2>&1 | grep "error:"
+#echo /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build start
+#time /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build 2>&1 | grep "error:"
 
-mv libs/armeabi/s2d libs/armeabi/libs2d.so
-mv libs/armeabi/ssd libs/armeabi/libssd.so
+#mv libs/armeabi/s2d libs/armeabi/libs2d.so
+#mv libs/armeabi/ssd libs/armeabi/libssd.so
 
 ant -q clean release
 

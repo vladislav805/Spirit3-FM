@@ -28,7 +28,7 @@ public class PresetView extends Button {
     mFrequency = frequency;
     mIndex = index;
 
-    setText(mFrequency.isEmpty() ? "+" : mFrequency);
+    setText(isEmpty() ? "+" : mFrequency);
 
     return this;
   }
@@ -49,6 +49,10 @@ public class PresetView extends Button {
 
   public String getFrequency() {
     return mFrequency;
+  }
+
+  public boolean isEmpty() {
+    return mFrequency.isEmpty();
   }
 
 }

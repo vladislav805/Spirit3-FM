@@ -36,8 +36,8 @@ public class gui_act extends Activity {
 
     // Must be done from an Activity
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
-    initBroadcastListener();
     gui_start();
+    initBroadcastListener();
   }
 
   // Create        Start,Resume       Pause,Resume        Pause,Stop,Restart       Start,Resume
@@ -105,7 +105,7 @@ public class gui_act extends Activity {
 
           if (m_com_api != null && m_gui != null) {
             m_com_api.radio_update(intent);
-            m_gui.gap_radio_update(intent);
+            m_gui.onReceivedUpdates(intent);
           }
         }
       };

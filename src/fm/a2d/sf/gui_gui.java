@@ -6,57 +6,48 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
 import android.widget.*;
-
 import android.media.AudioManager;
-
-import android.os.Bundle;
-
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
-
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
-
 import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
-public class gui_gui implements gui_gap {
+public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickListener {
 
   private static final String TAG = "GUI_GUI";
 
-  private static int stat_constrs = 1;
-  private int audio_stream = AudioManager.STREAM_MUSIC;
-
-  private Activity m_gui_act;
+  // References
+  private Activity mActivity;
   private Context mContext;
-  private com_api m_com_api;
+  private com_api mApi;
 
+  // Metrics
   private DisplayMetrics mDisplayMetrics;
 
-  private VisualizerView m_visualizerView;
-  private boolean gui_vis_disabled = true;
-
-  private Typeface mDigitalFont;
-
+  // Visualizer
+  private VisualizerView mVisualizerView;
+  private boolean mVisualizerDisabled = true;
 
   // TODO: User Interface:
   private Animation m_ani_button = null;
+  private Typeface mDigitalFont;
 
-  private LinearLayout m_lv_presets = null;
+  private LinearLayout mViewListPresets = null;
 
-  // Text:
-  private TextView m_tv_rssi = null;
-  private TextView m_tv_state = null;
-  private TextView m_tv_most = null;
-  private TextView m_tv_band = null;
-  private TextView m_tv_freq = null;
+  // Info
+  private TextView mViewRSSI = null;
+  private TextView mViewState = null;
+  private TextView mViewStereo = null;
+  private TextView mViewBand = null;
+  private TextView mViewFrequency = null;
 
   // RDS data:
 //  private TextView m_tv_picl = null;
@@ -65,42 +56,39 @@ public class gui_gui implements gui_gap {
 //  private TextView m_tv_rt = null;
 
   // ImageView Buttons:
-  private ImageView m_iv_record = null;
-  private ImageView m_iv_seekup = null;
-  private ImageView m_iv_seekdn = null;
+  private ImageView mViewRecord = null;
+  private ImageView mViewSeekUp = null;
+  private ImageView mViewSeekDown = null;
 
-  private ImageView m_iv_prev = null;
-  private ImageView m_iv_next = null;
+  // Navigation
+  private ImageView mViewPrevious = null;
+  private ImageView mViewNext = null;
 
-  private ImageView m_iv_paupla = null;
-  private ImageView m_iv_stop = null;
-  private ImageView m_iv_pause = null;
-  private ImageView m_iv_mute = null;
-  private ImageView m_iv_menu = null;
+  // Control
+  private ImageView mViewPlayToggle = null;
+  private ImageView mViewMute = null;
+
   private ImageView m_iv_out = null; // ImageView for Speaker/Headset toggle
   private ImageView m_iv_pwr = null;
-  private ImageView m_iv_signal = null;
+  private ImageView mViewSignal = null;
 
-  private HorizontalScrollView m_hsv_freq = null;
-  private SeekBar m_sb_freq = null;
+  // Seek frequency line
+  private HorizontalScrollView mViewLineFrequency = null;
+  private SeekBar mViewSeekFrequency = null;
 
   // Presets
   private PresetView[] mPresetViews;
 
-  private Dialog intro_dialog = null;
+  private Dialog mIntroDialog = null;
 
 //  private String last_rt = "";
-  private int last_int_audio_sessid = 0;
-
+  private int mLastAudioSessionId = 0;
 
   // Code:
-
   public gui_gui(Context c, com_api the_com_api) { // Constructor
-    com_uti.logd("stat_constrs: " + stat_constrs++);
-
     mContext = c;
-    m_gui_act = (Activity) c;
-    m_com_api = the_com_api;
+    mActivity = (Activity) c;
+    mApi = the_com_api;
   }
 
   // Lifecycle API
@@ -116,8 +104,8 @@ public class gui_gui implements gui_gap {
 
   private boolean gui_stop() {
     //stopBroadcastListener ();
-    if (gui_vis_disabled)
-      com_uti.logd("gui_vis_disabled = true");
+    if (mVisualizerDisabled)
+      com_uti.logd("mVisualizerDisabled = true");
     else
       gui_vis_stop();
     return (true);
@@ -129,94 +117,84 @@ public class gui_gui implements gui_gap {
     // !! Hack for s2d comms to allow network activity on UI thread
     com_uti.strict_mode_set(false);
 
-    m_gui_act.requestWindowFeature(Window.FEATURE_NO_TITLE); // No title to save screen space
-    m_gui_act.setContentView(R.layout.gui_gui_layout); // Main Layout
+    mActivity.requestWindowFeature(Window.FEATURE_NO_TITLE); // No title to save screen space
+    mActivity.setContentView(R.layout.gui_gui_layout); // Main Layout
 
     mDisplayMetrics = new DisplayMetrics();
-    m_gui_act.getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
-    m_gui_act.findViewById(R.id.new_fl).setLayoutParams(new LinearLayout.LayoutParams(mDisplayMetrics.widthPixels, ViewGroup.LayoutParams.MATCH_PARENT));
+    mActivity.getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
+    mActivity.findViewById(R.id.new_fl).setLayoutParams(new LinearLayout.LayoutParams(mDisplayMetrics.widthPixels, ViewGroup.LayoutParams.MATCH_PARENT));
 
     mDigitalFont = Typeface.createFromAsset(mContext.getAssets(), "fonts/digital-number.ttf");
 
     m_ani_button = AnimationUtils.loadAnimation(mContext, R.anim.ani_button);// Set button animation
 
-    m_tv_rssi = (TextView) m_gui_act.findViewById(R.id.tv_rssi);
-    m_tv_state = (TextView) m_gui_act.findViewById(R.id.tv_state);  // Phase
-    m_tv_most = (TextView) m_gui_act.findViewById(R.id.tv_most);
+    mViewRSSI = (TextView) mActivity.findViewById(R.id.tv_rssi);
+    mViewState = (TextView) mActivity.findViewById(R.id.tv_state);  // Phase
+    mViewStereo = (TextView) mActivity.findViewById(R.id.tv_most);
 
-    m_tv_band = (TextView) m_gui_act.findViewById(R.id.tv_band);
+    mViewBand = (TextView) mActivity.findViewById(R.id.tv_band);
 
-//    m_tv_picl = (TextView) m_gui_act.findViewById(R.id.tv_picl);
-//    m_tv_ps = (TextView) m_gui_act.findViewById(R.id.tv_ps);
-//    m_tv_ptyn = (TextView) m_gui_act.findViewById(R.id.tv_ptyn);
-//    m_tv_rt = (TextView) m_gui_act.findViewById(R.id.tv_rt);
+//    m_tv_picl = (TextView) mActivity.findViewById(R.id.tv_picl);
+//    m_tv_ps = (TextView) mActivity.findViewById(R.id.tv_ps);
+//    m_tv_ptyn = (TextView) mActivity.findViewById(R.id.tv_ptyn);
+//    m_tv_rt = (TextView) mActivity.findViewById(R.id.tv_rt);
 
-    m_iv_seekdn = (ImageView) m_gui_act.findViewById(R.id.iv_seekdn);
-    m_iv_seekdn.setOnClickListener(mOnClickListener);
+    mViewSeekDown = (ImageView) mActivity.findViewById(R.id.iv_seekdn);
+    mViewSeekDown.setOnClickListener(this);
 
-    m_iv_seekup = (ImageView) m_gui_act.findViewById(R.id.iv_seekup);
-    m_iv_seekup.setOnClickListener(mOnClickListener);
+    mViewSeekUp = (ImageView) mActivity.findViewById(R.id.iv_seekup);
+    mViewSeekUp.setOnClickListener(this);
 
-    m_iv_record = (ImageView) m_gui_act.findViewById(R.id.iv_record);
-    m_iv_record.setOnClickListener(mOnClickListener);
+    mViewRecord = (ImageView) mActivity.findViewById(R.id.iv_record);
+    mViewRecord.setOnClickListener(this);
 
-    m_iv_prev = (ImageView) m_gui_act.findViewById(R.id.iv_prev);
-    m_iv_prev.setOnClickListener(mOnClickListener);
+    mViewPrevious = (ImageView) mActivity.findViewById(R.id.iv_prev);
+    mViewPrevious.setOnClickListener(this);
 
-    m_iv_next = (ImageView) m_gui_act.findViewById(R.id.iv_next);
-    m_iv_next.setOnClickListener(mOnClickListener);
+    mViewNext = (ImageView) mActivity.findViewById(R.id.iv_next);
+    mViewNext.setOnClickListener(this);
 
-    m_tv_freq = (TextView) m_gui_act.findViewById(R.id.tv_freq);
-    m_tv_freq.setOnClickListener(mOnClickListener);
+    mViewFrequency = (TextView) mActivity.findViewById(R.id.tv_freq);
+    mViewFrequency.setOnClickListener(this);
 
-    m_iv_paupla = (ImageView) m_gui_act.findViewById(R.id.iv_playpause);
-    m_iv_paupla.setOnClickListener(mOnClickListener);
+    mViewPlayToggle = (ImageView) mActivity.findViewById(R.id.iv_play_toggle);
+    mViewPlayToggle.setOnClickListener(this);
+    mViewPlayToggle.setOnLongClickListener(this);
 
-    m_iv_stop = (ImageView) m_gui_act.findViewById(R.id.iv_stop);
-    m_iv_stop.setOnClickListener(mOnClickListener);
+    mViewMute = (ImageView) mActivity.findViewById(R.id.iv_mute);
+    mViewMute.setOnClickListener(this);
 
-    m_iv_pause = (ImageView) m_gui_act.findViewById(R.id.iv_pause);
-    m_iv_pause.setOnClickListener(mOnClickListener);
+    mViewSignal = (ImageView) mActivity.findViewById(R.id.iv_signal);
+    mViewListPresets = (LinearLayout) mActivity.findViewById(R.id.preset_list);
+    mViewLineFrequency = (HorizontalScrollView) mActivity.findViewById(R.id.seek_scroll_frequency);
 
-    m_iv_mute = (ImageView) m_gui_act.findViewById(R.id.iv_mute);
-    m_iv_mute.setOnClickListener(mOnClickListener);
+    mViewSeekFrequency = (SeekBar) mActivity.findViewById(R.id.sb_freq_seek);
+    mViewSeekFrequency.setMax(205);
+    mViewSeekFrequency.setOnSeekBarChangeListener(mOnSeekFrequencyChanged);
 
-    m_iv_menu = (ImageView) m_gui_act.findViewById(R.id.iv_menu);
-    m_iv_menu.setOnClickListener(mOnClickListener);
-
-    m_iv_signal = (ImageView) m_gui_act.findViewById(R.id.iv_signal);
-    m_lv_presets = (LinearLayout) m_gui_act.findViewById(R.id.preset_list);
-    m_hsv_freq = (HorizontalScrollView) m_gui_act.findViewById(R.id.seek_scroll_frequency);
-
-    m_tv_freq.setTypeface(mDigitalFont);
-    m_tv_rssi.setTypeface(mDigitalFont);
-
-    m_sb_freq = (SeekBar) m_gui_act.findViewById(R.id.sb_freq_seek);
-    m_sb_freq.setMax(205);
-    m_sb_freq.setOnSeekBarChangeListener(mOnSeekFrequencyChanged);
+    mViewFrequency.setTypeface(mDigitalFont);
+    mViewRSSI.setTypeface(mDigitalFont);
 
     setupPresets();
 
     updateUIViewsByPowerState(false);
 
-    long curr_time = com_uti.ms_get();
-    long radio_gui_first_time = com_uti.long_get(com_uti.prefs_get(mContext, "radio_gui_first_time", ""));
-    if (radio_gui_first_time <= 0L) {
-      com_uti.prefs_set(mContext, "radio_gui_first_time", String.valueOf(curr_time));
+    if (com_uti.long_get(com_uti.prefs_get(mContext, C.GUI_START_FIRST_TIME, "")) <= 0L) {
+      com_uti.prefs_set(mContext, C.GUI_START_FIRST_TIME, String.valueOf(com_uti.ms_get()));
     }
 
-    int radio_gui_start_count = com_uti.prefs_get(mContext, "radio_gui_start_count", 0);
-    radio_gui_start_count++;
+    int startGuiCount = com_uti.prefs_get(mContext, C.GUI_START_COUNT, 0);
+    startGuiCount++;
 
-    if (radio_gui_start_count <= 1) { // If first 1 runs...
-      m_com_api.key_set("tuner_band", "EU");
+    if (startGuiCount <= 1) { // If first 1 runs...
+      mApi.key_set(C.TUNER_BAND, "EU");
     } else {
-      setTunerBand(com_uti.prefs_get(mContext, "tuner_band", "EU"));
+      setTunerBand(com_uti.prefs_get(mContext, C.TUNER_BAND, "EU"));
     }
 
-    onStarted(radio_gui_start_count);
+    onStarted(startGuiCount);
 
-    m_com_api.key_set("audio_state", "start"); // Start audio service
+    mApi.key_set("audio_state", "start"); // Start audio service
 
     updateUIViewsByPowerState(true); // !!!! Move later to Radio API callback
 
@@ -248,7 +226,7 @@ public class gui_gui implements gui_gap {
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-      if (!m_com_api.tuner_state.equalsIgnoreCase("start")) {
+      if (!mApi.tuner_state.equalsIgnoreCase("start")) {
         return; // Not Consumed
       }
 
@@ -260,9 +238,8 @@ public class gui_gui implements gui_gap {
    * Вызывается когда в первый раз происходит запуск приложения
    */
   private void onStarted(int count) {
-    m_gui_act.showDialog(count <= 1 ? DLG_INTRO : DLG_POWER);
+    openDialogIntro(count);
   }
-
 
   /**
    * Enables/disables buttons based on power
@@ -278,9 +255,9 @@ public class gui_gui implements gui_gap {
     }
 
     // Power button is always enabled
-    m_iv_seekup.setEnabled(power);
-    m_iv_seekdn.setEnabled(power);
-    m_iv_record.setEnabled(true);
+    mViewSeekUp.setEnabled(power);
+    mViewSeekDown.setEnabled(power);
+    mViewRecord.setEnabled(true);
 //    m_tv_rt.setEnabled(power);
 
     for (int idx = 0; idx < com_api.PRESET_COUNT; idx++) { // For all presets...
@@ -293,26 +270,26 @@ public class gui_gui implements gui_gap {
 
   // Visualizer:
 
-  private void gui_vis_stop() {
+  private void gui_vis_start(int audio_sessid) {
     try {
-      com_uti.logd("m_gui_vis: " + this.m_visualizerView);
-      if (this.m_visualizerView != null) {
-        this.m_visualizerView.vis_stop();
-        this.m_visualizerView = null;
+      com_uti.logd("m_gui_vis: " + mVisualizerView + "  audio_sessid: " + audio_sessid);
+      mVisualizerView = (VisualizerView) mActivity.findViewById(R.id.gui_vis);
+      if (mVisualizerView == null) {
+        showToast("VisualizerView not found");
+      } else {
+        mVisualizerView.vis_start(audio_sessid);
       }
     } catch (Throwable e) {
       e.printStackTrace();
     }
   }
 
-  private void gui_vis_start(int audio_sessid) {
+  private void gui_vis_stop() {
     try {
-      com_uti.logd("m_gui_vis: " + m_visualizerView + "  audio_sessid: " + audio_sessid);
-      m_visualizerView = (VisualizerView) m_gui_act.findViewById(R.id.gui_vis);
-      if (m_visualizerView == null) {
-        showToast("VisualizerView not found");
-      } else {
-        m_visualizerView.vis_start(audio_sessid);
+      com_uti.logd("m_gui_vis: " + this.mVisualizerView);
+      if (this.mVisualizerView != null) {
+        this.mVisualizerView.vis_stop();
+        this.mVisualizerView = null;
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -322,19 +299,19 @@ public class gui_gui implements gui_gap {
   private void visualizer_state_set(String state) {
     com_uti.logd("state: " + state);
     if (state.equals("Start")) {
-      gui_vis_disabled = false;
-      m_gui_act.findViewById(R.id.vis).setVisibility(View.VISIBLE);
+      mVisualizerDisabled = false;
+      mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
       m_iv_pwr.setVisibility(View.INVISIBLE);
-      m_gui_act.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
-      int audio_sessid = com_uti.int_get(m_com_api.audio_sessid);
+      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
+      int audio_sessid = com_uti.int_get(mApi.audio_sessid);
       if (audio_sessid > 0) {
         do_gui_vis_start(audio_sessid);
       }
     } else {
-      gui_vis_disabled = true;
-      m_gui_act.findViewById(R.id.vis).setVisibility(View.INVISIBLE);
+      mVisualizerDisabled = true;
+      mActivity.findViewById(R.id.vis).setVisibility(View.INVISIBLE);
       m_iv_pwr.setVisibility(View.VISIBLE);
-      m_gui_act.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
+      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
       gui_vis_stop();
     }
     com_uti.prefs_set(mContext, "gui_visualizer_state", state);
@@ -352,16 +329,16 @@ public class gui_gui implements gui_gap {
 
       mPresetViews[idx].populate(idx, freq).setListeners(mOnClickPresetListener, mOnLongClickPresetListener);
 
-      m_lv_presets.addView(mPresetViews[idx]);
+      mViewListPresets.addView(mPresetViews[idx]);
     }
   }
 
 
   private void resetAllViews() {
-    m_tv_state.setText("");
-    m_tv_most.setText("");
-    m_tv_band.setText("");
-    m_tv_rssi.setText("");
+    mViewState.setText("");
+    mViewStereo.setText("");
+    mViewBand.setText("");
+    mViewRSSI.setText("");
 //    m_tv_ps.setText("");
 //    m_tv_picl.setText("");
 //    m_tv_ptyn.setText("");
@@ -370,37 +347,12 @@ public class gui_gui implements gui_gap {
 //    m_tv_rt.setText("");
   }
 
-
-  // Dialog methods:
-
-  private static final int DLG_INTRO = 1;    // First time show this
-  private static final int DLG_POWER = 2;    // Every subsequent startup show this
-  private static final int DLG_FREQ_SET = 3;
-
-  public Dialog gap_dialog_create(int id, Bundle args) {                            // Create a dialog by calling specific *_dialog_create function    ; Triggered by showDialog (int id);
-    //public DialogFragment gap_dialog_create (int id, Bundle args) {
-    //com_uti.logd ("id: " + id + "  args: " + args);
-    Dialog ret = null;
-    //DialogFragment ret = null;
-    switch (id) {
-      case DLG_INTRO:
-      case DLG_POWER:
-        ret = openDialogIntro();
-        intro_dialog = ret;
-        break;
-      case DLG_FREQ_SET:
-        ret = openDialogChangeFrequency();
-        break;
-    }
-    return (ret);
-  }
-
   /**
    * Открытие интро
    */
-  private Dialog openDialogIntro() {
+  private void openDialogIntro(@SuppressWarnings("unused") int count) {
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
-            .setTitle("Spirit2 " + com_uti.app_version_get(mContext));
+            .setTitle("Spirit3 " + com_uti.app_version_get(mContext));
 
     String intro_msg;
 
@@ -409,19 +361,16 @@ public class gui_gui implements gui_gap {
     } else {*/
       intro_msg = "Welcome to Spirit2! :)\n\nPlease wait while it starts...";
     //}
-
-    dialog.setMessage(intro_msg);
-
-    return dialog.create();
+    mIntroDialog = dialog.setCancelable(false).setIcon(R.drawable.ic_radio).setMessage(intro_msg).create();
   }
 
   /**
    * Изменение частотного диапазона
    */
   private void setTunerBand(String band) {
-    m_com_api.tuner_band = band;
+    mApi.tuner_band = band;
     com_uti.tnru_band_set(band); // To setup band values; different process than service
-    m_com_api.key_set("tuner_band", band);
+    mApi.key_set(C.TUNER_BAND, band);
   }
 
   /**
@@ -433,7 +382,7 @@ public class gui_gui implements gui_gap {
   /**
    * Открытие диалога изменения текущей частоты
    */
-  private Dialog openDialogChangeFrequency() {
+  private void openDialogChangeFrequency() {
     LayoutInflater factory = LayoutInflater.from(mContext);
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext);
 
@@ -442,20 +391,20 @@ public class gui_gui implements gui_gap {
     final EditText freqEditView = (EditText) textEntryView.findViewById(R.id.edit_number);
     freqEditView.setTypeface(mDigitalFont);
     freqEditView.setTextAlignment(TEXT_ALIGNMENT_CENTER);
-    freqEditView.setText(m_com_api.tuner_freq);
+    freqEditView.setText(mApi.tuner_freq);
 
-    return dialog
-      .setTitle(mContext.getString(R.string.dialog_frequency_title))
-      .setView(textEntryView)
-      .setPositiveButton(mContext.getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int whichButton) {
-          setFrequency(freqEditView.getEditableText().toString().replace(",", "."));
-        }
-      })
-      .setNegativeButton(mContext.getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
-        public void onClick(DialogInterface dialog, int whichButton) {
-        }
-      }).create();
+    dialog
+        .setTitle(mContext.getString(R.string.dialog_frequency_title))
+        .setView(textEntryView)
+        .setPositiveButton(mContext.getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int whichButton) {
+            setFrequency(freqEditView.getEditableText().toString().replace(",", "."));
+          }
+        })
+        .setNegativeButton(mContext.getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+          public void onClick(DialogInterface dialog, int whichButton) {
+          }
+        }).create();
   }
 
   /**
@@ -469,7 +418,7 @@ public class gui_gui implements gui_gap {
     }
 
     // If tuner disabled...
-    if (!m_com_api.tuner_state.equalsIgnoreCase("start")) {
+    if (!mApi.tuner_state.equalsIgnoreCase("start")) {
       return;
     }
 
@@ -492,7 +441,7 @@ public class gui_gui implements gui_gap {
     }
 
     if (freq >= mFrequencyLow && freq <= mFrequencyHigh) {
-      m_com_api.key_set("tuner_freq", String.valueOf(freq));
+      mApi.key_set("tuner_freq", String.valueOf(freq));
       float f = freq / 1000.0f;
       showToast(String.format(Locale.ENGLISH, "Frequency changed to: %.1f MHz", f));
       onFrequencyChanged(f);
@@ -506,7 +455,7 @@ public class gui_gui implements gui_gap {
     if (s.length() == 4) {
       s = " " + s;
     }
-    m_tv_freq.setText(s);
+    mViewFrequency.setText(s);
   }
 
   /**
@@ -516,12 +465,12 @@ public class gui_gui implements gui_gap {
     setFrequencyText(String.valueOf(frequency));
 
     int val = (int) (frequency * 10 - 875);
-    m_sb_freq.setProgress(val);
+    mViewSeekFrequency.setProgress(val);
 
 
-    int x = (m_hsv_freq.getChildAt(0).getWidth() * val  / 205) - (mDisplayMetrics.widthPixels / 2);
+    int x = (mViewLineFrequency.getChildAt(0).getWidth() * val  / 205) - (mDisplayMetrics.widthPixels / 2);
 
-    m_hsv_freq.smoothScrollTo(x, 0);
+    mViewLineFrequency.smoothScrollTo(x, 0);
   }
 
   /**
@@ -538,8 +487,8 @@ public class gui_gui implements gui_gap {
   //
   private void do_gui_vis_start(int audio_sessid) {
     com_uti.logd("audio_sessid: " + audio_sessid);
-    if (gui_vis_disabled) {
-      com_uti.logd("gui_vis_disabled = true");
+    if (mVisualizerDisabled) {
+      com_uti.logd("mVisualizerDisabled = true");
     } else {
       gui_vis_start(audio_sessid);
     }
@@ -549,49 +498,29 @@ public class gui_gui implements gui_gap {
   public void onReceivedUpdates(Intent intent) {
     // Audio Session ID:
 
-    int audio_sessid = com_uti.int_get(m_com_api.audio_sessid);
-    if (audio_sessid != 0 && last_int_audio_sessid != audio_sessid) {                        // If audio session ID has changed...
-      last_int_audio_sessid = audio_sessid;
-      com_uti.logd("m_com_api.audio_sessid: " + m_com_api.audio_sessid + "  audio_sessid: " + audio_sessid);
+    int audio_sessid = com_uti.int_get(mApi.audio_sessid);
+    if (audio_sessid != 0 && mLastAudioSessionId != audio_sessid) { // If audio session ID has changed...
+      mLastAudioSessionId = audio_sessid;
+      com_uti.logd("mApi.audio_sessid: " + mApi.audio_sessid + "  audio_sessid: " + audio_sessid);
       // If no session, do nothing (or stop visual and EQ)
       do_gui_vis_start(audio_sessid);
     }
 
-    if (m_com_api.audio_state.equalsIgnoreCase("Start")) {
-      if (intro_dialog != null) {
-        intro_dialog.dismiss();
-        intro_dialog = null;
-        setFrequency(m_com_api.tuner_freq);
+    if (mApi.audio_state.equalsIgnoreCase("Start")) {
+      if (mIntroDialog != null) {
+        mIntroDialog.dismiss();
+        mIntroDialog = null;
+        setFrequency(mApi.tuner_freq);
       }
     }
 
     // Buttons:
 
-    // Mode Buttons at bottom:
-    // Mute/Unmute:
-    if (m_com_api.audio_state.equalsIgnoreCase("starting")) {
-      com_uti.loge("Audio starting");
-      m_iv_paupla.setImageResource(R.drawable.sel_pause);
-    } else if (m_com_api.audio_state.equalsIgnoreCase("start")) {
-      m_iv_paupla.setImageResource(R.drawable.sel_pause);
-    } else if (m_com_api.audio_state.equalsIgnoreCase("pause")) {
-      m_iv_paupla.setImageResource(R.drawable.btn_play);
-    } else if (m_com_api.audio_state.equalsIgnoreCase("stop")) {
-      m_iv_paupla.setImageResource(R.drawable.btn_play);
-    } else if (m_com_api.audio_state.equalsIgnoreCase("stopping")) {
-      m_iv_paupla.setImageResource(R.drawable.btn_play);
-    } else {
-      m_iv_paupla.setImageResource(R.drawable.btn_play);//sel_pause);
-    }
-
-    if (m_com_api.audio_record_state.equals("Start")) {
-      m_iv_record.setImageResource(R.drawable.btn_record_press);
-    } else {
-      m_iv_record.setImageResource(R.drawable.btn_record);
-    }
+    setPlayToggleButtonState(mApi.audio_state);
+    setRecordAudioState(mApi.audio_record_state);
 
     // Speaker/Headset:     NOT USED NOW
-    if (m_com_api.audio_output.equalsIgnoreCase("speaker")) {                                  // Else if speaker..., Pressing button goes to headset
+    if (mApi.audio_output.equalsIgnoreCase("speaker")) {                                  // Else if speaker..., Pressing button goes to headset
       //if (m_iv_out != null)
       //  m_iv_out.setImageResource (android.R.drawable.stat_sys_headset);//ic_volume_bluetooth_ad2p);
 //com_uti.loge ("Speaker Mode");
@@ -603,9 +532,9 @@ public class gui_gui implements gui_gap {
 
 
     // Power:
-    updateUIViewsByPowerState(m_com_api.tuner_state.equalsIgnoreCase("start"));
+    updateUIViewsByPowerState(mApi.tuner_state.equalsIgnoreCase("start"));
 
-    int ifreq = (int) (com_uti.double_get(m_com_api.tuner_freq) * 1000);
+    int ifreq = (int) (com_uti.double_get(mApi.tuner_freq) * 1000);
     ifreq = com_uti.tnru_freq_fix(ifreq + 25); // Must fix due to floating point rounding need, else 106.1 = 106.099
 
     String freq = null;
@@ -616,31 +545,61 @@ public class gui_gui implements gui_gap {
       setFrequencyText(freq);
     }
 
-    m_tv_band.setText(m_com_api.tuner_band);
+    mViewBand.setText(mApi.tuner_band);
 
     updateSignalStretch();
 
-    if (m_com_api.tuner_most.equalsIgnoreCase("Mono"))
-      m_tv_most.setText("");
-    else if (m_com_api.tuner_most.equalsIgnoreCase("Stereo"))
-      m_tv_most.setText("S");
+    if (mApi.tuner_most.equalsIgnoreCase("Mono"))
+      mViewStereo.setText("");
+    else if (mApi.tuner_most.equalsIgnoreCase("Stereo"))
+      mViewStereo.setText("S");
     else
-      m_tv_most.setText("");
+      mViewStereo.setText("");
 /*
-    m_tv_state.setText("" + m_com_api.tuner_state + " " + m_com_api.audio_state);
-    m_tv_picl.setText(m_com_api.tuner_rds_picl);
-    m_tv_ps.setText(m_com_api.tuner_rds_ps);
-    m_tv_ps2.setText (m_com_api.tuner_rds_ps);
-    m_com_api.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get (m_com_api.tuner_band, com_uti.int_get (m_com_api.tuner_rds_pt));
-    m_tv_ptyn.setText(m_com_api.tuner_rds_ptyn);
-    if (!last_rt.equalsIgnoreCase(m_com_api.tuner_rds_rt)) {
-      //com_uti.loge ("rt changed: " + m_com_api.tuner_rds_rt);
-      last_rt = m_com_api.tuner_rds_rt;
-      m_tv_rt.setText(m_com_api.tuner_rds_rt);
+    mViewState.setText("" + mApi.tuner_state + " " + mApi.audio_state);
+    m_tv_picl.setText(mApi.tuner_rds_picl);
+    m_tv_ps.setText(mApi.tuner_rds_ps);
+    m_tv_ps2.setText (mApi.tuner_rds_ps);
+    mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get (mApi.tuner_band, com_uti.int_get (mApi.tuner_rds_pt));
+    m_tv_ptyn.setText(mApi.tuner_rds_ptyn);
+    if (!last_rt.equalsIgnoreCase(mApi.tuner_rds_rt)) {
+      //com_uti.loge ("rt changed: " + mApi.tuner_rds_rt);
+      last_rt = mApi.tuner_rds_rt;
+      m_tv_rt.setText(mApi.tuner_rds_rt);
       //m_tv_rt.setMarqueeRepeatLimit (-1);  // Forever
       m_tv_rt.setSelected(true);
     }
 */
+  }
+
+  private void setPlayToggleButtonState(String state) {
+    switch (state.toLowerCase()) {
+      case C.AUDIO_STATE_STARTING:
+        com_uti.loge("Audio starting");
+        mViewPlayToggle.setEnabled(false);
+        mViewPlayToggle.setImageResource(R.drawable.ic_pause);
+        break;
+
+      case C.AUDIO_STATE_START:
+        mViewPlayToggle.setEnabled(true);
+        mViewPlayToggle.setImageResource(R.drawable.ic_pause);
+        break;
+
+      case C.AUDIO_STATE_PAUSE:
+        mViewPlayToggle.setEnabled(true);
+        mViewPlayToggle.setImageResource(R.drawable.ic_play);
+        break;
+
+      case C.AUDIO_STATE_STOPPING:
+        mViewPlayToggle.setEnabled(false);
+      case C.AUDIO_STATE_STOP:
+      default:
+        mViewPlayToggle.setImageResource(R.drawable.ic_play);
+    }
+  }
+
+  private void setRecordAudioState(String state) {
+    mViewRecord.setImageResource(state.equals(C.AUDIO_RECORD_START) ? R.drawable.btn_record_press : R.drawable.btn_record);
   }
 
   private int SIGNAL_EDGES[] = new int[] {50, 350, 750, 900};
@@ -651,7 +610,7 @@ public class gui_gui implements gui_gap {
    */
   private void updateSignalStretch() {
     try {
-      int f = Integer.valueOf(m_com_api.tuner_rssi);
+      int f = Integer.valueOf(mApi.tuner_rssi);
 
       int resId = SIGNAL_RES[4];
 
@@ -662,8 +621,8 @@ public class gui_gui implements gui_gap {
         }
       }
 
-      m_iv_signal.setImageResource(resId);
-      m_tv_rssi.setText(String.format("%4s", m_com_api.tuner_rssi));
+      mViewSignal.setImageResource(resId);
+      mViewRSSI.setText(String.format("%4s", mApi.tuner_rssi));
     } catch (Exception ignore) {}
   }
 
@@ -687,12 +646,12 @@ public class gui_gui implements gui_gap {
    * Save preset in memory
    */
   private void setPreset(PresetView preset) {
-    preset.populate(m_com_api.tuner_freq);
+    preset.populate(mApi.tuner_freq);
 
     // !! Current implementation requires simultaneous (одновременно)
-    m_com_api.key_set(
-            "radio_name_prst_" + preset.getIndex(), m_com_api.tuner_freq,
-            "radio_freq_prst_" + preset.getIndex(), m_com_api.tuner_freq
+    mApi.key_set(
+            "radio_name_prst_" + preset.getIndex(), mApi.tuner_freq,
+            "radio_freq_prst_" + preset.getIndex(), mApi.tuner_freq
     );
   }
 
@@ -707,52 +666,52 @@ public class gui_gui implements gui_gap {
     }
   };
 
-
-
-
-  private View.OnClickListener mOnClickListener = new View.OnClickListener() {
-    public void onClick(View v) {
-      if (v == m_iv_mute) {
+  @Override
+  public void onClick(View v) {
+    switch (v.getId()) {
+      case R.id.iv_mute:
         AudioManager m_am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         if (m_am != null) {
           // Display volume change
-          m_am.setStreamVolume(audio_stream, m_am.getStreamVolume(audio_stream), AudioManager.FLAG_SHOW_UI);
+          m_am.setStreamVolume(AudioManager.STREAM_MUSIC, m_am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_SHOW_UI);
         }
+        break;
 
-      } else if (v == m_iv_paupla) {
-        m_com_api.key_set("audio_state", "Toggle");
+      case R.id.iv_play_toggle:
+        mApi.key_set("audio_state", "Toggle");
+        break;
 
-      } else if (v == m_iv_stop) {
-        m_com_api.key_set("tuner_state", "Stop");
+      case R.id.iv_record:
+        mApi.key_set("audio_record_state", "Toggle");
+        break;
 
-      } else if (v == m_iv_record) {
-        m_com_api.key_set("audio_record_state", "Toggle");
+      //case R.id.iv_out: -> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
+      //  mApi.key_set("audio_output", "toggle");
 
-      } else if (v == m_iv_out) { // TODO: Speaker/headset  NOT USED NOW
-        m_com_api.key_set("audio_output", "toggle");
+      case R.id.tv_freq:
+        openDialogChangeFrequency();
+        break;
 
-      } else if (v == m_tv_freq) { // Frequency direct entry
-        m_gui_act.showDialog(DLG_FREQ_SET);
+      case R.id.iv_seekdn:
+        mApi.key_set("tuner_scan_state", "down");
+        break;
 
-      } else if (v == m_iv_seekdn) { // Seek down
-        m_com_api.key_set("tuner_scan_state", "down");
+      case R.id.iv_seekup:
+        mApi.key_set("tuner_scan_state", "up");
+        break;
 
-      } else if (v == m_iv_seekup) { // Seek up
-        m_com_api.key_set("tuner_scan_state", "up");
+      case R.id.iv_prev:
+        mApi.key_set("tuner_freq", "down");
+        break;
 
-      } else if (v == m_iv_prev) {
-        m_com_api.key_set("tuner_freq", "down");
-
-      } else if (v == m_iv_next) {
-        m_com_api.key_set("tuner_freq", "up");
-
-      }
-
+      case R.id.iv_next:
+        mApi.key_set("tuner_freq", "up");
+        break;
     }
-  };
+  }
 
 /*
-    if (m_com_api.audio_output.equalsIgnoreCase ("speaker")) {                                  // Else if speaker..., Pressing button goes to headset
+    if (mApi.audio_output.equalsIgnoreCase ("speaker")) {                                  // Else if speaker..., Pressing button goes to headset
       //if (m_iv_out != null)
       //  m_iv_out.setImageResource (android.R.drawable.stat_sys_headset);//ic_volume_bluetooth_ad2p);
     }
@@ -762,6 +721,18 @@ public class gui_gui implements gui_gap {
     }
 */
 
+
+  @Override
+  public boolean onLongClick(View v) {
+    switch (v.getId()) {
+
+      case R.id.iv_play_toggle:
+        mApi.key_set("tuner_state", "Stop");
+        return true;
+
+    }
+    return false;
+  }
 
 
   private String tuner_stereo_load_prefs() {
@@ -781,7 +752,7 @@ public class gui_gui implements gui_gap {
 
   private String audio_output_set_nonvolatile(String value) {  // Called only by speaker/headset checkbox change
     com_uti.logd("value: " + value);
-    m_com_api.key_set("audio_output", value);
+    mApi.key_set("audio_output", value);
     return (value); // No error
   }
 
@@ -802,19 +773,19 @@ public class gui_gui implements gui_gap {
   private String setVisualState(String state) {
     com_uti.logd("state: " + state);
     if (state.equalsIgnoreCase("Start")) {
-      gui_vis_disabled = false;
+      mVisualizerDisabled = false;
 
       m_iv_pwr.setVisibility(View.INVISIBLE);
-      ((ImageView) m_gui_act.findViewById(R.id.frequency_bar)).setVisibility(View.INVISIBLE);
+      ((ImageView) mActivity.findViewById(R.id.frequency_bar)).setVisibility(View.INVISIBLE);
 
-      int audio_sessid = com_uti.int_get(m_com_api.audio_sessid);
+      int audio_sessid = com_uti.int_get(mApi.audio_sessid);
       if (audio_sessid > 0)
         do_gui_vis_start(audio_sessid);
     } else {
-      gui_vis_disabled = true;
+      mVisualizerDisabled = true;
 
       m_iv_pwr.setVisibility(View.VISIBLE);
-      ((ImageView) m_gui_act.findViewById(R.id.frequency_bar)).setVisibility(View.VISIBLE);
+      ((ImageView) mActivity.findViewById(R.id.frequency_bar)).setVisibility(View.VISIBLE);
 
       gui_vis_stop();
     }
@@ -827,7 +798,7 @@ public class gui_gui implements gui_gap {
     String val = "Stereo";
     if (!checked)
       val = "Mono";
-    m_com_api.key_set("tuner_stereo", val);
+    mApi.key_set("tuner_stereo", val);
   }
 
   private void cb_audio_stereo(boolean checked) {
@@ -835,7 +806,7 @@ public class gui_gui implements gui_gap {
     String val = "Stereo";
     if (!checked)
       val = "Mono";
-    m_com_api.key_set("audio_stereo", val);
+    mApi.key_set("audio_stereo", val);
   }
 
   public void gap_gui_clicked(View view) {

@@ -134,14 +134,6 @@ public class gui_act extends Activity {
     }
   }
 
-  // Dialog methods:
-  // Create a dialog by calling specific *_dialog_create function    ; Triggered by showDialog (int id);
-  @SuppressWarnings("deprecation")
-  @Override
-  protected Dialog onCreateDialog(int id, Bundle args) {
-    return m_gui.gap_dialog_create(id, args);
-  }
-
   public void gap_gui_clicked(View v) {
     m_gui.gap_gui_clicked(v);
   }

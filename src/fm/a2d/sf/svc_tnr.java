@@ -58,7 +58,7 @@ public class svc_tnr implements svc_tap {
       return (com_uti.s2d_get (key));
 
         // Else if not on, use cached info:
-    else if (key.equalsIgnoreCase ("tuner_band"))
+    else if (key.equalsIgnoreCase (C.TUNER_BAND))
       return (m_com_api.tuner_band);
     else if (key.equalsIgnoreCase ("tuner_freq"))
       return (m_com_api.tuner_freq);
@@ -131,14 +131,14 @@ public class svc_tnr implements svc_tap {
     else if (key.equalsIgnoreCase ("radio_nop"))                        // If radio_nop...
       return (com_uti.s2d_set (key, val));                              // Set via s2d
 
-    //else if (key.equalsIgnoreCase ("tuner_band"))
+    //else if (key.equalsIgnoreCase (C.TUNER_BAND))
     //  return (tuner_band_set (val));
 
     else if (m_com_api.tuner_state.equalsIgnoreCase ("start"))          // If tuner_state = Start...
       return (com_uti.s2d_set (key, val));                                // Set via s2d
 
         // Else if not on:
-    else if (key.equalsIgnoreCase ("tuner_band"))
+    else if (key.equalsIgnoreCase (C.TUNER_BAND))
       return (m_com_api.tuner_band = val);
     else if (key.equalsIgnoreCase ("tuner_freq"))
       return (m_com_api.tuner_freq = val);

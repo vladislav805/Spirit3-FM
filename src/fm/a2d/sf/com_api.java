@@ -59,7 +59,7 @@ public class com_api {
   public String tuner_rds_picl = "";//WKBW";   // ro ... ... Values:   North American Call Letters or Hex PI for tuner_rds_pi
   public String tuner_rds_pt = "";//-1";       // ro ... ... Values:   0 - 31
   public String tuner_rds_ptyn = "";           // ro ... ... Values:   Describes tuner_rds_pt (English !)
-  public String tuner_rds_ps = "Spirit2 Free"; // ro ... ... Values:   RBDS 8 char info or RDS Station
+  public String tuner_rds_ps = "Spirit3";      // ro ... ... Values:   RBDS 8 char info or RDS Station
   public String tuner_rds_rt = "";             // ro ... ... Values:   64 char
   //OBNOXIOUS !!     "Analog 2 Digital radio ; Thanks for Your Support... :)";
 
@@ -142,7 +142,7 @@ public class com_api {
     if (!new_tuner_state.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_state = new_tuner_state;
 
-    String new_tuner_band = extras.getString("tuner_band", DEFAULT_DETECT);
+    String new_tuner_band = extras.getString(C.TUNER_BAND, DEFAULT_DETECT);
     String new_tuner_freq = extras.getString("tuner_freq", DEFAULT_DETECT);
     String new_tuner_stereo = extras.getString("tuner_stereo", DEFAULT_DETECT);
     String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);

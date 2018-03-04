@@ -3,7 +3,6 @@
 
 package fm.a2d.sf;
 
-import android.app.Service;
 import android.media.MediaRecorder;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -11,25 +10,12 @@ import android.content.BroadcastReceiver;
 import android.content.Intent;
 import android.content.Context;
 import android.content.IntentFilter;
-import android.media.AudioFormat;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.media.MediaPlayer;
-import android.media.MediaPlayer.OnCompletionListener;
-import android.media.MediaPlayer.OnErrorListener;
-import android.media.MediaPlayer.OnPreparedListener;
-import android.media.audiofx.AudioEffect;
-import android.os.Environment;
-import android.os.PowerManager;
 
 import java.lang.reflect.Method;
-import java.io.BufferedOutputStream;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 import java.util.Timer;
-import java.util.TimerTask;
 import java.util.Locale;
 
 
@@ -38,7 +24,7 @@ public class svc_aud implements svc_aap, AudioManager.OnAudioFocusChangeListener
   private static int stat_constrs = 1;
 
   private AudioManager m_AM = null;
-  private aud_rec m_aud_rec = null;
+  private RadioRecorder mRecorder = null;
   private Context m_context = null;
   private svc_acb m_svc_acb = null;
   private com_api m_com_api = null;
@@ -349,7 +335,7 @@ API level 17 / 4.2+
 
     com_uti.logd("at_min_size 2: " + at_min_size);
 
-    this.m_aud_rec = new aud_rec(this.m_context, this.m_samplerate, this.m_channels, this.m_com_api);
+    this.mRecorder = new RadioRecorder(this.m_context, this.m_samplerate, this.m_channels, this.m_com_api);
   }
 
   private void audio_start() {
@@ -686,12 +672,12 @@ if (intent != null)
           long curr_ms_start;
           long curr_ms_time;
 
-          if (m_aud_rec != null) {
+          if (mRecorder != null) {
             curr_ms_start = com_uti.tmr_ms_get();
-            m_aud_rec.audio_record_write(aud_buf, len);
+            mRecorder.write(aud_buf, len);
             curr_ms_time = com_uti.tmr_ms_get() - curr_ms_start;
             if (curr_ms_time >= 100) {
-              com_uti.loge("run_pcm_write m_aud_rec.audio_record_write too long curr_ms_time: " + curr_ms_time + "  len: " + len + "  len_written: unk"  + "  aud_buf: " + aud_buf);
+              com_uti.loge("run_pcm_write mRecorder.write too long curr_ms_time: " + curr_ms_time + "  len: " + len + "  len_written: unk"  + "  aud_buf: " + aud_buf);
             }
           }
 
@@ -754,7 +740,7 @@ if (intent != null)
         e.printStackTrace();
       } // Fall through to terminate if exception
 
-      if (m_aud_rec != null) {
+      if (mRecorder != null) {
         audio_record_state_set("Stop");
       }
     }
@@ -1226,8 +1212,8 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
 
   public String audio_record_state_set(String new_record_state) {
     com_uti.logd("new_record_state: " + new_record_state);
-    if (m_aud_rec != null) {
-      m_aud_rec.audio_record_state_set(new_record_state);
+    if (mRecorder != null) {
+      mRecorder.setState(new_record_state);
     }
     return this.m_com_api.audio_record_state;
   }

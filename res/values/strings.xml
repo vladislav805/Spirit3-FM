@@ -8,4 +8,11 @@
   <string name="dialog_ok">OK</string>
   <string name="dialog_cancel">Cancel</string>
   <string name="application_name">Spirit2</string>
+  <string name="seek_down">Seek down</string>
+  <string name="frequency">Frequency</string>
+  <string name="seek_up">Seek up</string>
+  <string name="button_previous">Previous</string>
+  <string name="button_next">Next</string>
+  <string name="button_stop">Stop</string>
+  <string name="button_play_toggle">Pause / Play</string>
 </resources>

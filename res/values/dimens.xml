@@ -13,4 +13,9 @@
   <dimen name="frequency_seek_radius">0dp</dimen>
   <dimen name="frequency_qualifier_width">8dp</dimen>
   <dimen name="frequency_qualifier_height">20dp</dimen>
+  <dimen name="button_seek_size">64dp</dimen>
+  <dimen name="seek_frequency_margin_vertical">15dp</dimen>
+  <dimen name="seek_frequency_margin_horizontal">8dp</dimen>
+  <dimen name="seek_frequency_height">80dp</dimen>
+  <dimen name="frequency_mhz_font_size">65sp</dimen>
 </resources>

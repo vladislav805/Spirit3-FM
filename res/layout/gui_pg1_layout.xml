@@ -98,145 +98,87 @@
         android:src="@drawable/sel_record" />
   </LinearLayout>
 
+
+  <!-- Frequency -->
   <LinearLayout
-      android:visibility="gone"
+      android:layout_marginTop="@dimen/seek_frequency_margin_vertical"
+      android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
+      android:layout_marginLeft="@dimen/seek_frequency_margin_horizontal"
+      android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
       android:layout_width="match_parent"
-      android:layout_height="0dip"
-      android:layout_weight="1.2"
-      android:layout_gravity="center"
-      android:orientation="horizontal">
-
-    <TextView
-            android:id="@+id/tv_rt"
-            android:contentDescription="RDS RT"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_weight="4"
-            android:textSize="15dip"
-            android:textStyle="normal"
-            android:textColor="#ffd1d1d1"
-            android:ellipsize="marquee"
-            android:gravity="center_vertical|center_horizontal"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:singleLine="true"
-            android:shadowColor="#74000000"
-            android:shadowDy="-1.0"
-            android:marqueeRepeatLimit="marquee_forever" />
-
-  </LinearLayout>
-
-
-<!-- Frequency -->
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="80dp"
+      android:layout_height="@dimen/seek_frequency_height"
       android:orientation="horizontal"
       android:baselineAligned="false">
 
-    <LinearLayout
+    <ImageView
+        android:id="@+id/iv_seekdn"
+        android:contentDescription="@string/seek_down"
+        android:src="@drawable/ic_frequency_previous"
+        android:background="@drawable/sel_stop_bg"
+        android:focusable="true"
+        android:clickable="true"
+        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/button_seek_size"
+        android:layout_height="@dimen/button_seek_size"
+        android:scaleType="center" />
+
+    <TextView
+        android:id="@+id/tv_freq"
+        android:contentDescription="@string/frequency"
+        android:textSize="@dimen/frequency_mhz_font_size"
+        android:gravity="center_vertical|center_vertical"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:textColor="@color/primary_blue"
+        android:shadowColor="@color/primary_blue_shadow"
+        android:shadowRadius="20"
+        android:shadowDx="0"
+        android:shadowDy="0"
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent" />
+
+    <ImageView
+        android:id="@+id/iv_seekup"
+        android:contentDescription="@string/seek_up"
+        android:src="@drawable/ic_frequency_next"
+        android:background="@drawable/sel_stop_bg"
+        android:focusable="true"
+        android:clickable="true"
+        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/button_seek_size"
+        android:layout_height="@dimen/button_seek_size"
+        android:scaleType="center" />
+  </LinearLayout>
+
+  <LinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"
+      android:layout_weight="1"
+      android:orientation="horizontal">
+    <TextView
+        android:id="@+id/tv_state"
+        android:contentDescription="State"
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
+        android:textSize="10dip"
+        android:textStyle="normal"
+        android:textColor="#ffa3a3a3"
         android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal">
-      <TextView
-          android:id="@+id/tv_picl"
-          android:contentDescription="RDS PI"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textSize="8sp"
-          android:textStyle="normal"
-          android:textColor="#ffa3a3a3"
-          android:gravity="center_vertical|center_horizontal"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:singleLine="true" />
-      <ImageView
-          android:visibility="visible"
-          android:id="@+id/iv_seekdn"
-          android:contentDescription="Seek down"
-          android:src="@drawable/btn_rw"
-          android:background="@drawable/sel_stop_bg"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginRight="2dp"
-          android:layout_marginLeft="2dp"
-          android:scaleType="center" />
-    </LinearLayout>
-
-    <LinearLayout
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="5"
-        android:orientation="horizontal"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal">
-      <TextView
-          android:id="@+id/tv_freq"
-          android:contentDescription="Frequency"
-          android:textSize="65sp"
-          android:gravity="center_vertical|center_vertical"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:textColor="@color/primary_blue"
-          android:textAppearance="?android:attr/textAppearanceLarge"
-          android:shadowColor="@color/primary_blue_shadow"
-          android:shadowRadius="20"
-          android:shadowDx="0"
-          android:shadowDy="0"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content" />
-      <TextView
-          android:visibility="gone"
-          android:textSize="30sp"
-          android:gravity="center_vertical|bottom"
-          android:layout_gravity="center_vertical|bottom"
-          android:text="MHz"
-          android:textColor="@color/primary_blue"
-          android:shadowColor="@color/primary_blue_shadow"
-          android:shadowRadius="10"
-          android:shadowDx="0"
-          android:shadowDy="0"
-          android:layout_marginBottom="1dp"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content" />
-    </LinearLayout>
-
-    <LinearLayout
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:maxLines="1" />
+    <TextView
+        android:id="@+id/tv_band"
+        android:contentDescription="Band"
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:orientation="vertical"
+        android:textSize="10dip"
+        android:textStyle="normal"
+        android:textColor="#ffa3a3a3"
         android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal">
-      <TextView
-          android:id="@+id/tv_ptyn"
-          android:contentDescription="RDS PT"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:textSize="10dp"
-          android:textStyle="normal"
-          android:textColor="#ffa3a3a3"
-          android:gravity="center_vertical|center_horizontal"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:singleLine="true" />
-      <ImageView
-          android:visibility="visible"
-          android:id="@+id/iv_seekup"
-          android:contentDescription="Seek up"
-          android:src="@drawable/btn_ff"
-          android:background="@drawable/sel_stop_bg"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="2dip"
-          android:layout_marginBottom="4dip"
-          android:layout_marginRight="2dip"
-          android:layout_marginLeft="2dip"
-          android:scaleType="center" />
-    </LinearLayout>
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:maxLines="1"/>
   </LinearLayout>
 
   <HorizontalScrollView
@@ -269,57 +211,51 @@
 
   </HorizontalScrollView>
 
-  <LinearLayout android:layout_width="match_parent" android:layout_height="0dip" android:layout_weight="1" android:layout_gravity="center" android:orientation="horizontal" >
-<!--
-  License State
--->
-    <TextView android:id="@+id/tv_state" android:contentDescription="State" android:layout_width="0dip" android:layout_height="match_parent" android:layout_weight="1" android:textSize="10dip" android:textStyle="normal"
-     android:textColor="#ffa3a3a3" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal" android:singleLine="true" />
-    <TextView android:id="@+id/tv_blank2" android:layout_width="0dip" android:layout_height="match_parent" android:layout_weight="4" android:textSize="10dip" android:textStyle="normal"
-     android:textColor="#ffa3a3a3" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal" android:singleLine="true" />
-<!--
-  Band
--->
-    <TextView android:id="@+id/tv_band" android:contentDescription="Band" android:layout_width="0dip" android:layout_height="match_parent" android:layout_weight="1" android:textSize="10dip" android:textStyle="normal"
-     android:textColor="#ffa3a3a3" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal" android:singleLine="true" />
+
+  <LinearLayout
+      android:gravity="center_vertical|center_horizontal"
+      android:orientation="horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content">
+    <ImageView
+        android:id="@+id/iv_prev"
+        android:contentDescription="@string/button_previous"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_frequency_previous"
+        android:background="@drawable/sel_stop_bg" />
+    <ImageView
+        android:id="@+id/iv_play_toggle"
+        android:contentDescription="@string/button_play_toggle"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:padding="15dp"
+        android:layout_marginLeft="6dp"
+        android:layout_marginRight="6dp"
+        android:src="@drawable/ic_play"
+        android:background="@drawable/sel_stop_bg" />
+    <ImageView
+        android:id="@+id/iv_next"
+        android:contentDescription="@string/button_next"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
+        android:padding="10dp"
+        android:src="@drawable/ic_frequency_next"
+        android:background="@drawable/sel_stop_bg" />
   </LinearLayout>
 
-
-<!--
--->
-<!--
-            Main part of screen:    Frequency dial, power (pause ?), next, previous
--->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="0dip"
-      android:layout_weight="20"
+      android:layout_weight="1"
       android:orientation="vertical">
     <RelativeLayout
         android:id="@+id/freq_dial"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
-      <ImageView
-          android:id="@+id/iv_prev"
-          android:contentDescription="Previous"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:src="@drawable/sel_prev"
-          android:background="@drawable/sel_prev_bg"
-          android:layout_marginTop="0dip"
-          android:layout_marginStart="0dip"
-          android:layout_alignParentStart="true" />
-      <ImageView
-          android:id="@+id/iv_next"
-          android:contentDescription="Next"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:src="@drawable/sel_next"
-          android:background="@drawable/sel_prev_bg"
-          android:layout_marginTop="0dp"
-          android:layout_marginEnd="0dp"
-          android:layout_alignParentEnd="true" />
+
       <ImageView
           android:id="@+id/frequency_bar"
           android:contentDescription="Frequency Dial"
@@ -343,23 +279,7 @@
             android:layout_height="match_parent" />
       </LinearLayout>
 
-      <ImageView
-          android:visibility="visible"
-          android:id="@+id/iv_stop"
-          android:contentDescription="Stop"
-          android:src="@drawable/sel_stop"
-          android:background="@drawable/sel_stop_bg"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="2dip"
-          android:layout_marginBottom="4dip"
-          android:layout_marginRight="2dip"
-          android:layout_marginLeft="2dip"
-          android:layout_alignParentBottom="true"
-          android:layout_alignParentStart="true"
-          android:scaleType="center" />
+
 
       <ImageView
           android:visibility="gone"
@@ -378,41 +298,6 @@
           android:layout_centerInParent="true"
           android:scaleType="center"/>
 
-      <ImageView
-          android:visibility="gone"
-          android:id="@+id/iv_pause"
-          android:contentDescription="Pause"
-          android:src="@drawable/sel_pause"
-          android:background="@drawable/sel_stop_bg"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="2dip"
-          android:layout_marginBottom="4dip"
-          android:layout_marginRight="2dip"
-          android:layout_marginLeft="2dip"
-          android:layout_alignParentBottom="true"
-          android:layout_alignParentEnd="true"
-          android:scaleType="center" />
-
-      <ImageView
-          android:visibility="visible"
-          android:id="@+id/iv_playpause"
-          android:contentDescription="Pause / Play"
-          android:src="@drawable/btn_play"
-          android:background="@drawable/sel_stop_bg"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="2dip"
-          android:layout_marginBottom="4dip"
-          android:layout_marginRight="2dip"
-          android:layout_marginLeft="2dip"
-          android:layout_alignParentBottom="true"
-          android:layout_alignParentEnd="true"
-          android:scaleType="center" />
     </RelativeLayout>
   </LinearLayout>
   <CheckBox android:visibility="gone" android:id="@+id/cb_visu" android:layout_width="match_parent" android:layout_height="0dp" android:checked="false" android:text="Visual" android:layout_weight="1.0" android:onClick="gap_gui_clicked" android:contentDescription="Visualizer" />

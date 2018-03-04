@@ -738,7 +738,7 @@ Evo 4G LTE  jewel
   }
 
   public static void prefs_set(Context context, String key, int int_val) {
-    String val = "" + int_val;
+    String val = String.valueOf(int_val);
     prefs_set(context, key, val);
     return;
   }

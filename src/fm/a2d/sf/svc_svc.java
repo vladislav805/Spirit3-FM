@@ -167,10 +167,10 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       if (!val.equals(""))
         tuner_freq_set(val);
 
-      val = extras.getString("tuner_band", "");
+      val = extras.getString(C.TUNER_BAND, "");
       if (!val.equals("")) {
-        m_svc_tap.tuner_set("tuner_band", val);
-        com_uti.prefs_set(m_context, "tuner_band", val);
+        m_svc_tap.tuner_set(C.TUNER_BAND, val);
+        com_uti.prefs_set(m_context, C.TUNER_BAND, val);
         m_com_api.tuner_band = val;
         com_uti.tnru_band_set(m_com_api.tuner_band);
       }
@@ -233,7 +233,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private void tuner_extras_put (Intent send_intent) {
 
     send_intent.putExtra ("tuner_state",        m_com_api.tuner_state);//m_svc_tap.tuner_get ("tuner_state"));
-    send_intent.putExtra ("tuner_band",         m_com_api.tuner_band);//m_svc_tap.tuner_get ("tuner_band"));
+    send_intent.putExtra (C.TUNER_BAND,         m_com_api.tuner_band);//m_svc_tap.tuner_get ("tuner_band"));
     String freq_khz = m_svc_tap.tuner_get ("tuner_freq");
     int ifreq = com_uti.int_get (freq_khz);
 //!! ifreq = com_uti.tnru_freq_fix (ifreq + 25);
@@ -548,8 +548,8 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   }
 
   private void tuner_prefs_init () { // Load tuner prefs
-    String band = com_uti.prefs_get (m_context, "tuner_band", "EU");
-    m_svc_tap.tuner_set ("tuner_band", band);
+    String band = com_uti.prefs_get (m_context, C.TUNER_BAND, "EU");
+    m_svc_tap.tuner_set (C.TUNER_BAND, band);
     m_com_api.tuner_band = band;
     com_uti.tnru_band_set (band);
 

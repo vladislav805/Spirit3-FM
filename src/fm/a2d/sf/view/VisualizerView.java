@@ -1,4 +1,4 @@
-package fm.a2d.sf;
+package fm.a2d.sf.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,8 +12,9 @@ import android.media.audiofx.Visualizer;
 import android.media.audiofx.Visualizer.OnDataCaptureListener;
 import android.util.AttributeSet;
 import android.view.View;
+import fm.a2d.sf.com_uti;
 
-public class gui_vis extends View {
+public class VisualizerView extends View {
     private static int m_obinits = 1;
     private boolean freq_avg_shared;
     private boolean freq_interp;
@@ -40,17 +41,17 @@ public class gui_vis extends View {
         }
 
         public void onWaveFormDataCapture(Visualizer visualizer, byte[] bytes, int samplingRate) {
-            gui_vis.this.m_wave_data = bytes;
-            gui_vis.this.invalidate();
+            VisualizerView.this.m_wave_data = bytes;
+            VisualizerView.this.invalidate();
         }
 
         public void onFftDataCapture(Visualizer visualizer, byte[] bytes, int samplingRate) {
-            gui_vis.this.m_freq_data = bytes;
-            gui_vis.this.invalidate();
+            VisualizerView.this.m_freq_data = bytes;
+            VisualizerView.this.invalidate();
         }
     }
 
-    public gui_vis(Context context) {
+    public VisualizerView(Context context) {
         this(context, null, 0);
         try {
             com_uti.logd("context: " + context);
@@ -59,7 +60,7 @@ public class gui_vis extends View {
         }
     }
 
-    public gui_vis(Context context, AttributeSet attrs) {
+    public VisualizerView(Context context, AttributeSet attrs) {
         this(context, attrs, 0);
         try {
             com_uti.logd("context: " + context + "  attrs: " + attrs);
@@ -68,7 +69,7 @@ public class gui_vis extends View {
         }
     }
 
-    public gui_vis(Context context, AttributeSet attrs, int defStyle) {
+    public VisualizerView(Context context, AttributeSet attrs, int defStyle) {
         super(context, attrs);
         this.m_wave_points = new float[16384];
         this.m_freq_points = new float[16384];

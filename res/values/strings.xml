@@ -3,4 +3,5 @@
   <string name="header_cd_rssi">RSSI</string>
   <string name="header_rssi_default">0</string>
   <string name="header_record">Record</string>
+  <string name="nill"></string>
 </resources>

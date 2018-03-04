@@ -6,13 +6,13 @@
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res/fm.a2d.sf">
+    xmlns:android="http://schemas.android.com/apk/res/android">
 <!-- Top display area: record button/indicator top left, volume (speaker image) top right, PS, RT -->
   <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="@dimen/header_height"
-          android:layout_gravity="center"
-          android:orientation="horizontal">
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/header_height"
+      android:layout_gravity="center"
+      android:orientation="horizontal">
 <!-- RSSI -->
     <LinearLayout
         android:layout_marginStart="@dimen/header_horizontal_margin"
@@ -75,17 +75,17 @@
 <!-- Stereo -->
     <TextView
         android:visibility="gone"
-            android:id="@+id/tv_most"
-            android:contentDescription="Mono / Stereo"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:layout_weight="4"
-            android:textSize="10dip"
-            android:textStyle="normal"
-            android:textColor="#ffa3a3a3"
-            android:gravity="center_vertical|center_horizontal"
-            android:layout_gravity="center_vertical|center_horizontal"
-            android:singleLine="true" />
+        android:id="@+id/tv_most"
+        android:contentDescription="Mono / Stereo"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:layout_weight="4"
+        android:textSize="10dip"
+        android:textStyle="normal"
+        android:textColor="#ffa3a3a3"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:singleLine="true" />
     <!-- Record -->
     <ImageView
         android:id="@+id/iv_record"
@@ -98,17 +98,13 @@
         android:src="@drawable/sel_record" />
   </LinearLayout>
 
-<!--
-  RT
-  <TextView android:layout_width="200dip" android:layout_height="0dip" android:layout_weight="1" android:id="@+id/rt_text" android:textSize="15.0dip" android:textStyle="normal" android:textColor="#ffa3a3a3" android:ellipsize="marquee" android:gravity="center_vertical|center_horizontal" android:layout_gravity="center_vertical|center_horizontal" android:singleLine="true" android:shadowColor="#74000000" android:shadowDy="-1.0" android:marqueeRepeatLimit="marquee_forever" />
--->
-
   <LinearLayout
-          android:layout_width="match_parent"
-          android:layout_height="0dip"
-          android:layout_weight="1.2"
-          android:layout_gravity="center"
-          android:orientation="horizontal">
+      android:visibility="gone"
+      android:layout_width="match_parent"
+      android:layout_height="0dip"
+      android:layout_weight="1.2"
+      android:layout_gravity="center"
+      android:orientation="horizontal">
 
     <TextView
             android:id="@+id/tv_rt"
@@ -192,6 +188,7 @@
           android:layout_width="wrap_content"
           android:layout_height="wrap_content" />
       <TextView
+          android:visibility="gone"
           android:textSize="30sp"
           android:gravity="center_vertical|bottom"
           android:layout_gravity="center_vertical|bottom"
@@ -242,22 +239,34 @@
     </LinearLayout>
   </LinearLayout>
 
-  <LinearLayout
-      android:layout_weight="3"
-      android:orientation="horizontal"
+  <HorizontalScrollView
+      android:layout_marginTop="8dp"
+      android:layout_marginBottom="8dp"
       android:layout_width="match_parent"
-      android:layout_height="0dp">
-    <!--suppress AndroidUnknownAttribute -->
-    <SeekBar
-        android:max="100"
-        android:progress="50"
-        android:progressDrawable="@drawable/seekbar_style"
-        android:thumb="@drawable/custom_thumb"
-        android:splitTrack="false"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/sb_freq_seek" />
-  </LinearLayout>
+      android:layout_height="150dp">
+    <LinearLayout
+        android:orientation="vertical"
+        android:layout_width="400dp"
+        android:layout_height="match_parent">
+      <!--suppress AndroidUnknownAttribute -->
+      <ImageView
+          android:src="@drawable/frequency_scale"
+          android:layout_width="match_parent"
+          android:layout_height="67dp"
+          android:layout_marginStart="2dp"
+          android:layout_marginEnd="2dp"
+          android:contentDescription="@string/nill"/>
+      <SeekBar
+          android:progressDrawable="@drawable/frequency_seek_style"
+          android:thumb="@drawable/frequency_seek_thumb"
+          android:splitTrack="false"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_marginEnd="5dp"
+          android:id="@+id/sb_freq_seek" />
+    </LinearLayout>
+
+  </HorizontalScrollView>
 
   <LinearLayout android:layout_width="match_parent" android:layout_height="0dip" android:layout_weight="1" android:layout_gravity="center" android:orientation="horizontal" >
 <!--
@@ -327,7 +336,7 @@
           android:layout_marginTop="50dp"
           android:layout_marginBottom="70dp"
           android:contentDescription="Visualizer">
-        <fm.a2d.sf.gui_vis
+        <fm.a2d.sf.view.VisualizerView
             android:id="@+id/gui_vis"
             android:layout_width="match_parent"
             android:layout_height="match_parent" />
@@ -352,7 +361,7 @@
           android:scaleType="center" />
 
       <ImageView
-          android:visibility="visible"
+          android:visibility="gone"
           android:id="@+id/iv_menu"
           android:contentDescription="Menu"
           android:src="@drawable/sel_menu"
@@ -366,7 +375,7 @@
           android:layout_marginLeft="2dip"
           android:layout_alignParentBottom="true"
           android:layout_centerInParent="true"
-          android:scaleType="center" />
+          android:scaleType="center"/>
 
       <ImageView
           android:visibility="gone"

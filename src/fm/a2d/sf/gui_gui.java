@@ -22,12 +22,13 @@ import android.graphics.Color;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 
+import fm.a2d.sf.view.DialView;
 import fm.a2d.sf.view.PresetView;
+import fm.a2d.sf.view.VisualizerView;
 
 import java.util.Locale;
 
 import static android.view.View.GONE;
-import static android.view.View.ROTATION_Y;
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
 // GUI
@@ -42,7 +43,7 @@ public class gui_gui implements gui_gap {
   private Context m_context = null;
   private com_api m_com_api = null;
 
-  private gui_vis m_gui_vis;
+  private VisualizerView m_visualizerView;
   private boolean gui_vis_disabled = true;
 
   private Typeface m_digital_font;
@@ -101,7 +102,7 @@ public class gui_gui implements gui_gap {
   private android.os.Handler delay_dial_handler = null;
   private Runnable delay_dial_runnable = null;
 
-  private gui_dia m_dial = null;
+  private DialView m_dial = null;
   private long last_rotate_time = 0;
 
   private double freq_at_210 = 85200;
@@ -362,7 +363,7 @@ public class gui_gui implements gui_gap {
     android.widget.RelativeLayout.LayoutParams lp_dial = new android.widget.RelativeLayout.LayoutParams(android.widget.RelativeLayout.LayoutParams.MATCH_PARENT, android.widget.RelativeLayout.LayoutParams.MATCH_PARENT);   // WRAP_CONTENT
     //int dial_size = (pixel_width * 3) / 4;
     int dial_size = (pixel_width * 7) / 8;
-    m_dial = new gui_dia(m_context, R.drawable.freq_dial_needle, -1, dial_size, dial_size); // Get dial instance/RelativeLayout view
+    m_dial = new DialView(m_context, R.drawable.freq_dial_needle, -1, dial_size, dial_size); // Get dial instance/RelativeLayout view
     lp_dial.addRule(RelativeLayout.CENTER_IN_PARENT);
     freq_dial_relative_layout.addView(m_dial, lp_dial);
 
@@ -375,7 +376,7 @@ public class gui_gui implements gui_gap {
     m_iv_pwr.setImageResource(R.drawable.dial_power_off);
     freq_dial_relative_layout.addView(m_iv_pwr, lp_power);
 
-    m_dial.listener_set(new gui_dia.gui_dia_listener() {                      // Setup listener for state_chngd() and dial_chngd()
+    m_dial.listener_set(new DialView.gui_dia_listener() {                      // Setup listener for state_chngd() and dial_chngd()
 
       public boolean prev_go() {
         if (!m_com_api.tuner_state.equalsIgnoreCase("start")) {
@@ -509,10 +510,10 @@ Rotate counter by 0.75 MHz = 8.766 degrees
 
   private void gui_vis_stop() {
     try {
-      com_uti.logd("m_gui_vis: " + this.m_gui_vis);
-      if (this.m_gui_vis != null) {
-        this.m_gui_vis.vis_stop();
-        this.m_gui_vis = null;
+      com_uti.logd("m_gui_vis: " + this.m_visualizerView);
+      if (this.m_visualizerView != null) {
+        this.m_visualizerView.vis_stop();
+        this.m_visualizerView = null;
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -521,12 +522,12 @@ Rotate counter by 0.75 MHz = 8.766 degrees
 
   private void gui_vis_start(int audio_sessid) {
     try {
-      com_uti.logd("m_gui_vis: " + m_gui_vis + "  audio_sessid: " + audio_sessid);
-      m_gui_vis = (gui_vis) m_gui_act.findViewById(R.id.gui_vis);
-      if (m_gui_vis == null) {
+      com_uti.logd("m_gui_vis: " + m_visualizerView + "  audio_sessid: " + audio_sessid);
+      m_visualizerView = (VisualizerView) m_gui_act.findViewById(R.id.gui_vis);
+      if (m_visualizerView == null) {
         com_uti.loge("m_gui_vis == null");
       } else {
-        m_gui_vis.vis_start(audio_sessid);
+        m_visualizerView.vis_start(audio_sessid);
       }
     } catch (Throwable e) {
       e.printStackTrace();

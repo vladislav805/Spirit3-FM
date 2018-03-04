@@ -1,5 +1,5 @@
 
-package fm.a2d.sf;
+package fm.a2d.sf.view;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -12,8 +12,9 @@ import android.widget.ImageView;
 import android.widget.ImageView.ScaleType;
 import android.widget.RelativeLayout;
 import android.graphics.Canvas;
+import fm.a2d.sf.com_uti;
 
-public class gui_dia extends RelativeLayout implements OnGestureListener {
+public class DialView extends RelativeLayout implements OnGestureListener {
 
   private static int stat_constrs = 1;
 
@@ -35,7 +36,7 @@ public class gui_dia extends RelativeLayout implements OnGestureListener {
   // Callback interface:
   private gui_dia_listener m_listener;
 
-  interface gui_dia_listener {
+  public interface gui_dia_listener {
     public boolean state_chngd();                                         // Previously had (boolean newstate), but now just an externally handled toggle
 
     public boolean dial_chngd(double angle);
@@ -49,7 +50,7 @@ public class gui_dia extends RelativeLayout implements OnGestureListener {
 
 
   // Dial Constructor
-  public gui_dia(Context context, int dial_id, int needle_id, int width, int height) {
+  public DialView(Context context, int dial_id, int needle_id, int width, int height) {
     super(context);
 
     com_uti.logd("stat_constrs: " + stat_constrs++);

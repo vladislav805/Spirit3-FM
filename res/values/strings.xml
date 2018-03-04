@@ -4,4 +4,8 @@
   <string name="header_rssi_default">0</string>
   <string name="header_record">Record</string>
   <string name="nill"></string>
+  <string name="dialog_frequency_title">Set Frequency</string>
+  <string name="dialog_ok">OK</string>
+  <string name="dialog_cancel">Cancel</string>
+  <string name="application_name">Spirit2</string>
 </resources>

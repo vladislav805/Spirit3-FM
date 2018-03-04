@@ -27,7 +27,7 @@
   <application
       android:allowBackup="true"
       android:icon="@drawable/ic_launcher"
-      android:label="Spirit2"
+      android:label="@string/application_name"
       android:launchMode="singleInstance"
       android:theme="@android:style/Theme.DeviceDefault" >
     <activity

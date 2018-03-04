@@ -21,90 +21,41 @@
   <!--uses-permission android:name="android.permission.VIBRATE"/-->
   <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+<!-- android:clearTaskOnLaunch="true" -->
 
-<!--
--->
-<!-- 
-    android:clearTaskOnLaunch="true"
-    android:launchMode="singleInstance"
- -->
-
-<!-- 
-App drawer name for all unless locally over-ridden:
- -->
+<!-- App drawer name for all unless locally over-ridden -->
   <application
       android:allowBackup="true"
-      android:icon="@drawable/ic_radio"
+      android:icon="@drawable/ic_launcher"
       android:label="Spirit2"
+      android:launchMode="singleInstance"
       android:theme="@android:style/Theme.DeviceDefault" >
-
-        <activity
-            android:name="fm.a2d.sf.gui_act"
-    android:launchMode="singleInstance"
-            android:screenOrientation="portrait" >
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-
-<!-- 
-    android:launchMode="singleInstance"
- if the activity you are launching uses the singleTask launch mode, it will not run in your task and thus you will immediately receive a cancel result. -->
-
-
-<!-- 
-Could be used with App Inventor API aia_act
-android:theme="@android:style/Theme.Translucent.NoTitleBar"
- -->
-
-<!-- 
-
-! Need separate process or get fg/bg problems !!!
- -->
-    <service
-      android:name="fm.a2d.sf.svc_svc"
-android:process=":s"
-      android:label="Spirit2 Free FM Service"
-      android:enabled="true"
-      android:exported="true"
-      >
+    <activity
+        android:name="fm.a2d.sf.gui_act"
+        android:launchMode="singleInstance"
+        android:screenOrientation="portrait" >
       <intent-filter>
-                <action android:name="fm.a2d.sf.action.set" />
+        <action android:name="android.intent.action.MAIN" />
+        <category android:name="android.intent.category.LAUNCHER" />
+      </intent-filter>
+    </activity>
+
+    <!-- ! Need separate process or get fg/bg problems !!! -->
+    <service
+        android:name="fm.a2d.sf.svc_svc"
+        android:process=":s"
+        android:label="Spirit2 Free FM Service"
+        android:enabled="true"
+        android:exported="true">
+      <intent-filter>
+        <action android:name="fm.a2d.sf.action.set" />
       </intent-filter>
     </service>
-<!-- 
-Intent API
- -->
 
-
-<!-- Widget
-        <action android:name="android.appwidget.action.APPWIDGET_DELETED" />
-        <action android:name="android.appwidget.action.APPWIDGET_ENABLED" />
-        <action android:name="android.appwidget.action.APPWIDGET_DISABLED" />
-
-        <action android:name="fm.a2d.sf.widget_update_timer" />
-
-receiver section:
-            android:exported="true"
- -->
-
-<!-- Spirit2 Free Service has media button & headset unplug receiver that deals with standard Android media button Intents . JB needs initial Intent filter AND registration
-            <intent-filter>
-                <action android:name="fm.a2d.sf.result.get" />
-            </intent-filter>
--->
-        <receiver android:name="fm.a2d.sf.svc_bcr">
-            <intent-filter>
-                <action android:name="android.intent.action.MEDIA_BUTTON" />
-            </intent-filter>
-<!-- 
-            <intent-filter>
-                <action android:name="android.media.AUDIO_BECOMING_NOISY" />
-            </intent-filter>
--->
-        </receiver>
-
-    </application>
-
+    <receiver android:name="fm.a2d.sf.svc_bcr">
+      <intent-filter>
+        <action android:name="android.intent.action.MEDIA_BUTTON" />
+      </intent-filter>
+    </receiver>
+  </application>
 </manifest>

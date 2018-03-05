@@ -21,6 +21,7 @@
   <!--uses-permission android:name="android.permission.VIBRATE"/-->
   <uses-permission android:name="android.permission.WAKE_LOCK" />
 
+
 <!-- android:clearTaskOnLaunch="true" -->
 
 <!-- App drawer name for all unless locally over-ridden -->
@@ -52,9 +53,11 @@
       </intent-filter>
     </service>
 
-    <receiver android:name="fm.a2d.sf.svc_bcr">
+    <receiver android:name="fm.a2d.sf.ServiceMediaReceiver">
       <intent-filter>
+        <action android:name="android.intent.action.PHONE_STATE"/>
         <action android:name="android.intent.action.MEDIA_BUTTON" />
+        <action android:name="android.intent.action.NEW_OUTGOING_CALL" />
       </intent-filter>
     </receiver>
   </application>

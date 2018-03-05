@@ -19,7 +19,7 @@ import java.util.Timer;
 import java.util.Locale;
 
 
-public class svc_aud implements svc_aap, AudioManager.OnAudioFocusChangeListener {
+public class svc_aud implements ServiceAudioAPIImpl, AudioManager.OnAudioFocusChangeListener {
 
   private static int stat_constrs = 1;
 
@@ -872,8 +872,6 @@ if (intent != null)
       }                                                                 // Fall through to terminate if exception
 
       com_uti.logd("pcm_read_runnable run() read_ctr: " + read_ctr + "  write_ctr: " + write_ctr + "  buf_errs: " + buf_errs + "  max_bufs: " + max_bufs);
-
-      return;
     }
   };
 
@@ -1007,7 +1005,6 @@ if (intent != null)
     if (m_audiotrack != null)
       m_audiotrack.release();
     m_audiotrack = null;
-
   }
 
   private void audio_output_off() { // Called only from audio_pause, after pcm read and write stopped
@@ -1031,9 +1028,6 @@ if (intent != null)
     }
 
     boolean need_restart = false;
-    if (m_com_api.audio_state.equalsIgnoreCase("start") && (com_uti.device == com_uti.DEV_GS1 || com_uti.device == com_uti.DEV_GS2 || com_uti.device == com_uti.DEV_GS3))
-      //pcm_audio_stop (true); // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
-      need_restart = true;
 
     if (new_audio_output.equalsIgnoreCase("speaker")) {                                        // If -> Speaker...
       if (need_restart)

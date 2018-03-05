@@ -1,6 +1,7 @@
 // Radio Service API:
 package fm.a2d.sf;
 
+import android.app.PendingIntent;
 import android.content.Intent;
 import android.content.Context;
 import android.os.Bundle;
@@ -9,6 +10,7 @@ public class com_api {
 
   private static int stat_constrs = 1;
   public static Context m_context = null;
+  private static int curr_pending_intent_num = 0;
 
   // Radio statuses:
   public String radio_phase = "Pre Init";
@@ -81,7 +83,7 @@ public class com_api {
 
   public void key_set(String key, String val, String key2, String val2) {  // Presets currently require simultaneous preset frequency and name
     com_uti.logd("key: " + key + "  val: " + val + "  key2: " + key2 + "  val2: " + val2);
-    Intent intent = new Intent("fm.a2d.sf.action.set");
+    Intent intent = new Intent(svc_svc.ACTION_SET);
     intent.setClass(m_context, svc_svc.class);
     intent.putExtra(key, val);
     intent.putExtra(key2, val2);
@@ -90,7 +92,7 @@ public class com_api {
 
   public void key_set(String key, String val) {
     com_uti.logd("key: " + key + "  val: " + val);
-    Intent intent = new Intent("fm.a2d.sf.action.set");
+    Intent intent = new Intent(svc_svc.ACTION_SET);
     intent.setClass(m_context, svc_svc.class);
     intent.putExtra(key, val);
     m_context.startService(intent);
@@ -227,6 +229,11 @@ public class com_api {
     if (!new_tuner_rds_taf.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_rds_taf = new_tuner_rds_taf;
 
+  }
+
+  public static PendingIntent createPendingIntent(Context context, String key, String val) {
+    Intent intent = new Intent(svc_svc.ACTION_SET).setClass(context, svc_svc.class).putExtra(key, val);
+    return PendingIntent.getService(context, ++curr_pending_intent_num, intent, 134217728);
   }
 
 }

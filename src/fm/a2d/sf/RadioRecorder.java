@@ -117,7 +117,7 @@ public class RadioRecorder {
   }
 
   public void setState(String state) {
-    if (state.equals("Toggle")) {
+    if (state.equalsIgnoreCase("Toggle")) {
       if (mApi.audio_record_state.equals("Stop")) {
         state = "Start";
       } else {

@@ -254,6 +254,15 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       resetAllViews();
     }
 
+    mViewFrequency.setShadowLayer(power ? 20 : 0, 0, 0, mContext.getResources().getColor(R.color.primary_blue_shadow));
+
+    int color = mContext.getResources().getColor(R.color.primary_blue);
+    if (!power) {
+      //noinspection NumericOverflow
+      color = (color & 0x00ffffff) | (0x88 << 24);
+    }
+    mViewFrequency.setTextColor(color);
+
     // Power button is always enabled
     mViewSeekUp.setEnabled(power);
     mViewSeekDown.setEnabled(power);

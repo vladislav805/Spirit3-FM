@@ -1,11 +1,10 @@
-
-    // Tuner API
-
 package fm.a2d.sf;
 
-public interface svc_tap {
+// Tuner API
 
-  public abstract String tuner_get (String key);
+public interface ServiceTunerAPIImpl {
+
+  public String getTunerValue(String key);
 /*
 t_api_state
 tuner_band
@@ -37,7 +36,7 @@ tuner_stereo
 tuner_thresh
 */
 
-  public abstract String tuner_set (String key, String val);
+  public String setTunerValue(String key, String val);
 /*
 t_api_state
 tuner_extra_cmd

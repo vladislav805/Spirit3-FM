@@ -13,7 +13,7 @@ import java.util.Date;
 import java.util.Locale;
 
 public class RadioRecorder {
-  private static final String mDirectory = "/Music/fm";
+  private static String mDirectory;
   private int mChannels;
   private com_api mApi;
   private boolean mNeedFinish = false;
@@ -165,6 +165,8 @@ public class RadioRecorder {
     if (!mApi.audio_record_state.equals("Stop")) {
       return false;
     }
+
+    mDirectory = "/Music/FM" + File.separator + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
 
     mRecordFile = null;
 
@@ -372,7 +374,7 @@ public class RadioRecorder {
 
   private String getFilename() {
     Date now = new Date();
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    SimpleDateFormat sdf = new SimpleDateFormat("hhmmss", Locale.getDefault());
     return String.format(Locale.ENGLISH, "FM-%s-%s.wav", mApi.tuner_freq, sdf.format(now));
   }
 }

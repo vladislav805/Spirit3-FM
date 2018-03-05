@@ -375,6 +375,7 @@ public class RadioRecorder {
   private String getFilename() {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("hhmmss", Locale.getDefault());
-    return String.format(Locale.ENGLISH, "FM-%s-%s.wav", mApi.tuner_freq, sdf.format(now));
+    float freq = Integer.valueOf(mApi.tuner_freq) / 1000;
+    return String.format(Locale.ENGLISH, "FM-%.1f-%s.wav", freq, sdf.format(now));
   }
 }

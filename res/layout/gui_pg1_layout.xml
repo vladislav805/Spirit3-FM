@@ -2,7 +2,8 @@
 
 <!-- Top Level: -->
 <LinearLayout
-    android:id="@+id/gui_pg1_layout_ll"
+    xmlns:tools="http://schemas.android.com/tools"
+
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -19,7 +20,8 @@
         android:layout_marginEnd="@dimen/header_horizontal_margin"
         android:orientation="horizontal"
         android:layout_width="wrap_content"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        tools:ignore="UseCompoundDrawables">
       <ImageView
           android:id="@+id/iv_signal"
           android:src="@drawable/ic_signal_off"
@@ -46,15 +48,15 @@
 <!-- PS -->
     <TextView
             android:id="@+id/tv_ps"
-            android:contentDescription="RDS PS"
-            android:text="Spirit2"
-            android:textSize="20.0dp"
+            android:contentDescription="@string/header_rds_ps"
+            android:text="@string/application_name"
+            android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="#ffffffff"
             android:gravity="center"
             android:layout_width="0dip"
             android:layout_height="match_parent"
-            android:singleLine="true"
+            android:maxLines="1"
             android:shadowColor="#ff000000"
             android:shadowDy="1.0"
             android:layout_weight="8" />
@@ -63,8 +65,8 @@
     <ImageView
         android:visibility="gone"
             android:id="@+id/iv_mute"
-            android:contentDescription="Volume"
-            android:src="@drawable/btn_volume"
+            android:contentDescription="@string/header_volume"
+            android:src="@drawable/ic_volume_up"
             android:focusable="true"
             android:clickable="true"
             android:layout_weight="2"
@@ -74,18 +76,16 @@
 
 <!-- Stereo -->
     <TextView
-        android:visibility="gone"
         android:id="@+id/tv_most"
-        android:contentDescription="Mono / Stereo"
-        android:layout_width="0dip"
+        android:contentDescription="@string/header_stereo"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent"
-        android:layout_weight="4"
-        android:textSize="10dip"
+        android:textSize="12sp"
         android:textStyle="normal"
         android:textColor="#ffa3a3a3"
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal"
-        android:singleLine="true" />
+        android:maxLines="1" />
     <!-- Record -->
     <ImageView
         android:id="@+id/iv_record"
@@ -107,48 +107,28 @@
       android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
       android:layout_width="match_parent"
       android:layout_height="@dimen/seek_frequency_height"
-      android:orientation="horizontal"
+      android:orientation="vertical"
       android:baselineAligned="false">
+<!-- android:background="@drawable/sel_stop_bg" -->
 
-    <ImageView
-        android:id="@+id/iv_seekdn"
-        android:contentDescription="@string/seek_down"
-        android:src="@drawable/ic_frequency_previous"
-        android:background="@drawable/sel_stop_bg"
-        android:focusable="true"
-        android:clickable="true"
-        android:layout_gravity="center_vertical"
-        android:layout_width="@dimen/button_seek_size"
-        android:layout_height="@dimen/button_seek_size"
-        android:scaleType="center" />
 
     <TextView
         android:id="@+id/tv_freq"
         android:contentDescription="@string/frequency"
+        android:text="@string/test_mhz"
         android:textSize="@dimen/frequency_mhz_font_size"
-        android:gravity="center_vertical|center_vertical"
-        android:layout_gravity="center_vertical|center_horizontal"
         android:textColor="@color/primary_blue"
         android:textAlignment="center"
         android:shadowColor="@color/primary_blue_shadow"
         android:shadowRadius="20"
         android:shadowDx="0"
         android:shadowDy="0"
-        android:layout_weight="1"
-        android:layout_width="0dp"
-        android:layout_height="match_parent" />
+        android:gravity="center_vertical|center_vertical"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
 
-    <ImageView
-        android:id="@+id/iv_seekup"
-        android:contentDescription="@string/seek_up"
-        android:src="@drawable/ic_frequency_next"
-        android:background="@drawable/sel_stop_bg"
-        android:focusable="true"
-        android:clickable="true"
-        android:layout_gravity="center_vertical"
-        android:layout_width="@dimen/button_seek_size"
-        android:layout_height="@dimen/button_seek_size"
-        android:scaleType="center" />
+
   </LinearLayout>
 
   <LinearLayout
@@ -192,7 +172,6 @@
         android:orientation="vertical"
         android:layout_width="400dp"
         android:layout_height="match_parent">
-      <!--suppress AndroidUnknownAttribute -->
       <ImageView
           android:src="@drawable/frequency_scale"
           android:layout_width="match_parent"
@@ -200,6 +179,7 @@
           android:layout_marginStart="2dp"
           android:layout_marginEnd="2dp"
           android:contentDescription="@string/nill"/>
+      <!--suppress AndroidUnknownAttribute -->
       <SeekBar
           android:progressDrawable="@drawable/frequency_seek_style"
           android:thumb="@drawable/frequency_seek_thumb"
@@ -219,31 +199,41 @@
       android:layout_width="match_parent"
       android:layout_height="wrap_content">
     <ImageView
+        android:id="@+id/iv_seekdn"
+        android:contentDescription="@string/seek_down"
+        android:src="@drawable/ic_fast_rewind"
+        android:padding="12dp"
+        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/button_seek_size"
+        android:layout_height="@dimen/button_seek_size" />
+    <ImageView
         android:id="@+id/iv_prev"
         android:contentDescription="@string/button_previous"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_frequency_previous"
-        android:background="@drawable/sel_stop_bg" />
+        android:src="@drawable/ic_frequency_previous" />
     <ImageView
         android:id="@+id/iv_play_toggle"
         android:contentDescription="@string/button_play_toggle"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
-        android:padding="15dp"
+        android:layout_width="60dp"
+        android:layout_height="60dp"
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
-        android:src="@drawable/ic_play"
-        android:background="@drawable/sel_stop_bg" />
+        android:src="@drawable/ic_play" />
     <ImageView
         android:id="@+id/iv_next"
         android:contentDescription="@string/button_next"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:padding="10dp"
-        android:src="@drawable/ic_frequency_next"
-        android:background="@drawable/sel_stop_bg" />
+        android:src="@drawable/ic_frequency_next" />
+    <ImageView
+        android:id="@+id/iv_seekup"
+        android:contentDescription="@string/seek_up"
+        android:src="@drawable/ic_fast_forward"
+        android:padding="12dp"
+        android:layout_gravity="center_vertical"
+        android:layout_width="@dimen/button_seek_size"
+        android:layout_height="@dimen/button_seek_size" />
   </LinearLayout>
 
   <LinearLayout

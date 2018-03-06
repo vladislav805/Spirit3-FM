@@ -8,8 +8,7 @@ import android.os.Bundle;
 
 public class com_api {
 
-  private static int stat_constrs = 1;
-  public static Context m_context = null;
+  private Context m_context;
   private static int curr_pending_intent_num = 0;
 
   // Radio statuses:
@@ -76,7 +75,6 @@ public class com_api {
 
 
   public com_api(Context context) { // Context constructor
-    com_uti.logd("stat_constrs: " + stat_constrs++);
     m_context = context;
     com_uti.logd("context: " + context);
   }

@@ -55,7 +55,7 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
           break;
 
         case Intent.ACTION_NEW_OUTGOING_CALL:
-          stopRadio(context);
+          send(context, "tuner_state", "Stop");
 
         case Intent.ACTION_MEDIA_BUTTON:
           handle_key_event(context, (KeyEvent) intent.getExtras ().get (Intent.EXTRA_KEY_EVENT));
@@ -66,15 +66,15 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
           switch (tm.getCallState()) {
 
             case TelephonyManager.CALL_STATE_RINGING:
-              stopRadio(context);
+              send(context, "tuner_state", "Stop");
               break;
 
             case TelephonyManager.CALL_STATE_OFFHOOK:
-              stopRadio(context);
+              send(context, "tuner_state", "Stop");
               break;
 
             case TelephonyManager.CALL_STATE_IDLE:
-
+              // TODO: restore play if was playing
               break;
 
           }
@@ -83,10 +83,6 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
     } catch (Throwable e) {
       e.printStackTrace();
     }
-  }
-
-  private void stopRadio(Context ctx) {
-    send(ctx, "tuner_state", "Stop");
   }
 
   private void send(Context ctx, String key, String value) {

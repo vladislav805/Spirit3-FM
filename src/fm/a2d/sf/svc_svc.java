@@ -926,7 +926,6 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private void notif_state_set (boolean state) {                        // Called only by onCreate w/ state = true and onDestroy w/ state = false
     com_uti.logd ("state: " + state);
     if (!state) { // Notifications off, go to idle non-foreground state
-      com_uti.logd ("false");
       stopForeground (true); // Service not in foreground state and remove notification (true)
       return;
     }
@@ -936,27 +935,35 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   }
 
   private void showNotificationAndStartForeground(boolean needStartForeground) {
-    Intent not_int = new Intent(mContext, gui_act.class);
-    not_int.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
-    PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, not_int, 134217728);
+    Intent mainInt = new Intent(mContext, gui_act.class);
+    mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
+    PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, 134217728);
+
     PendingIntent pendingToggle = com_api.createPendingIntent(mContext, "audio_state", "toggle");
     PendingIntent pendingKill = com_api.createPendingIntent(mContext, "tuner_state", "stop");
     PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", "Toggle");
 
     Notification.Builder notify = new Notification.Builder(this)
         .setContentTitle(mContext.getString(R.string.application_name))
-        .setContentText("Starting...")
+        .setContentText(getString(R.string.notification_starting))
         .setSmallIcon(R.drawable.ic_radio)
         .setContentIntent(pendingMain)
         .setOngoing(true);
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equalsIgnoreCase("start");
+      String labelToggle = getString(mApi.tuner_state.equalsIgnoreCase("start")
+              ? R.string.notification_button_pause
+              : R.string.notification_button_play
+      );
+      String labelRecord = getString(isRecord
+              ? R.string.notification_button_record_stop
+              : R.string.notification_button_record_start
+      );
       notify
-          .addAction(R.drawable.ic_pause, mApi.tuner_state.equalsIgnoreCase("start") ? "Pause" : "Play", pendingToggle)
-          .addAction(R.drawable.ic_stop, "Stop", pendingKill)
-          .addAction(R.drawable.btn_record, isRecord ? "Stop record" : "Record", pendingRecord)
-          .setContentText(String.format("%sMhz%s", mApi.tuner_freq, isRecord ? "; recording" : ""))
-          .setContentInfo(mApi.tuner_rssi);
+          .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
+          .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
+          .addAction(R.drawable.btn_record, labelRecord, pendingRecord)
+          .setContentText(String.format("%sMhz%s", mApi.tuner_freq, isRecord ? "; recording" : ""));
     }
 
     mynot = notify.build();

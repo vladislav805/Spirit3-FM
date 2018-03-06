@@ -286,6 +286,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       if (mVisualizerView == null) {
         showToast("VisualizerView not found");
       } else {
+        showToast("vis start");
         mVisualizerView.vis_start(audio_sessid);
       }
     } catch (Throwable e) {
@@ -307,20 +308,21 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
   private void visualizer_state_set(String state) {
     com_uti.logd("state: " + state);
-    if (state.equals("Start")) {
+    if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
       mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
-      m_iv_pwr.setVisibility(View.INVISIBLE);
-      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
+      //m_iv_pwr.setVisibility(View.INVISIBLE);
+      //mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
       int audio_sessid = com_uti.int_get(mApi.audio_sessid);
-      if (audio_sessid > 0) {
+      showToast("sessid: " + audio_sessid);
+      //if (audio_sessid > 0) {
         do_gui_vis_start(audio_sessid);
-      }
+      //}
     } else {
       mVisualizerDisabled = true;
       mActivity.findViewById(R.id.vis).setVisibility(View.INVISIBLE);
-      m_iv_pwr.setVisibility(View.VISIBLE);
-      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
+      //m_iv_pwr.setVisibility(View.VISIBLE);
+      //mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
       gui_vis_stop();
     }
     com_uti.prefs_set(mContext, "gui_visualizer_state", state);

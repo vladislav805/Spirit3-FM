@@ -132,6 +132,7 @@
   </LinearLayout>
 
   <LinearLayout
+      android:visibility="gone"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_weight="1"
@@ -236,10 +237,24 @@
         android:layout_height="@dimen/button_seek_size" />
   </LinearLayout>
 
+
+  <LinearLayout
+      android:id="@+id/vis"
+      android:visibility="invisible"
+      android:layout_width="match_parent"
+      android:layout_height="160dp"
+      android:layout_marginTop="10dp"
+      android:layout_marginBottom="10dp"
+      android:contentDescription="Visualizer">
+    <fm.a2d.sf.view.VisualizerView
+        android:id="@+id/gui_vis"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+  </LinearLayout>
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="0dip"
-      android:layout_weight="1"
+      android:visibility="gone"
       android:orientation="vertical">
     <RelativeLayout
         android:id="@+id/freq_dial"
@@ -256,19 +271,7 @@
           android:src="@drawable/dial_frequency"
           android:layout_centerInParent="true"/>
 
-      <LinearLayout
-          android:id="@+id/vis"
-          android:visibility="gone"
-          android:layout_width="match_parent"
-          android:layout_height="match_parent"
-          android:layout_marginTop="50dp"
-          android:layout_marginBottom="70dp"
-          android:contentDescription="Visualizer">
-        <fm.a2d.sf.view.VisualizerView
-            android:id="@+id/gui_vis"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-      </LinearLayout>
+
 
 
 
@@ -291,6 +294,6 @@
 
     </RelativeLayout>
   </LinearLayout>
-  <CheckBox android:visibility="gone" android:id="@+id/cb_visu" android:layout_width="match_parent" android:layout_height="0dp" android:checked="false" android:text="Visual" android:layout_weight="1.0" android:onClick="gap_gui_clicked" android:contentDescription="Visualizer" />
+  <CheckBox android:id="@+id/cb_visu" android:layout_width="match_parent" android:layout_height="0dp" android:checked="false" android:text="Visual" android:layout_weight="1.0" android:onClick="gap_gui_clicked" android:contentDescription="Visualizer" />
 </LinearLayout>
 

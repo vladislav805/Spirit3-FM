@@ -938,7 +938,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     PendingIntent pendingToggle = com_api.createPendingIntent(mContext, "audio_state", "toggle");
     PendingIntent pendingKill = com_api.createPendingIntent(mContext, "tuner_state", "stop");
-    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", "Toggle");
+    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", C.RECORD_STATE_TOGGLE);
 
     Notification.Builder notify = new Notification.Builder(this)
         .setContentTitle(mContext.getString(R.string.application_name))
@@ -947,7 +947,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
         .setContentIntent(pendingMain)
         .setOngoing(true);
     if (mApi != null) {
-      boolean isRecord = mApi.audio_record_state.equalsIgnoreCase("start");
+      boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
       String labelToggle = getString(mApi.isTunerStarted()
               ? R.string.notification_button_pause
               : R.string.notification_button_play

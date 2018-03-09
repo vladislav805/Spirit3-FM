@@ -25,7 +25,7 @@ public class com_api {
   public String audio_state = "stop";
   public String audio_output = "headset";
   public String audio_stereo = "Stereo";
-  public String audio_record_state = "stop"; // stop, start
+  public String audio_record_state = C.RECORD_STATE_STOP;
   public String audio_sessid = "0";
 
   // Tuner:
@@ -186,16 +186,10 @@ public class com_api {
     if (!new_tuner_most.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_most = new_tuner_most;
 
-    String new_tuner_rds_pi = extras.getString("tuner_rds_pi", DEFAULT_DETECT);
-    String new_tuner_rds_picl = extras.getString("tuner_rds_picl", DEFAULT_DETECT);
     String new_tuner_rds_pt = extras.getString("tuner_rds_pt", DEFAULT_DETECT);
     String new_tuner_rds_ptyn = extras.getString("tuner_rds_ptyn", DEFAULT_DETECT);
     String new_tuner_rds_ps = extras.getString("tuner_rds_ps", DEFAULT_DETECT);
     String new_tuner_rds_rt = extras.getString("tuner_rds_rt", DEFAULT_DETECT);
-    if (!new_tuner_rds_pi.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_pi = new_tuner_rds_pi;
-    if (!new_tuner_rds_picl.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_picl = new_tuner_rds_picl;
     if (!new_tuner_rds_pt.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_rds_pt = new_tuner_rds_pt;
     if (!new_tuner_rds_ptyn.equalsIgnoreCase(DEFAULT_DETECT))
@@ -204,28 +198,6 @@ public class com_api {
       tuner_rds_ps = new_tuner_rds_ps;
     if (!new_tuner_rds_rt.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_rds_rt = new_tuner_rds_rt;
-
-    String new_tuner_rds_af = extras.getString("tuner_rds_af", DEFAULT_DETECT);
-    String new_tuner_rds_ms = extras.getString("tuner_rds_ms", DEFAULT_DETECT);
-    String new_tuner_rds_ct = extras.getString("tuner_rds_ct", DEFAULT_DETECT);
-    String new_tuner_rds_tmc = extras.getString("tuner_rds_tmc", DEFAULT_DETECT);
-    String new_tuner_rds_tp = extras.getString("tuner_rds_tp", DEFAULT_DETECT);
-    String new_tuner_rds_ta = extras.getString("tuner_rds_ta", DEFAULT_DETECT);
-    String new_tuner_rds_taf = extras.getString("tuner_rds_taf", DEFAULT_DETECT);
-    if (!new_tuner_rds_af.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_af = new_tuner_rds_af;
-    if (!new_tuner_rds_ms.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_ms = new_tuner_rds_ms;
-    if (!new_tuner_rds_ct.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_ct = new_tuner_rds_ct;
-    if (!new_tuner_rds_tmc.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_tmc = new_tuner_rds_tmc;
-    if (!new_tuner_rds_tp.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_tp = new_tuner_rds_tp;
-    if (!new_tuner_rds_ta.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_ta = new_tuner_rds_ta;
-    if (!new_tuner_rds_taf.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_taf = new_tuner_rds_taf;
 
   }
 

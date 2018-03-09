@@ -612,7 +612,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
   }
 
   private void setRecordAudioState(String state) {
-    mViewRecord.setImageResource(state.equals(C.AUDIO_RECORD_START) ? R.drawable.btn_record_press : R.drawable.btn_record);
+    mViewRecord.setImageResource(state.equals(C.RECORD_STATE_START) ? R.drawable.btn_record_press : R.drawable.btn_record);
   }
 
   private int SIGNAL_EDGES[] = new int[] {50, 350, 750, 900};
@@ -695,7 +695,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
         break;
 
       case R.id.iv_record:
-        mApi.key_set("audio_record_state", "Toggle");
+        mApi.key_set("audio_record_state", C.RECORD_STATE_TOGGLE);
         break;
 
       //case R.id.iv_out: -> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW

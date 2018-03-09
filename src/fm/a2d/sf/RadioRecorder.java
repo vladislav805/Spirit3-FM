@@ -108,25 +108,26 @@ public class RadioRecorder {
 
     if (mRecordDataSize < 0 && (mRecordDataSize + length) + 36 > -4) {
       com_uti.loge("!!! Max mRecordDataSize: " + mRecordDataSize + "  length: " + length);
-      mApi.audio_record_state = "Stop";
+      mApi.audio_record_state = C.RECORD_STATE_STOP;
       mNeedFinish = true;
     }
-    if (!mApi.audio_record_state.equals("Stop")) {
+    if (!mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
       writeBuffer(buffer, length);
     }
   }
 
   public void setState(String state) {
-    if (state.equalsIgnoreCase("Toggle")) {
-      if (mApi.audio_record_state.equals("Stop")) {
-        state = "Start";
+    if (state.equals(C.RECORD_STATE_TOGGLE)) {
+      if (mApi.audio_record_state.equalsIgnoreCase(C.RECORD_STATE_STOP)) {
+        state = C.RECORD_STATE_START;
       } else {
-        state = "Stop";
+        state = C.RECORD_STATE_STOP;
       }
     }
-    if (state.equals("Stop")) {
+
+    if (state.equals(C.RECORD_STATE_STOP)) {
       stop();
-    } else if (state.equals("Start")) {
+    } else if (state.equals(C.RECORD_STATE_START)) {
       start();
     }
   }
@@ -158,11 +159,11 @@ public class RadioRecorder {
     if (mRecordThread != null) {
       mRecordThread.interrupt();
     }
-    mApi.audio_record_state = "Stop";
+    mApi.audio_record_state = C.RECORD_STATE_STOP;
   }
 
   public boolean start() {
-    if (!mApi.audio_record_state.equals("Stop")) {
+    if (!mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
       return false;
     }
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -222,11 +223,11 @@ public class RadioRecorder {
             com_uti.loge("Throwable: " + e);
             e.printStackTrace();
             audio_record_finish();
-            mApi.audio_record_state = "Stop";
+            mApi.audio_record_state = C.RECORD_STATE_STOP;
             return false;
           }
         }
-        mApi.audio_record_state = "Start";
+        mApi.audio_record_state = C.RECORD_STATE_START;
         mNeedFinish = true;
         return true;
 
@@ -375,7 +376,7 @@ public class RadioRecorder {
 
   private String getFilename() {
     Date now = new Date();
-    SimpleDateFormat sdf = new SimpleDateFormat("hhmmss", Locale.getDefault());
+    SimpleDateFormat sdf = new SimpleDateFormat("HHmmss", Locale.getDefault());
     sdf.setTimeZone(TimeZone.getDefault());
     return String.format(Locale.ENGLISH, "FM-%s-%s.wav", mApi.getStringFrequencyMHz(), sdf.format(now));
   }

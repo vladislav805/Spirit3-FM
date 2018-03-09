@@ -17,5 +17,7 @@ public class C {
   public static final String AUDIO_STATE_STOP = "stop";
   public static final String AUDIO_STATE_STOPPING = "stopping";
 
-  public static final String AUDIO_RECORD_START = "Start";
+  public static final String RECORD_STATE_START = "start";
+  public static final String RECORD_STATE_STOP = "stop";
+  public static final String RECORD_STATE_TOGGLE = "toggle";
 }

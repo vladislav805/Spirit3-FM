@@ -741,7 +741,7 @@ if (intent != null)
       } // Fall through to terminate if exception
 
       if (mRecorder != null) {
-        audio_record_state_set("Stop");
+        audio_record_state_set(C.RECORD_STATE_STOP);
       }
     }
   };
@@ -1204,10 +1204,9 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
     return (null);
   }
 
-  public String audio_record_state_set(String new_record_state) {
-    com_uti.logd("new_record_state: " + new_record_state);
+  public String audio_record_state_set(String newState) {
     if (mRecorder != null) {
-      mRecorder.setState(new_record_state);
+      mRecorder.setState(newState);
     }
     return this.m_com_api.audio_record_state;
   }

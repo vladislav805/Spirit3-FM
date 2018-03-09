@@ -19,7 +19,8 @@
         android:layout_marginStart="@dimen/header_horizontal_margin"
         android:layout_marginEnd="@dimen/header_horizontal_margin"
         android:orientation="horizontal"
-        android:layout_width="wrap_content"
+        android:layout_weight="3"
+        android:layout_width="0dp"
         android:layout_height="match_parent"
         tools:ignore="UseCompoundDrawables">
       <ImageView
@@ -86,16 +87,29 @@
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal"
         android:maxLines="1" />
-    <!-- Record -->
-    <ImageView
-        android:id="@+id/iv_record"
-        android:contentDescription="@string/header_record"
-        android:focusable="true"
-        android:clickable="true"
-        android:layout_gravity="center_vertical"
-        android:layout_width="@dimen/header_height"
-        android:layout_height="@dimen/header_height"
-        android:src="@drawable/sel_record" />
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_weight="3"
+        android:gravity="center_vertical"
+        android:layout_width="0dp"
+        android:layout_height="match_parent">
+      <TextView
+          android:id="@+id/tv_record_duration"
+          android:text="00:02"
+          android:textColor="#DA3B3B"
+          android:layout_width="wrap_content"
+          android:layout_height="wrap_content" />
+      <!-- Record -->
+      <ImageView
+          android:id="@+id/iv_record"
+          android:contentDescription="@string/header_record"
+          android:focusable="true"
+          android:clickable="true"
+
+          android:layout_width="@dimen/header_height"
+          android:layout_height="@dimen/header_height"
+          android:src="@drawable/sel_record" />
+    </LinearLayout>
   </LinearLayout>
 
 
@@ -170,6 +184,7 @@
       android:layout_width="match_parent"
       android:layout_height="150dp">
     <LinearLayout
+        android:gravity="center_vertical"
         android:orientation="vertical"
         android:layout_width="400dp"
         android:layout_height="match_parent">

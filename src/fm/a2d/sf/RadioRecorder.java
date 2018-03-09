@@ -34,6 +34,8 @@ public class RadioRecorder {
   private boolean mRecordWriteThreadActive = false;
   private Thread mRecordThread = null;
 
+  private long mStartTime;
+
   private final Runnable mRecordWriteRunnable = new Runnable() {
 
     public void run() {
@@ -171,6 +173,8 @@ public class RadioRecorder {
     mDirectory = "/Music/FM" + File.separator + sdf.format(new Date());
 
     mRecordFile = null;
+
+    mStartTime = System.currentTimeMillis();
 
     File recordDirectory = new File(com_uti.getExternalStorageDirectory().getPath() + mDirectory);
 
@@ -378,6 +382,10 @@ public class RadioRecorder {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("HHmmss", Locale.getDefault());
     sdf.setTimeZone(TimeZone.getDefault());
-    return String.format(Locale.ENGLISH, "FM-%s-%s.wav", mApi.getStringFrequencyMHz(), sdf.format(now));
+    return String.format(Locale.ENGLISH, "FM-%4s-%s.wav", mApi.getStringFrequencyMHz().replace(".", ""), sdf.format(now)).replace(" ", "0");
+  }
+
+  public int getCurrentDuration() {
+    return (int) ((System.currentTimeMillis() - mStartTime) / 1000);
   }
 }

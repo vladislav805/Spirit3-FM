@@ -48,6 +48,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
   private TextView mViewStereo = null;
   private TextView mViewBand = null;
   private TextView mViewFrequency = null;
+  private TextView mViewRecordDuration = null;
 
   // RDS data:
 //  private TextView m_tv_picl = null;
@@ -131,7 +132,6 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     mViewRSSI = (TextView) mActivity.findViewById(R.id.tv_rssi);
     mViewState = (TextView) mActivity.findViewById(R.id.tv_state);  // Phase
     mViewStereo = (TextView) mActivity.findViewById(R.id.tv_most);
-
     mViewBand = (TextView) mActivity.findViewById(R.id.tv_band);
 
 //    m_tv_picl = (TextView) mActivity.findViewById(R.id.tv_picl);
@@ -147,6 +147,8 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
     mViewRecord = (ImageView) mActivity.findViewById(R.id.iv_record);
     mViewRecord.setOnClickListener(this);
+
+    mViewRecordDuration = (TextView) mActivity.findViewById(R.id.tv_record_duration);
 
     mViewPrevious = (ImageView) mActivity.findViewById(R.id.iv_prev);
     mViewPrevious.setOnClickListener(this);
@@ -370,9 +372,10 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     /*if (!com_uti.file_get("/system/bin/su") && !com_uti.file_get("/system/xbin/su")) {
       intro_msg = "Sorry... \"NO SU\" Error. Spirit2 REQUIRES JB+ & ROOT & Qualcomm.\n\nThanks! :)";
     } else {*/
-      intro_msg = "Welcome to Spirit2! :)\n\nPlease wait while it starts...";
+      intro_msg = "Welcome to Spirit3! :)\n\nPlease wait while it starts...";
     //}
     mIntroDialog = dialog.setCancelable(false).setIcon(R.drawable.ic_radio).setMessage(intro_msg).create();
+    mIntroDialog.show();
   }
 
   /**
@@ -437,7 +440,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     try {
       freq = (int) (Float.valueOf(nFreq) * 1000);
     } catch (Throwable e) {
-      com_uti.loge("fFrequency = Float.valueOf (nFreq); failed");
+      com_uti.loge("fFrequency = Float.valueOf(nFreq); failed");
       return;
     }
 
@@ -541,6 +544,11 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 //com_uti.loge ("Headset Mode");
     }
 
+/* TODO: set duration
+    if (mApi.audio_record_state.equals(C.RECORD_STATE_START)) {
+
+    }
+ */
 
     // Power:
     updateUIViewsByPowerState(mApi.isTunerStarted());

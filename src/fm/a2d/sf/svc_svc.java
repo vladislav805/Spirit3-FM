@@ -32,7 +32,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private Context mContext = this;
   private com_api mApi = null;
   private ServiceTunerAPIImpl mTunerAPI = null;
-  private ServiceAudioAPIImpl m_svc_aap = null;
+  private svc_aud mAudioAPI = null;
 
 
   // Create a new Notification object
@@ -71,7 +71,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
         com_uti.logd("mApi: " + mApi);
       }
 
-      m_svc_aap = new svc_aud(this, this, mApi); // Instantiate audio        class
+      mAudioAPI = new svc_aud(this, this, mApi); // Instantiate audio        class
       mTunerAPI = new svc_tnr(this, this, mApi);  // Instantiate tuner        class
     } catch (Throwable e) {
       e.printStackTrace();
@@ -213,18 +213,18 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
       val = extras.getString("audio_output", "");
       if (!val.isEmpty()) {
-        m_svc_aap.audio_output_set(val);
+        mAudioAPI.audio_output_set(val);
         com_uti.prefs_set(mContext, "audio_output", val);
       }
 
       val = extras.getString("audio_record_state", "");
       if (!val.isEmpty()) {
-        m_svc_aap.audio_record_state_set(val);
+        mAudioAPI.audio_record_state_set(val);
       }
 
       val = extras.getString("audio_stereo", "");
       if (!val.isEmpty()) {
-        m_svc_aap.audio_stereo_set(val);
+        mAudioAPI.audio_stereo_set(val);
         com_uti.prefs_set(mContext, "audio_stereo", val);
       }
 
@@ -290,7 +290,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
   private Intent radio_status_send() { // Send all radio state & status info
 
-    m_svc_aap.audio_sessid_get (); // Better to update here ?
+    mAudioAPI.audio_sessid_get (); // Better to update here ?
 
     com_uti.logx ("audio_state: " + mApi.audio_state + "  audio_output: " + mApi.audio_output +
                 "  audio_stereo: " + mApi.audio_stereo + "  audio_record_state: " + mApi.audio_record_state);
@@ -411,10 +411,10 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     if (state.equalsIgnoreCase ("start")) {                             // If Audio Start...
       if (! mApi.audio_state.equalsIgnoreCase ("start")) {         // If audio not started (Could be stopped or paused)
         String stereo = com_uti.prefs_get (mContext, "audio_stereo", "Stereo");
-        m_svc_aap.audio_stereo_set (stereo);                            // Set audio stereo from prefs, before audio is started
+        mAudioAPI.audio_stereo_set (stereo);                            // Set audio stereo from prefs, before audio is started
 
         if (mApi.isTunerStarted()) {         // If tuner started
-          m_svc_aap.audio_state_set ("Start");                          // Set Audio State synchronously
+          mAudioAPI.audio_state_set ("Start");                          // Set Audio State synchronously
         }
         else {                                                          // Else if tuner not started
           mApi.audio_state = "Starting";                           // Signal tuner state callback that audio needs to be started
@@ -423,7 +423,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
     }
     else                                                                // Else for Audio Stop or Pause...
-      m_svc_aap.audio_state_set (state);                                // Set Audio State synchronously
+      mAudioAPI.audio_state_set (state);                                // Set Audio State synchronously
 
     return (mApi.audio_state);                                     // Return current audio state
   }
@@ -436,7 +436,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     if (audio_state.equalsIgnoreCase ("start")) {                       // If audio state = Start...
 
       String audio_output = com_uti.prefs_get (mContext, "audio_output", "headset");
-      m_svc_aap.audio_output_set (audio_output);                      // Set Audio Output from prefs
+      mAudioAPI.audio_output_set (audio_output);                      // Set Audio Output from prefs
 
       remote_state_set (true);                                          // Remote State = Playing
     }
@@ -468,7 +468,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
     }
     else if (state.equalsIgnoreCase ("stop")) {                         // If Stop...
-      m_svc_aap.audio_state_set ("Stop");                               // Set Audio State  synchronously to Stop
+      mAudioAPI.audio_state_set ("Stop");                               // Set Audio State  synchronously to Stop
       mTunerAPI.setTunerValue("tuner_state", "stop");                      // Set Tuner State asynchronously to Stop
       return (mApi.tuner_state);                                   // Return new tuner state
     }
@@ -484,7 +484,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       mApi.tuner_state = "start";                                  // Tuner State = Start
       tuner_prefs_init ();                                              // Load tuner prefs
       if (mApi.audio_state.equalsIgnoreCase ("starting")) {        // If Audio starting...
-        m_svc_aap.audio_state_set ("Start");                            // Set Audio State synchronously
+        mAudioAPI.audio_state_set ("Start");                            // Set Audio State synchronously
       }
       return;
     }
@@ -590,11 +590,11 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   public void cb_tuner_key (String key, String val) {
     com_uti.logx ("key: " + key + "  val: " + val);
 ///*
-    if (com_uti.device == com_uti.DEV_QCV && m_svc_aap.audio_blank_get ()) {   // If we need to kickstart audio...
+    if (com_uti.device == com_uti.DEV_QCV && mAudioAPI.audio_blank_get ()) {   // If we need to kickstart audio...
       com_uti.loge ("!!!!!!!!!!!!!!!!!!!!!!!!! Kickstarting stalled audio !!!!!!!!!!!!!!!!!!!!!!!!!!");
       //mTunerAPI.setTunerValue ("tuner_stereo", mApi.tuner_stereo);     // Set Stereo (Frequency also works, and others ?)
       mTunerAPI.setTunerValue("tuner_freq", mApi.getStringFrequencyMHz());     // Set Frequency
-      m_svc_aap.audio_blank_set (false);
+      mAudioAPI.audio_blank_set (false);
     }
 //*/
     if (key != null) {
@@ -956,11 +956,18 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
               ? R.string.notification_button_record_stop
               : R.string.notification_button_record_start
       );
+
+      String recordText = isRecord ? "; recording" : "";
+
+      if (isRecord && mAudioAPI.getRecorder() != null) {
+        recordText += " " + com_uti.getTimeStringBySeconds(mAudioAPI.getRecorder().getCurrentDuration());
+      }
+
       notify
           .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
           .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
           .addAction(R.drawable.btn_record, labelRecord, pendingRecord)
-          .setContentText(String.format("%sMhz%s", mApi.getStringFrequencyMHz(), isRecord ? "; recording" : ""));
+          .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));
     }
 
     mynot = notify.build();

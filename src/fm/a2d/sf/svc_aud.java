@@ -338,6 +338,10 @@ API level 17 / 4.2+
     this.mRecorder = new RadioRecorder(this.m_context, this.m_samplerate, this.m_channels, this.m_com_api);
   }
 
+  public RadioRecorder getRecorder() {
+    return mRecorder;
+  }
+
   private void audio_start() {
     com_uti.logd("audio_state: " + m_com_api.audio_state + "  m_audiotrack: " + m_audiotrack + "  device: " + com_uti.device);
 

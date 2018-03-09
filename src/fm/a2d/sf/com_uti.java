@@ -1774,4 +1774,12 @@ It should be noted that operation in this region is the same as it is for all RD
     return ("");
   }
 
+  public static String getTimeStringBySeconds(int number) {
+    double second = Math.floor(number % 60);
+    double minute = Math.floor(number / 60 % 60);
+    double hour = Math.floor(number / 60 / 60 % 60);
+
+    return (hour > 0 ? hour + ":" : "") + String.format(Locale.ENGLISH, "%02.0f:%02.0f", minute, second);
+  }
+
 }

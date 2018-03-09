@@ -97,7 +97,7 @@ public class gui_act extends Activity {
         public void onReceive(Context context, Intent intent) {
           String action = intent.getAction();
 
-          com_uti.logx("intent: " + intent + "  action: " + action);
+          //com_uti.logx("intent: " + intent + "  action: " + action);
 
           if (!action.equalsIgnoreCase("fm.a2d.sf.result.get")) {
             return;

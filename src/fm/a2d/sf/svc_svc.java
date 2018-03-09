@@ -246,17 +246,16 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
   private void tuner_extras_put (Intent send_intent) {
 
-    send_intent.putExtra ("tuner_state",        mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
-    send_intent.putExtra (C.TUNER_BAND,         mApi.tuner_band);//mTunerAPI.getTunerValue ("tuner_band"));
+    send_intent.putExtra ("tuner_state", mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
+    send_intent.putExtra (C.TUNER_BAND, mApi.tuner_band);//mTunerAPI.getTunerValue ("tuner_band"));
     String freq_khz = mTunerAPI.getTunerValue("tuner_freq");
     int ifreq = com_uti.int_get (freq_khz);
-//!! ifreq = com_uti.tnru_freq_fix (ifreq + 25);
     if (ifreq >= 50000 && ifreq < 500000) {
-      mApi.tuner_freq = ("" + (double) ifreq / 1000);
+      mApi.tuner_freq = String.valueOf((double) ifreq / 1000);
       mApi.int_tuner_freq = ifreq;
     }
-    com_uti.logx ("mApi.tuner_freq: " + mApi.tuner_freq + "  mApi.int_tuner_freq: " + mApi.int_tuner_freq);
-    send_intent.putExtra ("tuner_freq",         mApi.tuner_freq);
+    com_uti.logx ("mApi.tuner_freq: " + mApi.getStringFrequencyMHz() + "  mApi.int_tuner_freq: " + mApi.getIntFrequencyKHz());
+    send_intent.putExtra ("tuner_freq",         mApi.getStringFrequencyMHz());
 
     //send_intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
     //send_intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
@@ -269,9 +268,9 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     //send_intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
     //send_intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
 
-    send_intent.putExtra ("tuner_rssi",         mApi.tuner_rssi);      //mTunerAPI.getTunerValue ("tuner_rssi"));
+    send_intent.putExtra ("tuner_rssi",         String.valueOf(mApi.getRssi()));      //mTunerAPI.getTunerValue ("tuner_rssi"));
     //send_intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
-    send_intent.putExtra ("tuner_most",         mApi.tuner_most);      //mTunerAPI.getTunerValue ("tuner_most"));
+    send_intent.putExtra ("tuner_most",         mApi.isStereo() ? "stereo" : "mono");      //mTunerAPI.getTunerValue ("tuner_most"));
 
     send_intent.putExtra ("tuner_rds_pi",       mApi.tuner_rds_pi);    //mTunerAPI.getTunerValue ("tuner_rds_pi"));
     send_intent.putExtra ("tuner_rds_picl",     mApi.tuner_rds_picl);  //mTunerAPI.getTunerValue ("tuner_rds_picl"));
@@ -314,14 +313,12 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     if (mTunerAPI == null) {
       send_intent.putExtra("tuner_state",      "stop");
-    }
-    else {
+    } else {
       tuner_extras_put (send_intent);
     }
     try {
-      mContext.sendStickyBroadcast (send_intent);                      // Send Sticky Broadcast w/ all info
-    }
-    catch (Throwable e) {
+      mContext.sendStickyBroadcast(send_intent);                      // Send Sticky Broadcast w/ all info
+    } catch (Throwable e) {
       e.printStackTrace ();
     }
     return send_intent;
@@ -364,7 +361,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private void preset_next (boolean up) {
     if (preset_num <= 0)
       return;
-    preset_curr = station_index_get (mApi.tuner_freq);
+    preset_curr = station_index_get(mApi.getStringFrequencyMHz());
     preset_curr_fix ();
     if (up)
       preset_curr ++;
@@ -416,7 +413,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
         String stereo = com_uti.prefs_get (mContext, "audio_stereo", "Stereo");
         m_svc_aap.audio_stereo_set (stereo);                            // Set audio stereo from prefs, before audio is started
 
-        if (mApi.tuner_state.equalsIgnoreCase ("start")) {         // If tuner started
+        if (mApi.isTunerStarted()) {         // If tuner started
           m_svc_aap.audio_state_set ("Start");                          // Set Audio State synchronously
         }
         else {                                                          // Else if tuner not started
@@ -458,7 +455,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private String tuner_state_set (String state) {                       // Called only by onStartCommand(), (maybe onDestroy in future)
     com_uti.logd ("state: " + state);
     if (state.equalsIgnoreCase ("toggle")) {                            // If Toggle...
-      if (mApi.tuner_state.equalsIgnoreCase ("start"))
+      if (mApi.isTunerStarted())
         state = "stop";
       else
         state = "start";
@@ -580,7 +577,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     ifreq *= 50;        // Back to KHz scale
     com_uti.logd ("ifreq: " + ifreq);
 
-    mTunerAPI.setTunerValue("tuner_freq", "" + ifreq); // Set frequency
+    mTunerAPI.setTunerValue("tuner_freq", String.valueOf(ifreq)); // Set frequency
   }
 
 
@@ -596,7 +593,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     if (com_uti.device == com_uti.DEV_QCV && m_svc_aap.audio_blank_get ()) {   // If we need to kickstart audio...
       com_uti.loge ("!!!!!!!!!!!!!!!!!!!!!!!!! Kickstarting stalled audio !!!!!!!!!!!!!!!!!!!!!!!!!!");
       //mTunerAPI.setTunerValue ("tuner_stereo", mApi.tuner_stereo);     // Set Stereo (Frequency also works, and others ?)
-      mTunerAPI.setTunerValue("tuner_freq", mApi.tuner_freq);     // Set Frequency
+      mTunerAPI.setTunerValue("tuner_freq", mApi.getStringFrequencyMHz());     // Set Frequency
       m_svc_aap.audio_blank_set (false);
     }
 //*/
@@ -951,7 +948,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
         .setOngoing(true);
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equalsIgnoreCase("start");
-      String labelToggle = getString(mApi.tuner_state.equalsIgnoreCase("start")
+      String labelToggle = getString(mApi.isTunerStarted()
               ? R.string.notification_button_pause
               : R.string.notification_button_play
       );
@@ -963,7 +960,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
           .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
           .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
           .addAction(R.drawable.btn_record, labelRecord, pendingRecord)
-          .setContentText(String.format("%sMhz%s", mApi.tuner_freq, isRecord ? "; recording" : ""));
+          .setContentText(String.format("%sMhz%s", mApi.getStringFrequencyMHz(), isRecord ? "; recording" : ""));
     }
 
     mynot = notify.build();

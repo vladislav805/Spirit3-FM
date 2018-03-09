@@ -226,7 +226,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
     @Override
     public void onStopTrackingTouch(SeekBar seekBar) {
-      if (!mApi.tuner_state.equalsIgnoreCase("start")) {
+      if (!mApi.isTunerStarted()) {
         return; // Not Consumed
       }
 
@@ -402,7 +402,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     final EditText freqEditView = (EditText) textEntryView.findViewById(R.id.edit_number);
     freqEditView.setTypeface(mDigitalFont);
     freqEditView.setTextAlignment(TEXT_ALIGNMENT_CENTER);
-    freqEditView.setText(mApi.tuner_freq);
+    freqEditView.setText(mApi.getStringFrequencyMHz());
 
     dialog
         .setTitle(mContext.getString(R.string.dialog_frequency_title))
@@ -415,7 +415,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
         .setNegativeButton(mContext.getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
           }
-        }).create();
+        }).create().show();
   }
 
   /**
@@ -429,7 +429,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     }
 
     // If tuner disabled...
-    if (!mApi.tuner_state.equalsIgnoreCase("start")) {
+    if (!mApi.isTunerStarted()) {
       return;
     }
 
@@ -521,7 +521,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       if (mIntroDialog != null) {
         mIntroDialog.dismiss();
         mIntroDialog = null;
-        setFrequency(mApi.tuner_freq);
+        setFrequency(mApi.getStringFrequencyMHz());
       }
     }
 
@@ -543,17 +543,19 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
 
     // Power:
-    updateUIViewsByPowerState(mApi.tuner_state.equalsIgnoreCase("start"));
+    updateUIViewsByPowerState(mApi.isTunerStarted());
 
     int ifreq = (int) (com_uti.double_get(mApi.tuner_freq) * 1000);
     ifreq = com_uti.tnru_freq_fix(ifreq + 25); // Must fix due to floating point rounding need, else 106.1 = 106.099
 
     String freq = null;
     if (ifreq >= 50000 && ifreq < 500000) {
-      freq = ("" + (double) ifreq / 1000);
+      freq = String.valueOf((double) ifreq / 1000);
     }
     if (freq != null) {
       setFrequencyText(freq);
+      // TODO: it here
+      //onFrequencyChanged(mApi.getFloatFrequencyMHz());
     }
 
     mViewBand.setText(mApi.tuner_band);
@@ -657,12 +659,12 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
    * Save preset in memory
    */
   private void setPreset(PresetView preset) {
-    preset.populate(mApi.tuner_freq);
+    preset.populate(mApi.getStringFrequencyMHz());
 
     // !! Current implementation requires simultaneous (одновременно)
     mApi.key_set(
-            "radio_name_prst_" + preset.getIndex(), mApi.tuner_freq,
-            "radio_freq_prst_" + preset.getIndex(), mApi.tuner_freq
+            "radio_name_prst_" + preset.getIndex(), mApi.getStringFrequencyMHz(),
+            "radio_freq_prst_" + preset.getIndex(), mApi.getStringFrequencyMHz()
     );
   }
 
@@ -718,6 +720,8 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       case R.id.iv_next:
         mApi.key_set("tuner_freq", "up");
         break;
+
+
     }
   }
 

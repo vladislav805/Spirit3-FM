@@ -9,6 +9,7 @@ public class C {
   public static final String GUI_START_COUNT = "radio_gui_start_count";
 
   public static final String TUNER_BAND = "tuner_band";
+  public static final String TUNER_FREQUENCY = "tuner_freq";
 
   public static final String AUDIO_STATE_STARTING = "starting";
   public static final String AUDIO_STATE_START = "start";

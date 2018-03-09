@@ -3,8 +3,6 @@
 package fm.a2d.sf;
 
 import android.os.StrictMode;
-import android.os.Looper;
-import android.telephony.TelephonyManager;
 import android.util.Log;
 import android.content.SharedPreferences;
 import android.content.Context;
@@ -135,7 +133,7 @@ public final class com_uti {
     }
   }
 
-  public static boolean logx_enable = true;
+  public static boolean logx_enable = false;
   public static boolean logd_enable = true;
   public static boolean loge_enable = true;
 
@@ -249,7 +247,7 @@ public final class com_uti {
   public static String utc_timestamp_get() {
     Date date = Calendar.getInstance().getTime();
     SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss.SSSZ", Locale.US);
-    sdf.setTimeZone(TimeZone.getTimeZone("UTC"));
+    sdf.setTimeZone(TimeZone.getDefault());
     return sdf.format(date);
   }
 
@@ -846,7 +844,10 @@ Evo 4G LTE  jewel
     return (ba);
   }
 
-  public static byte[] str_to_ba(String s) {                          // String to byte array
+  /**
+   * String to byte array
+   */
+  public static byte[] stringToByteArray(String s) {
     //s += "�";     // RDS test ?
     char[] buffer = s.toCharArray();
     byte[] content = new byte[buffer.length];
@@ -859,22 +860,11 @@ Evo 4G LTE  jewel
     }
     return (content);
   }
-  /*private static byte[] str_to_ba (String str) {                                     // String to byte array
-    byte[] ba = new byte [str.length ()];
-    //for (int i = 0; i < str.length (); i++ ) {
-    //  ba [i] = Byte.parseByte (str [i]);
-    //}
-    try {
-      ba = str.getBytes ("UTF-8");//16");
-    }
-    catch (Exception e) {
-      loge ("exception");
-      //e.printStackTrace ();
-    }
-    return (ba);
-  }*/
 
-  public static String ba_to_str(byte[] b) {                  // Byte array to string
+  /**
+   * Byte array to string
+   */
+  public static String byteArrayToString(byte[] b) {
     String s = "";
     try {
       s = new String(b, "UTF-8");
@@ -882,32 +872,6 @@ Evo 4G LTE  jewel
       //e.printStackTrace ();
     }
     return (s);
-  }
-
-
-  public static byte[] hexstr_to_ba(String s) {
-    int len = s.length();
-    byte[] data = new byte[len / 2];
-    for (int i = 0; i < len; i += 2) {
-      data[i / 2] = (byte) ((Character.digit(s.charAt(i), 16) << 4) + Character.digit(s.charAt(i + 1), 16));
-    }
-    return (data);
-  }
-/*
-  public static byte [] hexstr_to_baScooby (String s) {    // For slightly better crypto
-    int len = s.length ();
-    byte [] data = new byte [len / 2];
-    for (int i = 0; i < len; i += 2) {
-      data[i / 2] = (byte) ((Character.digit(s.charAt (i), 16) << 4) + Character.digit (s.charAt (i + 1), 16));
-      data[i / 2] += 128;   // Add "Scooby Doo" bit 7 flip for each byte
-    }
-    return (data);
-  }
-*/
-
-  public static String str_to_hexstr(String s) {
-    byte[] ba = str_to_ba(s);
-    return (ba_to_hexstr(ba));
   }
 
   public static String ba_to_hexstr(byte[] ba) {
@@ -945,16 +909,13 @@ Evo 4G LTE  jewel
     //  com_uti.logd ("zx hex_get byte: " + b + "  c1: " + c1 +  "  c2: " + c2 +  "  buffer0: " + buffer[0] +  "  buffer1: " + buffer[1] );
     //}
 
-    String str = new String(buffer);
-
-    return (str);
+    return new String(buffer);
   }
 
   public static String hex_get(short s) {
     byte byte_lo = (byte) (s >> 0 & 0xFF);
     byte byte_hi = (byte) (s >> 8 & 0xFF);
-    String res = hex_get(byte_hi) + hex_get(byte_lo);
-    return (res);
+    return (hex_get(byte_hi) + hex_get(byte_lo));
   }
 
 
@@ -964,69 +925,20 @@ Evo 4G LTE  jewel
     //String path = Environment.getExternalStorageDirectory ().toString ();
     //ret = Environment.getExternalStorageDirectory ();   // Stopped working for some 4.2+ due to multi-user and 0
     ret = new File("/sdcard/");
-    return (ret);
+    return ret;
   }
 
-/*
-  private static String temp_dir_get () {
-    String tdir = "";
 
-    //boolean have_writable_sd = false;
-//    try {
-      String es_state = Environment.getExternalStorageState ();
-      if (Environment.MEDIA_MOUNTED.equals (es_state)) {
-//        have_writable_sd=true;
-        com_uti.logd ("SDCard / ExternalStorage available and writeable");
-
-        //API 8 or greater:
-        //File m_ext_dir_f= getExternalFilesDir ();
-        //String m_ext_dir_s= m_ext_dir_f.getAbsolutePath ();
-        //com_uti.logd ("API >=8 ext dir: " +m_ext_dir_s);
-      
-        //API 7 or lesser:
-        File m_ext_dir_f2 = Environment.getExternalStorageDirectory ();
-        String m_ext_dir_sf= m_ext_dir_f2.getAbsolutePath ();
-        com_uti.logd ("API <=7 ext dir: " +m_ext_dir_sf);
-
-        //tdir = m_ext_dir_sf + "/spirit_cfg/";
-        tdir = m_ext_dir_sf + "/";                                  // Default temp dir is the sdcard root, if the sdcard is present and writeable
-      }
-      else if (Environment.MEDIA_MOUNTED_READ_ONLY.equals (es_state)) {
-        com_uti.logd ("SDCard / ExternalStorage available but read-only");
-      }
-      else {
-        com_uti.logd ("SDCard / ExternalStorage NOT available");
-      }
-
-
-//      File m_cache_dir = getCacheDir ();                                  // This creates the "cache" directory if it doesn't exist
-//      String m_ap= m_cache_dir.getAbsolutePath ();
-//      com_uti.logd ("Cache dir: " +m_ap);
-//      if (have_writable_sd==false) {                                    // If can't write to SDCard, use internal cache storage
-//        //tdir: /sdcard/ OR /data/data/com.WHATEVER.fm/cache/
-//        //tdir = m_ap + "/spirit_cfg/";
-//        tdir = m_ap + "/";
-//      }
-
-//    }
-//    catch (IOException e) {
-//      //e.printStackTrace ();
-//    }
-    com_uti.logd ("tdir: " + tdir);
-
-    return (tdir);
-  }
-*/
-
-
-  // Datagram command API:
+  /**
+   * Datagram command API
+   */
 
   private static DatagramSocket ds = null;
 
   private static int dg_s2d_cmd(int cmd_len, byte[] cmd_buf, int res_len, byte[] res_buf, int rx_tmo) {
     int len = 0;
 
-    String cmd = (com_uti.ba_to_str(cmd_buf)).substring(0, cmd_len);
+    String cmd = (com_uti.byteArrayToString(cmd_buf)).substring(0, cmd_len);
 
     dg_s2d_log = com_uti.file_get("/mnt/sdcard/sf/s2d_log", false);
 
@@ -1041,62 +953,45 @@ Evo 4G LTE  jewel
     }
 
     try {
-//    DatagramSocket ds = null;
-      DatagramPacket dps = null;
+      DatagramPacket dps;
 
       if (ds == null || rx_tmo == 100 || rx_tmo == 15000) {
         ds = new DatagramSocket(0);//2122);
       }
+
       ds.setSoTimeout(rx_tmo);
 
-      //if (! loop_set) {
+      //if (!loop_set) {
       loop_set = true;
       loop = InetAddress.getByName("127.0.0.1");
       //}
 
-      dps = new DatagramPacket(cmd_buf, cmd_len, loop, 2122);     // Send
-
-      //com_uti.logd ("Before send() cmd: " + cmd + "  res_len: " + res_len);
+      // Send
+      dps = new DatagramPacket(cmd_buf, cmd_len, loop, 2122);
       ds.send(dps);
-      //com_uti.logd ("After  send() cmd: " + cmd);
-
-
       ds.receive(dps);
       // java.net.PortUnreachableException        Caused by: libcore.io.ErrnoException: recvfrom failed: ECONNREFUSED (Connection refused)
       // java.net.SocketTimeoutException
       //com_uti.logd ("After  receive() cmd: " + cmd);
 
-      byte[] rcv_buf = dps.getData();
-
-      //com_uti.logd ("After  getData() cmd: " + cmd);
+      byte[] receivedBuffer = dps.getData();
 
       len = dps.getLength();
 
       if (dg_s2d_log) {
         com_uti.logd("After  getLength() cmd: " + cmd + "  len: " + len);
-        if (rx_tmo == 1002)
-          com_uti.logd("hexstr res: " + (com_uti.ba_to_hexstr(rcv_buf)).substring(0, len * 2));
-        else
-          com_uti.logd("   str res: " + (com_uti.ba_to_str(rcv_buf)).substring(0, len));
+        if (rx_tmo == 1002) {
+          com_uti.logd("hexstr res: " + (com_uti.ba_to_hexstr(receivedBuffer)).substring(0, len * 2));
+        } else {
+          com_uti.logd("   str res: " + (com_uti.byteArrayToString(receivedBuffer)).substring(0, len));
+        }
       }
 
-      if (len < 0) {    // 0 is valid length, eg empty RT
+      // 0 is valid length, eg empty RT
+      if (len < 0) {
         com_uti.loge("cmd: " + cmd + "  len: " + len);
       } else {
-        //com_uti.loge ("1111");
-        int ctr = 0;
-        for (ctr = 0; ctr < len; ctr++)
-          res_buf[ctr] = rcv_buf[ctr];
-        //com_uti.loge ("2222 rx_tmo: " + rx_tmo);
-/*
-        if (rx_tmo == 1002) {
-          //com_uti.loge ("cmd: " + cmd + "  audio len: " + len + "  res: " + (com_uti.ba_to_hexstr (res_buf)).substring (0, len * 2));
-          com_uti.loge ("cmd: " + cmd + "  audio len: " + len + "  res: " + (com_uti.ba_to_hexstr (res_buf)).substring (0, 320 * 2));       // !! Why does this hang ??
-        }
-        else
-          com_uti.logd ("cmd: " + cmd + "  len: " + len + "  res: " + (com_uti.ba_to_str (res_buf)).substring (0, len));
-*/
-        //com_uti.loge ("3333");
+        System.arraycopy(receivedBuffer, 0, res_buf, 0, len);
       }
       //com_uti.loge ("4444");
     } catch (SocketTimeoutException e) {
@@ -1110,49 +1005,56 @@ Evo 4G LTE  jewel
   }
 
   public static String s2d_get(String key) {
-    String res = s2d_cmd("g " + key);
-    //com_uti.logd ("key: " + key + "  res: " + res);
-    return (res);
+    return s2d_cmd("g " + key);
   }
 
   public static String s2d_set(String key, String val) {
     String res = s2d_cmd("s " + key + " " + val);
     com_uti.logd("key: " + key + "  val: " + val + "  res: " + res);
-    return (res);
+    return res;
   }
 
 
-  private static String s2d_cmd(String cmd) {
-    int cmd_len = cmd.length();
-    if (s2d_cmd_log)
-      com_uti.logd("cmd_len: " + cmd_len + "  cmd: \"" + cmd + "\"");
+  private static String s2d_cmd(String command) {
+    int commandLength = command.length();
+    if (s2d_cmd_log) {
+      com_uti.logd("cmd_len: " + commandLength + "  cmd: \"" + command + "\"");
+    }
 
-    byte[] cmd_buf = com_uti.str_to_ba(cmd);
-    cmd_len = cmd_buf.length;
+    byte[] commandBuffer = com_uti.stringToByteArray(command);
 
-    int res_len = DEF_BUF;
-    byte[] res_buf = new byte[res_len];
+    commandLength = commandBuffer.length;
 
-    int rx_tmo = 3000;
-    if (cmd.equalsIgnoreCase("s tuner_state Start"))
-      rx_tmo = 15000;
-    else if (cmd.equalsIgnoreCase("s radio_nop Start"))
-      rx_tmo = 100; // Always fails so make it short
-    res_len = dg_s2d_cmd(cmd_len, cmd_buf, res_len, res_buf, rx_tmo);
+    int resultLength = DEF_BUF;
+    byte[] resultBuffer = new byte[resultLength];
 
-    String res = "";//Avoid showing 999 for RT when result is zero length string "" (actually 1 byte long for zero)      "999";
-    if (res_len > 0 && res_len <= DEF_BUF) {
+    int rx_timeout = 3000;
+
+    if (command.equalsIgnoreCase("s tuner_state Start")) {
+      rx_timeout = 15000;
+    } else if (command.equalsIgnoreCase("s radio_nop Start")) {
+      rx_timeout = 100; // Always fails so make it short
+    }
+
+    resultLength = dg_s2d_cmd(commandLength, commandBuffer, resultLength, resultBuffer, rx_timeout);
+
+    // Avoid showing 999 for RT when result is zero length string "" (actually 1 byte long for zero) "999";
+    String result = "";
+
+    if (resultLength > 0 && resultLength <= DEF_BUF) {
+      if (s2d_cmd_log) {
+        com_uti.logd("res_len: " + resultLength + "  res_buf: \"" + resultBuffer + "\"");
+      }
+
+      result = com_uti.byteArrayToString(resultBuffer);
+      result = result.substring(0, resultLength);     // Remove extra data
       if (s2d_cmd_log)
-        com_uti.logd("res_len: " + res_len + "  res_buf: \"" + res_buf + "\"");
-      res = com_uti.ba_to_str(res_buf);
-      res = res.substring(0, res_len);     // Remove extra data
-      if (s2d_cmd_log)
-        com_uti.logd("res: \"" + res + "\"");
-    } else if (res_len == 0)
-      res = "";             // Empty string
+        com_uti.logd("res: \"" + result + "\"");
+    } else if (resultLength == 0)
+      result = "";             // Empty string
     else
-      com_uti.loge("res_len: " + res_len + "  cmd: " + cmd);
-    return (res);
+      com_uti.loge("res_len: " + resultLength + "  cmd: " + command);
+    return (result);
   }
 
 
@@ -1173,7 +1075,7 @@ Evo 4G LTE  jewel
     for (x = 0; x < ((1280/64) -1); x++)
       cmd += "                                                                ";        // 64 bytes
     int cmd_len = cmd.length ();
-    byte [] cmd_buf = com_uti.str_to_ba (cmd);
+    byte [] cmd_buf = com_uti.stringToByteArray (cmd);
     cmd_len = cmd_buf.length;
 
     len = dg_s2d_cmd (cmd_len, cmd_buf, buf_len, buffer, rx_tmo);
@@ -1186,66 +1088,6 @@ Evo 4G LTE  jewel
     }
 
     return (len);
-  }
-*/
-
-
-  // !! Use native_priority_set() instead !!
-/*
-  private static void old_thread_priority_set () {
-
-    int tid = -5;
-    int priority = 3333;
-    try {
-      tid = android.os.Process.myTid ();
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    try {
-      priority = android.os.Process.getThreadPriority (tid);
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    com_uti.logd ("tid: " + tid + "  priority: " + priority);
-
-if (false) {
-    try {
-      android.os.Process.setThreadPriority (android.os.Process.THREAD_PRIORITY_URGENT_AUDIO);//ANDROID_URGENT_AUDIO);
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    try {
-      priority = android.os.Process.getThreadPriority (tid);
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    com_uti.logd ("priority: " + priority);
-
-
-    try {
-      android.os.Process.setThreadPriority (-20);//android.os.Process.);//ANDROID_PRIORITY_HIGHEST);
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    try {
-      priority = android.os.Process.getThreadPriority (tid);
-    }
-    catch (Throwable e) {
-      com_uti.loge ("Throwable: " + e);
-      e.printStackTrace ();
-    }
-    com_uti.logd ("priority: " + priority);
-}
   }
 */
 

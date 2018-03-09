@@ -6,7 +6,6 @@ package fm.a2d.sf;
 import java.util.TimerTask;
 import java.util.Timer;
 
-import android.os.Handler;
 import android.content.Context;
 
 public class svc_tnr implements ServiceTunerAPIImpl {
@@ -44,14 +43,14 @@ public class svc_tnr implements ServiceTunerAPIImpl {
     else if (key.equalsIgnoreCase ("tuner_state"))
       return (mApi.tuner_state);
 
-    else if (mApi.tuner_state.equalsIgnoreCase ("start"))
+    else if (mApi.isTunerStarted())
       return (com_uti.s2d_get (key));
 
         // Else if not on, use cached info:
     else if (key.equalsIgnoreCase (C.TUNER_BAND))
       return (mApi.tuner_band);
     else if (key.equalsIgnoreCase ("tuner_freq"))
-      return (mApi.tuner_freq);
+      return mApi.getStringFrequencyMHz();
     else if (key.equalsIgnoreCase ("tuner_stereo"))
       return (mApi.tuner_stereo);
     else if (key.equalsIgnoreCase ("tuner_thresh"))
@@ -124,7 +123,7 @@ public class svc_tnr implements ServiceTunerAPIImpl {
     //else if (key.equalsIgnoreCase (C.TUNER_BAND))
     //  return (tuner_band_set (val));
 
-    else if (mApi.tuner_state.equalsIgnoreCase ("start"))          // If tuner_state = Start...
+    else if (mApi.isTunerStarted())          // If tuner_state = Start...
       return (com_uti.s2d_set (key, val));                                // Set via s2d
 
         // Else if not on:
@@ -228,7 +227,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
     // Start poll timer so volume will be set before FM chip power up, and applied at chip power up.
     mPollingTimer = new Timer("Poll", true);
-    mPollingTimer.schedule(new poll_tmr_hndlr(), 3000, 1000); // After 3 seconds every 500 ms
+    mPollingTimer.schedule(new PollTunerHandler(), 3000, 1000); // After 3 seconds every 500 ms
     mIsPolling = true;
   }
 
@@ -242,60 +241,62 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
     mIsPolling = false;
   }
 
-  private class poll_tmr_hndlr extends TimerTask {
-    public void run () {
-      if (! mApi.tuner_state.equalsIgnoreCase ("start"))                                             // Done if state not started
+  private class PollTunerHandler extends TimerTask {
+    public void run() {
+      // Done if state not started
+      if (!mApi.isTunerStarted()) {
         return;
+      }
 
-        // Freq:
-      int min_freq = 65000; //50000;    // !! Broadcom sometimes returns 64000, so suppress this as it writes frequency to settings
-      String temp_freq_str = com_uti.s2d_get ("tuner_freq");
-      int    temp_freq_int = com_uti.int_get (temp_freq_str);
+      // Frequency:
+      int min_freq = 65000;
+      String temp_freq_str = com_uti.s2d_get(C.TUNER_FREQUENCY);
+      int temp_freq_int = com_uti.int_get(temp_freq_str);
       if (temp_freq_int >= min_freq) {
         mApi.tuner_freq = temp_freq_str;
-        mApi.int_tuner_freq = com_uti.int_get (mApi.tuner_freq);
+        mApi.int_tuner_freq = com_uti.int_get(mApi.tuner_freq);
         if (mApi.int_tuner_freq >= min_freq && last_poll_freq != mApi.int_tuner_freq) {
           last_poll_freq = mApi.int_tuner_freq;
-          m_svc_tcb.cb_tuner_key ("tuner_freq", mApi.tuner_freq);   // Inform change
+          m_svc_tcb.cb_tuner_key(C.TUNER_FREQUENCY, mApi.tuner_freq); // Inform change
         }
       }
 
-        // RSSI:
-      mApi.tuner_rssi = com_uti.s2d_get ("tuner_rssi");
-      if (last_poll_rssi != (last_poll_rssi = com_uti.int_get (mApi.tuner_rssi)))
-        m_svc_tcb.cb_tuner_key ("tuner_rssi", mApi.tuner_rssi);                        // Inform change
+      // RSSI:
+      mApi.tuner_rssi = com_uti.s2d_get("tuner_rssi");
+      if (last_poll_rssi != (last_poll_rssi = com_uti.int_get(mApi.tuner_rssi)))
+        m_svc_tcb.cb_tuner_key("tuner_rssi", mApi.tuner_rssi);                        // Inform change
 
-        // MOST:
-      mApi.tuner_most = com_uti.s2d_get ("tuner_most");
-      if (! last_poll_most.equals (mApi.tuner_most))
-        m_svc_tcb.cb_tuner_key ("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
+      // MOST:
+      mApi.tuner_most = com_uti.s2d_get("tuner_most");
+      if (!last_poll_most.equals(mApi.tuner_most))
+        m_svc_tcb.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
 
-        // RDS ps:
-      mApi.tuner_rds_ps = com_uti.s2d_get ("tuner_rds_ps");
-      if (! last_poll_rds_ps.equals (mApi.tuner_rds_ps))
-        m_svc_tcb.cb_tuner_key ("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
+      // RDS ps:
+      mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");
+      if (!last_poll_rds_ps.equals(mApi.tuner_rds_ps))
+        m_svc_tcb.cb_tuner_key("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
 
-        // RDS rt:
-      mApi.tuner_rds_rt = com_uti.s2d_get ("tuner_rds_rt                                                                    ").trim ();    // !!!! Must have ~ 64 characters due to s2d design.
-      if (! last_poll_rds_rt.equals (mApi.tuner_rds_rt))
-        m_svc_tcb.cb_tuner_key ("tuner_rds_rt", last_poll_rds_rt = mApi.tuner_rds_rt); // Inform change
+      // RDS rt:
+      mApi.tuner_rds_rt = com_uti.s2d_get("tuner_rds_rt                                                                    ").trim();    // !!!! Must have ~ 64 characters due to s2d design.
+      if (!last_poll_rds_rt.equals(mApi.tuner_rds_rt))
+        m_svc_tcb.cb_tuner_key("tuner_rds_rt", last_poll_rds_rt = mApi.tuner_rds_rt); // Inform change
 
-        // RDS pi:
-      mApi.tuner_rds_pi = com_uti.s2d_get ("tuner_rds_pi");
-      int rds_pi = com_uti.int_get (mApi.tuner_rds_pi);
+      // RDS pi:
+      mApi.tuner_rds_pi = com_uti.s2d_get("tuner_rds_pi");
+      int rds_pi = com_uti.int_get(mApi.tuner_rds_pi);
       if (last_poll_rds_pi != rds_pi) {
         last_poll_rds_pi = rds_pi;
-        mApi.tuner_rds_picl = com_uti.tnru_rds_picl_get (mApi.tuner_band, rds_pi);
-        m_svc_tcb.cb_tuner_key ("tuner_rds_pi", mApi.tuner_rds_pi);                    // Inform change
+        mApi.tuner_rds_picl = com_uti.tnru_rds_picl_get(mApi.tuner_band, rds_pi);
+        m_svc_tcb.cb_tuner_key("tuner_rds_pi", mApi.tuner_rds_pi);                    // Inform change
       }
 
-        // RDS pt:
-      mApi.tuner_rds_pt = com_uti.s2d_get ("tuner_rds_pt");
-      int rds_pt = com_uti.int_get (mApi.tuner_rds_pt);
+      // RDS pt:
+      mApi.tuner_rds_pt = com_uti.s2d_get("tuner_rds_pt");
+      int rds_pt = com_uti.int_get(mApi.tuner_rds_pt);
       if (last_poll_rds_pt != rds_pt) {
         last_poll_rds_pt = rds_pt;
-        mApi.tuner_rds_pt = mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get (mApi.tuner_band, rds_pt);
-        m_svc_tcb.cb_tuner_key ("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
+        mApi.tuner_rds_pt = mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get(mApi.tuner_band, rds_pt);
+        m_svc_tcb.cb_tuner_key("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
       }
     }
   }

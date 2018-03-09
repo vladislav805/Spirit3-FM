@@ -1,7 +1,6 @@
 package fm.a2d.sf;
 
 import android.content.Context;
-import android.util.Log;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -11,6 +10,7 @@ import java.lang.Thread.State;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
+import java.util.TimeZone;
 
 public class RadioRecorder {
   private static String mDirectory;
@@ -165,8 +165,9 @@ public class RadioRecorder {
     if (!mApi.audio_record_state.equals("Stop")) {
       return false;
     }
-
-    mDirectory = "/Music/FM" + File.separator + new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(new Date());
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    sdf.setTimeZone(TimeZone.getDefault());
+    mDirectory = "/Music/FM" + File.separator + sdf.format(new Date());
 
     mRecordFile = null;
 
@@ -331,7 +332,7 @@ public class RadioRecorder {
   }
 
   private boolean writeWavHeader() {
-    byte[] header = com_uti.str_to_ba("RIFF....WAVEfmt sc1safncsamrbytrbabsdatasc2s");
+    byte[] header = com_uti.stringToByteArray("RIFF....WAVEfmt sc1safncsamrbytrbabsdatasc2s");
     com_uti.logd("wavHeader.length: " + header.length);
     writeBytes(header, 4, 4, mRecordDataSize + 36);
     writeBytes(header, 16, 4, 16);
@@ -375,7 +376,7 @@ public class RadioRecorder {
   private String getFilename() {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("hhmmss", Locale.getDefault());
-    float freq = Integer.valueOf(mApi.tuner_freq) / 1000;
-    return String.format(Locale.ENGLISH, "FM-%.1f-%s.wav", freq, sdf.format(now));
+    sdf.setTimeZone(TimeZone.getDefault());
+    return String.format(Locale.ENGLISH, "FM-%s-%s.wav", mApi.getStringFrequencyMHz(), sdf.format(now));
   }
 }

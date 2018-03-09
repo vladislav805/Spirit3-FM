@@ -234,5 +234,47 @@ public class com_api {
     return PendingIntent.getService(context, ++curr_pending_intent_num, intent, 134217728);
   }
 
+  public float getFloatFrequencyMHz() {
+    return Float.valueOf(tuner_freq);
+  }
+
+  public String getStringFrequencyMHz() {
+    return tuner_freq;
+  }
+
+  public int getIntFrequencyKHz() {
+    return int_tuner_freq;
+  }
+
+  public boolean isStereo() {
+    return !tuner_most.equalsIgnoreCase("mono");
+  }
+
+  public int getRssi() {
+    return com_uti.int_get(tuner_rssi, 0);
+  }
+
+  public static final int TUNER_UNKNOWN = 0;
+  public static final int TUNER_START = 1;
+  public static final int TUNER_STOP = 2;
+  public static final int TUNER_PAUSE = 3;
+  public static final int TUNER_RESUME = 4;
+
+  public int getTunerState() {
+    switch (tuner_state.toLowerCase()) {
+      case "start": return TUNER_START;
+      case "stop": return TUNER_STOP;
+      case "pause": return TUNER_PAUSE;
+      case "resume": return TUNER_RESUME;
+      default: return TUNER_UNKNOWN;
+    }
+  }
+
+  public boolean isTunerStarted() {
+    return getTunerState() == TUNER_START;
+  }
+
+
+
 }
 

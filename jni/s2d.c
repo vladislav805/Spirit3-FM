@@ -764,7 +764,8 @@ int tuner_init() {
   
 
 
-
+// AFE_PCM_TX ???
+// https://stackoverflow.com/questions/21024851/redirecting-audio-creating-alternate-sound-paths-in-android
 int qcv_digital_input_on () {
   alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
   alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path

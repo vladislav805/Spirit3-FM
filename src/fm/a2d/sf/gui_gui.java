@@ -623,7 +623,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     mViewRecord.setImageResource(state.equals(C.RECORD_STATE_START) ? R.drawable.btn_record_press : R.drawable.btn_record);
   }
 
-  private int SIGNAL_EDGES[] = new int[] {50, 350, 750, 900};
+  private int SIGNAL_EDGES[] = new int[] {15, 25, 35, 45};
   private int SIGNAL_RES[] = new int[] {R.drawable.ic_signal_0, R.drawable.ic_signal_1, R.drawable.ic_signal_2, R.drawable.ic_signal_3, R.drawable.ic_signal_4};
 
   /**
@@ -643,7 +643,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       }
 
       mViewSignal.setImageResource(resId);
-      mViewRSSI.setText(String.format("%4s", mApi.tuner_rssi));
+      mViewRSSI.setText(String.format("%3s", mApi.tuner_rssi));
     } catch (Exception ignore) {}
   }
 

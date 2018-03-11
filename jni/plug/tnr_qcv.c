@@ -582,9 +582,6 @@ int chip_imp_pwr_on(int pwr_rds) {
 
   logd("chip_imp_pwr_on done");
 
-  logd("############################################################################");
-  logd("RDS support = ?");
-  logd("############################################################################");
   return 0;
 }
 
@@ -608,9 +605,9 @@ int chip_imp_pwr_off(int pwr_rds) {
    * 0 = FM_OFF, 1 = FM_RECV, 2 = FM_TRANS, 3 = FM_RESET
    */
   if (chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_STATE, 0) < 0) {
-    loge ("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 error");
+    loge("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 error");
   } else {
-    logd ("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 success");
+    logd("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 success");
   }
 
   ms_sleep(2000);
@@ -774,10 +771,16 @@ int chip_imp_rssi_get() {
     return -1;
   }
 
-  rssi = v4l_tuner.signal;
-  rssi -= 150; // 151 seen before proper power up ?      2014: ?  150 (0x96) = -106 to 205 (0xCD) = -51
-  rssi *= 3;
-  rssi /= 2; // Multiply by 1.5 to scale similar to other chips / Broadcom (-144)
+  /**
+   * было просто извлечение переменной
+   * эмпирическим путем было выяснено:
+   * 139 -- самый минимум без наушников и USB провода
+   * ~70 - максимум после вычета 139 (=68)
+   */
+  rssi = v4l_tuner.signal - 139;
+ // rssi -= 150; // 151 seen before proper power up ?      2014: ?  150 (0x96) = -106 to 205 (0xCD) = -51
+ // rssi *= 3;
+ // rssi /= 2; // Multiply by 1.5 to scale similar to other chips / Broadcom (-144)
   // RSSI -16 on N4 and OF means v4l_tuner.signal = 139
   return rssi;
 }
@@ -801,7 +804,7 @@ int chip_imp_stro_get() {
   } else {
     // am: V4L2_TUNER_MODE_STEREO   1
     // am: V4L2_TUNER_MODE_MONO     0
-    curr_stereo = v4l_tuner.audmode;
+    curr_stereo = v4l_tuner.audmode > 0;
   }
   return curr_stereo;
 }

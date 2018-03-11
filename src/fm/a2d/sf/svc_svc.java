@@ -142,7 +142,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
           case "down":
             if (preset_num <= 1) {
-              mTunerAPI.setTunerValue("tuner_scan_state", val);
+              mTunerAPI.setTunerValue(C.TUNER_SCAN_STATE, val);
             } else {
               preset_change(0);
             }
@@ -150,7 +150,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
           case "up":
             if (preset_num <= 1) {
-              mTunerAPI.setTunerValue("tuner_scan_state", val);
+              mTunerAPI.setTunerValue(C.TUNER_SCAN_STATE, val);
             } else {
               preset_change(1);
             }
@@ -160,7 +160,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
 
       if (extras.getString("radio_freq", "").equalsIgnoreCase("scan"))
-        mTunerAPI.setTunerValue("tuner_scan_state", extras.getString("radio_freq", ""));
+        mTunerAPI.setTunerValue(C.TUNER_SCAN_STATE, extras.getString("radio_freq", ""));
 
 
       // Tuner:
@@ -170,12 +170,12 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
 
 // tuner_scan_state
-      val = extras.getString("tuner_scan_state", "");
+      val = extras.getString(C.TUNER_SCAN_STATE, "");
       if (!val.isEmpty()) {
-        mTunerAPI.setTunerValue("tuner_scan_state", val);
+        mTunerAPI.setTunerValue(C.TUNER_SCAN_STATE, val);
       }
 
-      val = extras.getString("tuner_freq", "");
+      val = extras.getString(C.TUNER_FREQUENCY, "");
       if (!val.isEmpty()) {
         tuner_freq_set(val);
       }
@@ -248,14 +248,14 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     send_intent.putExtra ("tuner_state", mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
     send_intent.putExtra (C.TUNER_BAND, mApi.tuner_band);//mTunerAPI.getTunerValue ("tuner_band"));
-    String freq_khz = mTunerAPI.getTunerValue("tuner_freq");
+    String freq_khz = mTunerAPI.getTunerValue(C.TUNER_FREQUENCY);
     int ifreq = com_uti.int_get (freq_khz);
     if (ifreq >= 50000 && ifreq < 500000) {
       mApi.tuner_freq = String.valueOf((double) ifreq / 1000);
       mApi.int_tuner_freq = ifreq;
     }
     com_uti.logx ("mApi.tuner_freq: " + mApi.getStringFrequencyMHz() + "  mApi.int_tuner_freq: " + mApi.getIntFrequencyKHz());
-    send_intent.putExtra ("tuner_freq",         mApi.getStringFrequencyMHz());
+    send_intent.putExtra (C.TUNER_FREQUENCY, mApi.getStringFrequencyMHz());
 
     //send_intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
     //send_intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
@@ -563,8 +563,8 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     presets_init(); // Load presets
 
-    int freq = com_uti.prefs_get(mContext, "tuner_freq", 87500);
-    tuner_freq_set (String.valueOf(freq)); // Set initial frequency
+    int freq = com_uti.prefs_get(mContext, C.TUNER_FREQUENCY, 87500);
+    tuner_freq_set(String.valueOf(freq)); // Set initial frequency
   }
 
 
@@ -577,7 +577,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     ifreq *= 50;        // Back to KHz scale
     com_uti.logd ("ifreq: " + ifreq);
 
-    mTunerAPI.setTunerValue("tuner_freq", String.valueOf(ifreq)); // Set frequency
+    mTunerAPI.setTunerValue(C.TUNER_FREQUENCY, String.valueOf(ifreq)); // Set frequency
   }
 
 
@@ -587,20 +587,20 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     // Single Tuner Sub-Service callback expands to other functions:
 
-  public void cb_tuner_key (String key, String val) {
+  public void cb_tuner_key(String key, String val) {
     com_uti.logx ("key: " + key + "  val: " + val);
 ///*
     if (com_uti.device == com_uti.DEV_QCV && mAudioAPI.audio_blank_get ()) {   // If we need to kickstart audio...
       com_uti.loge ("!!!!!!!!!!!!!!!!!!!!!!!!! Kickstarting stalled audio !!!!!!!!!!!!!!!!!!!!!!!!!!");
       //mTunerAPI.setTunerValue ("tuner_stereo", mApi.tuner_stereo);     // Set Stereo (Frequency also works, and others ?)
-      mTunerAPI.setTunerValue("tuner_freq", mApi.getStringFrequencyMHz());     // Set Frequency
+      mTunerAPI.setTunerValue(C.TUNER_FREQUENCY, mApi.getStringFrequencyMHz());     // Set Frequency
       mAudioAPI.audio_blank_set (false);
     }
 //*/
     if (key != null) {
       if (key.equalsIgnoreCase ("tuner_state"))
         cb_tuner_state (val);
-      else if (key.equalsIgnoreCase ("tuner_freq"))
+      else if (key.equals(C.TUNER_FREQUENCY))
         cb_tuner_freq (val);
       else if (key.equalsIgnoreCase ("tuner_rssi"))
         cb_tuner_rssi (val);
@@ -655,7 +655,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
 
     displays_update ("cb_tuner_freq");
 
-    com_uti.prefs_set (mContext, "tuner_freq", new_freq);
+    com_uti.prefs_set (mContext, C.TUNER_FREQUENCY, new_freq);
   }
   private void cb_tuner_rssi (String rssi) {
     displays_update ("cb_tuner_rssi");

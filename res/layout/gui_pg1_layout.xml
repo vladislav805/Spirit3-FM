@@ -94,6 +94,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent">
       <TextView
+          android:visibility="gone"
           android:id="@+id/tv_record_duration"
           android:text="00:02"
           android:textColor="#DA3B3B"
@@ -114,7 +115,7 @@
 
 
   <!-- Frequency -->
-  <LinearLayout
+  <FrameLayout
       android:layout_marginTop="@dimen/seek_frequency_margin_vertical"
       android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
       android:layout_marginLeft="@dimen/seek_frequency_margin_horizontal"
@@ -126,6 +127,17 @@
 <!-- android:background="@drawable/sel_stop_bg" -->
 
 
+    <TextView
+        android:id="@+id/tv_freq_fake"
+        android:contentDescription="@string/frequency"
+        android:text="@string/test_mhz"
+        android:textSize="@dimen/frequency_mhz_font_size"
+        android:textColor="@color/frequency_digit_background"
+        android:textAlignment="center"
+        android:gravity="center_vertical|center_vertical"
+        android:layout_gravity="center_horizontal"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"/>
     <TextView
         android:id="@+id/tv_freq"
         android:contentDescription="@string/frequency"
@@ -142,8 +154,7 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"/>
 
-
-  </LinearLayout>
+  </FrameLayout>
 
   <LinearLayout
       android:visibility="gone"
@@ -157,7 +168,7 @@
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:textSize="10dip"
+        android:textSize="10dp"
         android:textStyle="normal"
         android:textColor="#ffa3a3a3"
         android:gravity="center_vertical|center_horizontal"
@@ -169,7 +180,7 @@
         android:layout_width="0dip"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        android:textSize="10dip"
+        android:textSize="10dp"
         android:textStyle="normal"
         android:textColor="#ffa3a3a3"
         android:gravity="center_vertical|center_horizontal"

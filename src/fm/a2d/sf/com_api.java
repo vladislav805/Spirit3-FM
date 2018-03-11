@@ -143,10 +143,10 @@ public class com_api {
       tuner_state = new_tuner_state;
 
     String new_tuner_band = extras.getString(C.TUNER_BAND, DEFAULT_DETECT);
-    String new_tuner_freq = extras.getString("tuner_freq", DEFAULT_DETECT);
+    String new_tuner_freq = extras.getString(C.TUNER_FREQUENCY, DEFAULT_DETECT);
     String new_tuner_stereo = extras.getString("tuner_stereo", DEFAULT_DETECT);
     String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);
-    String new_tuner_scan_state = extras.getString("tuner_scan_state", DEFAULT_DETECT);
+    String new_tuner_scan_state = extras.getString(C.TUNER_SCAN_STATE, DEFAULT_DETECT);
 
     if (!new_tuner_band.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_band = new_tuner_band;

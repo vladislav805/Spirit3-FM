@@ -48,15 +48,15 @@ public class svc_tnr implements ServiceTunerAPIImpl {
 
         // Else if not on, use cached info:
     else if (key.equalsIgnoreCase (C.TUNER_BAND))
-      return (mApi.tuner_band);
-    else if (key.equalsIgnoreCase ("tuner_freq"))
+      return mApi.tuner_band;
+    else if (key.equalsIgnoreCase (C.TUNER_FREQUENCY))
       return mApi.getStringFrequencyMHz();
     else if (key.equalsIgnoreCase ("tuner_stereo"))
       return (mApi.tuner_stereo);
     else if (key.equalsIgnoreCase ("tuner_thresh"))
       return (mApi.tuner_thresh);
-    else if (key.equalsIgnoreCase ("tuner_scan_state"))
-      return (mApi.tuner_scan_state);
+    else if (key.equals(C.TUNER_SCAN_STATE))
+      return mApi.tuner_scan_state;
 
     else if (key.equalsIgnoreCase ("tuner_rds_state"))
       return (mApi.tuner_rds_state);
@@ -127,15 +127,15 @@ public class svc_tnr implements ServiceTunerAPIImpl {
       return (com_uti.s2d_set (key, val));                                // Set via s2d
 
         // Else if not on:
-    else if (key.equalsIgnoreCase (C.TUNER_BAND))
+    else if (key.equalsIgnoreCase(C.TUNER_BAND))
       return (mApi.tuner_band = val);
-    else if (key.equalsIgnoreCase ("tuner_freq"))
+    else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY))
       return (mApi.tuner_freq = val);
     else if (key.equalsIgnoreCase ("tuner_stereo"))
       return (mApi.tuner_stereo = val);
     else if (key.equalsIgnoreCase ("tuner_thresh"))
       return (mApi.tuner_thresh = val);
-    else if (key.equalsIgnoreCase ("tuner_scan_state"))
+    else if (key.equals(C.TUNER_SCAN_STATE))
       return (mApi.tuner_scan_state = val);
 
     else if (key.equalsIgnoreCase ("tuner_rds_state"))

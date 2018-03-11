@@ -176,6 +176,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
     mViewFrequency.setTypeface(mDigitalFont);
     mViewRSSI.setTypeface(mDigitalFont);
+    ((TextView) mActivity.findViewById(R.id.tv_freq_fake)).setTypeface(mDigitalFont);
 
     setupPresets();
 
@@ -455,7 +456,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     }
 
     if (freq >= mFrequencyLow && freq <= mFrequencyHigh) {
-      mApi.key_set("tuner_freq", String.valueOf(freq));
+      mApi.key_set(C.TUNER_FREQUENCY, String.valueOf(freq));
       float f = freq / 1000.0f;
       showToast(String.format(Locale.ENGLISH, "Frequency changed to: %.1f MHz", f));
       onFrequencyChanged(f);
@@ -714,19 +715,19 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
         break;
 
       case R.id.iv_seekdn:
-        mApi.key_set("tuner_scan_state", "down");
+        mApi.key_set(C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
         break;
 
       case R.id.iv_seekup:
-        mApi.key_set("tuner_scan_state", "up");
+        mApi.key_set(C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
         break;
 
       case R.id.iv_prev:
-        mApi.key_set("tuner_freq", "down");
+        mApi.key_set(C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_DOWN);
         break;
 
       case R.id.iv_next:
-        mApi.key_set("tuner_freq", "up");
+        mApi.key_set(C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_UP);
         break;
 
 

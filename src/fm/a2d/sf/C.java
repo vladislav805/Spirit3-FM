@@ -10,6 +10,8 @@ public class C {
 
   public static final String TUNER_BAND = "tuner_band";
   public static final String TUNER_FREQUENCY = "tuner_freq";
+  public static final String TUNER_FREQUENCY_UP = "up";
+  public static final String TUNER_FREQUENCY_DOWN = "down";
 
   public static final String AUDIO_STATE_STARTING = "starting";
   public static final String AUDIO_STATE_START = "start";
@@ -20,4 +22,7 @@ public class C {
   public static final String RECORD_STATE_START = "start";
   public static final String RECORD_STATE_STOP = "stop";
   public static final String RECORD_STATE_TOGGLE = "toggle";
+  public static final String TUNER_SCAN_STATE = "tuner_scan_state";
+  public static final String TUNER_SCAN_UP = "up";
+  public static final String TUNER_SCAN_DOWN = "down";
 }

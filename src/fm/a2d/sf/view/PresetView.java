@@ -52,7 +52,7 @@ public class PresetView extends Button {
   }
 
   public boolean isEmpty() {
-    return mFrequency.isEmpty();
+    return mFrequency == null || mFrequency.isEmpty();
   }
 
 }

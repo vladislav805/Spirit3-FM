@@ -657,7 +657,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       PresetView preset = (PresetView) v;
 
       if (preset.isEmpty()) { // If no preset yet...
-        setPreset(preset);
+        setPreset(preset, mApi.getStringFrequencyMHz());
       } else {
         setFrequency(preset.getFrequency());
       }
@@ -667,13 +667,13 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
   /**
    * Save preset in memory
    */
-  private void setPreset(PresetView preset) {
-    preset.populate(mApi.getStringFrequencyMHz());
+  private void setPreset(PresetView preset, String frequency) {
+    preset.populate(frequency);
 
     // !! Current implementation requires simultaneous (одновременно)
     mApi.key_set(
-            "radio_name_prst_" + preset.getIndex(), mApi.getStringFrequencyMHz(),
-            "radio_freq_prst_" + preset.getIndex(), mApi.getStringFrequencyMHz()
+            "radio_name_prst_" + preset.getIndex(), frequency,
+            "radio_freq_prst_" + preset.getIndex(), frequency
     );
   }
 
@@ -681,9 +681,32 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
    * Long click: Show preset change options
    */
   private View.OnLongClickListener mOnLongClickPresetListener = new View.OnLongClickListener() {
-    public boolean onLongClick(View v) {
-      setPreset((PresetView) v);
+    public boolean onLongClick(final View v) {
       v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
+      AlertDialog.Builder ab = new AlertDialog.Builder(mContext);
+      ab
+              .setIcon(R.drawable.ic_radio)
+              .setCancelable(false)
+              .setTitle("Edit favourite")
+              .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  setPreset((PresetView) v, null);
+                }
+              })
+              .setNegativeButton("Replace", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  setPreset((PresetView) v, mApi.getStringFrequencyMHz());
+                }
+              })
+              .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialog, int which) {
+                  dialog.cancel();
+                }
+              });
+      ab.create().show();
       return true;
     }
   };

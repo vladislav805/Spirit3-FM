@@ -438,7 +438,7 @@ int rds_dbg                 = 1;  // RT // 1 = But do log counts every 10, 000 b
 int rds_ok_dbg              = 1;  // PS, PT
 int rds_ok_extra_dbg        = 0;
 
-int evt_dbg                 = 1;
+int evt_dbg                 = 0;
 
 int af_ok_debug             = 0;
 int af_common_error_debug   = 0;
@@ -523,7 +523,7 @@ int freq_dn_get (int freq) {                                            // Calle
 
 
 
-int RSSI_FACTOR = 16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
+int RSSI_FACTOR = 1; //16;//20; // 62.5/50 -> 1000  (See 60)     Highest seen locally = 57, 1000 / 62.5 = 16
 int prev_freq = 0;
 int stro_evt_enable = 0;//1;
 int rssi_evt_enable = 0;//1;

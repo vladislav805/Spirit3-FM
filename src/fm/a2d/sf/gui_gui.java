@@ -819,7 +819,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       mVisualizerDisabled = false;
 
       m_iv_pwr.setVisibility(View.INVISIBLE);
-      ((ImageView) mActivity.findViewById(R.id.frequency_bar)).setVisibility(View.INVISIBLE);
+      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
 
       int audio_sessid = com_uti.int_get(mApi.audio_sessid);
       if (audio_sessid > 0)
@@ -828,11 +828,11 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       mVisualizerDisabled = true;
 
       m_iv_pwr.setVisibility(View.VISIBLE);
-      ((ImageView) mActivity.findViewById(R.id.frequency_bar)).setVisibility(View.VISIBLE);
+      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
 
       gui_vis_stop();
     }
-    return (state);                                                     // No error
+    return state; // No error
   }
 
 

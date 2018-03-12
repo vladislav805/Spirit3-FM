@@ -299,25 +299,6 @@
 
 
 
-
-
-      <ImageView
-          android:visibility="gone"
-          android:id="@+id/iv_menu"
-          android:contentDescription="Menu"
-          android:src="@drawable/sel_menu"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_marginTop="2dip"
-          android:layout_marginBottom="4dip"
-          android:layout_marginRight="2dip"
-          android:layout_marginLeft="2dip"
-          android:layout_alignParentBottom="true"
-          android:layout_centerInParent="true"
-          android:scaleType="center"/>
-
     </RelativeLayout>
   </LinearLayout>
   <CheckBox android:id="@+id/cb_visu" android:layout_width="match_parent" android:layout_height="0dp" android:checked="false" android:text="Visual" android:layout_weight="1.0" android:onClick="gap_gui_clicked" android:contentDescription="Visualizer" />

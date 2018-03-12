@@ -119,7 +119,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     com_uti.strict_mode_set(false);
 
     mActivity.requestWindowFeature(Window.FEATURE_NO_TITLE); // No title to save screen space
-    mActivity.setContentView(R.layout.gui_gui_layout); // Main Layout
+    mActivity.setContentView(R.layout.activity_main); // Main Layout
 
     mDisplayMetrics = new DisplayMetrics();
     mActivity.getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);

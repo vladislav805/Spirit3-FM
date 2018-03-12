@@ -29,7 +29,7 @@
           android:id="@+id/new_fl"
           android:layout_width="400dip"
           android:layout_height="match_parent">
-        <include layout="@layout/gui_pg1_layout"/>
+        <include layout="@layout/player_fragment"/>
       </FrameLayout>
     </LinearLayout>
   </LinearLayout>

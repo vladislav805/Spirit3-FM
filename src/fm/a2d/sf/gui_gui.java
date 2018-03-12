@@ -687,20 +687,20 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
       ab
               .setIcon(R.drawable.ic_radio)
               .setCancelable(false)
-              .setTitle("Edit favourite")
-              .setPositiveButton("Remove", new DialogInterface.OnClickListener() {
+              .setTitle(mContext.getString(R.string.preset_dialog_title))
+              .setPositiveButton(mContext.getString(R.string.preset_dialog_remove), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   setPreset((PresetView) v, null);
                 }
               })
-              .setNegativeButton("Replace", new DialogInterface.OnClickListener() {
+              .setNegativeButton(mContext.getString(R.string.preset_dialog_replace), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   setPreset((PresetView) v, mApi.getStringFrequencyMHz());
                 }
               })
-              .setNeutralButton("Cancel", new DialogInterface.OnClickListener() {
+              .setNeutralButton(mContext.getString(R.string.preset_dialog_cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   dialog.cancel();

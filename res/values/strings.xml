@@ -25,5 +25,9 @@
   <string name="notification_button_stop">Stop</string>
   <string name="notification_button_record_stop">Stop record</string>
   <string name="notification_button_record_start">Record</string>
+  <string name="preset_dialog_title">Edit favourite</string>
+  <string name="preset_dialog_remove">Remove</string>
+  <string name="preset_dialog_replace">Replace</string>
+  <string name="preset_dialog_cancel">Cancel</string>
 
 </resources>

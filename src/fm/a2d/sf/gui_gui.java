@@ -286,10 +286,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     try {
       com_uti.logd("m_gui_vis: " + mVisualizerView + "  audio_sessid: " + audio_sessid);
       mVisualizerView = (VisualizerView) mActivity.findViewById(R.id.gui_vis);
-      if (mVisualizerView == null) {
-        showToast("VisualizerView not found");
-      } else {
-        showToast("vis start");
+      if (mVisualizerView != null) {
         mVisualizerView.vis_start(audio_sessid);
       }
     } catch (Throwable e) {
@@ -300,9 +297,9 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
   private void gui_vis_stop() {
     try {
       com_uti.logd("m_gui_vis: " + this.mVisualizerView);
-      if (this.mVisualizerView != null) {
-        this.mVisualizerView.vis_stop();
-        this.mVisualizerView = null;
+      if (mVisualizerView != null) {
+        mVisualizerView.vis_stop();
+        mVisualizerView = null;
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -779,18 +776,15 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
 
   private String tuner_stereo_load_prefs() {
-    String value = com_uti.prefs_get(mContext, "tuner_stereo", "");
-    return (value);
+    return com_uti.prefs_get(mContext, "tuner_stereo", "");
   }
 
   private String audio_stereo_load_prefs() {
-    String value = com_uti.prefs_get(mContext, "audio_stereo", "");
-    return (value);
+    return com_uti.prefs_get(mContext, "audio_stereo", "");
   }
 
   private String audio_output_load_prefs() {
-    String value = com_uti.prefs_get(mContext, "audio_output", "");
-    return (value);
+    return com_uti.prefs_get(mContext, "audio_output", "");
   }
 
   private String audio_output_set_nonvolatile(String value) {  // Called only by speaker/headset checkbox change

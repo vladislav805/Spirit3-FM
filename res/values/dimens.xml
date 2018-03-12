@@ -20,4 +20,6 @@
   <dimen name="seek_frequency_margin_vertical">15dp</dimen>
   <dimen name="seek_frequency_margin_horizontal">8dp</dimen>
   <dimen name="seek_frequency_height">80dp</dimen>
+  <dimen name="dialog_startup_margin_ani_text">8dp</dimen>
+  <dimen name="dialog_startup_margin_vertical">18dp</dimen>
 </resources>

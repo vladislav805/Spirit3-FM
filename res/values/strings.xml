@@ -29,5 +29,6 @@
   <string name="preset_dialog_remove">Remove</string>
   <string name="preset_dialog_replace">Replace</string>
   <string name="preset_dialog_cancel">Cancel</string>
+  <string name="dialog_startup">Spirit3 is starting up… Please, wait…</string>
 
 </resources>

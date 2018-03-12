@@ -366,16 +366,10 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
    */
   private void openDialogIntro(@SuppressWarnings("unused") int count) {
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
-            .setTitle("Spirit3 " + com_uti.app_version_get(mContext));
+            .setView(mActivity.getLayoutInflater().inflate(R.layout.dialog_startup, null))
+            .setCancelable(false);
 
-    String intro_msg;
-
-    /*if (!com_uti.file_get("/system/bin/su") && !com_uti.file_get("/system/xbin/su")) {
-      intro_msg = "Sorry... \"NO SU\" Error. Spirit2 REQUIRES JB+ & ROOT & Qualcomm.\n\nThanks! :)";
-    } else {*/
-      intro_msg = "Welcome to Spirit3! :)\n\nPlease wait while it starts...";
-    //}
-    mIntroDialog = dialog.setCancelable(false).setIcon(R.drawable.ic_radio).setMessage(intro_msg).create();
+    mIntroDialog = dialog.create();
     mIntroDialog.show();
   }
 

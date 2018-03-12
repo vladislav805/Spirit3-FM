@@ -123,7 +123,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
     mDisplayMetrics = new DisplayMetrics();
     mActivity.getWindowManager().getDefaultDisplay().getMetrics(mDisplayMetrics);
-    mActivity.findViewById(R.id.new_fl).setLayoutParams(new LinearLayout.LayoutParams(mDisplayMetrics.widthPixels, ViewGroup.LayoutParams.MATCH_PARENT));
+    mActivity.findViewById(R.id.main_wrap).setLayoutParams(new LinearLayout.LayoutParams(mDisplayMetrics.widthPixels, ViewGroup.LayoutParams.MATCH_PARENT));
 
     mDigitalFont = Typeface.createFromAsset(mContext.getAssets(), "fonts/digital-number.ttf");
 

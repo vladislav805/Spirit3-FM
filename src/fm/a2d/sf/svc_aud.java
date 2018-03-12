@@ -12,6 +12,8 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import android.os.Looper;
+import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.io.RandomAccessFile;
@@ -1212,7 +1214,8 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
     if (mRecorder != null) {
       mRecorder.setState(newState);
     }
-    return this.m_com_api.audio_record_state;
+
+    return m_com_api.audio_record_state;
   }
 
 }

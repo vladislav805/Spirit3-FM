@@ -9,6 +9,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.Toast;
+
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -220,6 +222,9 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       val = extras.getString("audio_record_state", "");
       if (!val.isEmpty()) {
         mAudioAPI.audio_record_state_set(val);
+        if (val.equals(C.RECORD_STATE_STOP)) {
+          Toast.makeText(this, getString(R.string.toast_record_stop), Toast.LENGTH_SHORT).show();
+        }
       }
 
       val = extras.getString("audio_stereo", "");

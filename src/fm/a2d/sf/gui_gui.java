@@ -365,8 +365,10 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
    * Открытие интро
    */
   private void openDialogIntro(@SuppressWarnings("unused") int count) {
+    View root = mActivity.getLayoutInflater().inflate(R.layout.dialog_startup, null);
+    ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
-            .setView(mActivity.getLayoutInflater().inflate(R.layout.dialog_startup, null))
+            .setView(root)
             .setCancelable(false);
 
     mIntroDialog = dialog.create();
@@ -853,7 +855,6 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
   public void gap_gui_clicked(View view) {
 
     int id = view.getId();
-    com_uti.logd("id: " + id + "  view: " + view);
     switch (id) {
       case R.id.cb_visu:
         if (((CheckBox) view).isChecked()) {

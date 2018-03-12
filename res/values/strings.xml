@@ -31,5 +31,6 @@
   <string name="preset_dialog_cancel">Cancel</string>
   <string name="dialog_startup">Spirit3 is starting up… Please, wait…</string>
   <string name="toast_record_stop">Record saved</string>
+  <string name="dialog_startup_build">build %d</string>
 
 </resources>

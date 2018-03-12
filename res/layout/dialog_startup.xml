@@ -18,4 +18,10 @@
       android:text="@string/dialog_startup"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
+  <TextView
+      android:id="@+id/dialog_startup_build"
+      android:layout_marginTop="@dimen/dialog_startup_margin_ani_text"
+      android:textSize="12sp"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"/>
 </LinearLayout>

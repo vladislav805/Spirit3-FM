@@ -19,6 +19,13 @@
   <string name="notification_button_record_start">Запись</string>
   <string name="notification_button_record_stop">Ост. запись</string>
   <string name="notification_button_stop">Выкл.</string>
-  <string name="notification_startinЗапуск…ity</stri<string name="preset_dialog_cancel">Отмена</string><string name="preset_dialog_remove">Удалить</string><string name="preset_dialog_replace">Заменить</string><string name="preset_dialog_title">Изменение пресета</string><string name="seek_down">Поиск ранее</string><string name="seek_up">Поиск позднее</string><string name="toast_record_stop">Запись сохранена</string><string name="button_previous">Предыдущая</string>
-g>
+  <string name="notification_starting">Запуск…</string>
+  <string name="preset_dialog_cancel">Отмена</string>
+  <string name="preset_dialog_remove">Удалить</string>
+  <string name="preset_dialog_replace">Заменить</string>
+  <string name="preset_dialog_title">Изменение пресета</string>
+  <string name="seek_down">Поиск ранее</string>
+  <string name="seek_up">Поиск позднее</string>
+  <string name="toast_record_stop">Запись сохранена</string>
+  <string name="button_previous">Предыдущая</string>
 </resources>

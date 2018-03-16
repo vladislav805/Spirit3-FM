@@ -27,4 +27,4 @@ jarsigner -storepass $MY_KEYSTORE_PASS -sigalg MD5withRSA -digestalg SHA1 -keyst
 zipalign -f 4 bin/$PROJ-release-unaligned.apk bin/$PROJ-release.apk
 
 adb install -r bin/$PROJ-release.apk
-adb shell am start -n fm.a2d.sf/fm.a2d.sf.gui_act
+adb shell am start -n fm.a2d.sf/fm.a2d.sf.MainActivity

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <string name="header_cd_rssi">RSSI</string>
-  <string name="header_rssi_default">0</string>
+  <string name="header_rssi_default" translatable="false">0</string>
   <string name="header_record">Record</string>
-  <string name="header_rds_ps">RDS PS</string>
+  <string name="header_rds_ps" translatable="false">RDS PS</string>
   <string name="header_volume">Volume</string>
   <string name="header_stereo">Mono / Stereo</string>
-  <string name="nill" />
+  <string name="nill" translatable="false"/>
   <string name="dialog_frequency_title">Set Frequency</string>
   <string name="dialog_ok">OK</string>
   <string name="dialog_cancel">Cancel</string>
@@ -18,14 +18,14 @@
   <string name="button_next">Next</string>
   <string name="button_stop">Stop</string>
   <string name="button_play_toggle">Pause / Play</string>
-  <string name="test_mhz">888.8</string>
+  <string name="test_mhz" translatable="false">888.8</string>
   <string name="notification_starting">Starting…</string>
   <string name="notification_button_pause">Pause</string>
   <string name="notification_button_play">Play</string>
   <string name="notification_button_stop">Stop</string>
   <string name="notification_button_record_stop">Stop record</string>
   <string name="notification_button_record_start">Record</string>
-  <string name="preset_dialog_title">Edit favourite</string>
+  <string name="preset_dialog_title">Edit preset</string>
   <string name="preset_dialog_remove">Remove</string>
   <string name="preset_dialog_replace">Replace</string>
   <string name="preset_dialog_cancel">Cancel</string>

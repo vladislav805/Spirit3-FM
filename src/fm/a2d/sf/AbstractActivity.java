@@ -5,8 +5,8 @@ import android.os.Bundle;
 import android.app.Dialog;
 import android.content.Intent;
 
-public interface gui_gap {
-  public boolean gap_state_set(String state);
+public interface AbstractActivity {
+  public boolean setState(String state);
   public void onReceivedUpdates(Intent intent);
-  public void gap_gui_clicked(View v);
+  public void onClickView(View v);
 }

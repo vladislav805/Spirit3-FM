@@ -20,7 +20,7 @@ import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
-public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickListener {
+public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnLongClickListener {
 
   private static final String TAG = "GUI_GUI";
 
@@ -94,7 +94,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
 
   // Lifecycle API
 
-  public boolean gap_state_set(String state) {
+  public boolean setState(String state) {
     boolean ret = false;
     if (state.equalsIgnoreCase("start"))
       ret = gui_start();
@@ -846,7 +846,7 @@ public class gui_gui implements gui_gap, View.OnClickListener, View.OnLongClickL
     mApi.key_set("audio_stereo", val);
   }
 
-  public void gap_gui_clicked(View view) {
+  public void onClickView(View view) {
 
     int id = view.getId();
     switch (id) {

@@ -32,7 +32,7 @@
       android:launchMode="singleInstance"
       android:theme="@android:style/Theme.DeviceDefault" >
     <activity
-        android:name="fm.a2d.sf.gui_act"
+        android:name="fm.a2d.sf.MainActivity"
         android:launchMode="singleInstance"
         android:screenOrientation="portrait" >
       <intent-filter>
@@ -43,7 +43,7 @@
 
     <!-- ! Need separate process or get fg/bg problems !!! -->
     <service
-        android:name="fm.a2d.sf.svc_svc"
+        android:name="fm.a2d.sf.MainService"
         android:process=":s"
         android:label="Spirit2 Free FM Service"
         android:enabled="true"

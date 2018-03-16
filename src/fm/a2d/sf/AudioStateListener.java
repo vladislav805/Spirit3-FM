@@ -3,7 +3,7 @@
 
 package fm.a2d.sf;
 
-public interface ServiceAudioAPIImpl {
+public interface AudioStateListener {
 
   public abstract String audio_sessid_get ();
 

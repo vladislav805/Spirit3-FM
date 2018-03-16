@@ -1,7 +1,6 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
-import android.app.Dialog;
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
@@ -12,13 +11,13 @@ import android.content.IntentFilter;
 
 // GUI Activity:
 
-public class gui_act extends Activity {
+public class MainActivity extends Activity {
 
   public static com_api m_com_api = null;
   private static int stat_creates = 1;
   private static BroadcastReceiver mBroadcastListener = null;
 
-  private gui_gap m_gui = null;
+  private AbstractActivity m_gui = null;
   private Context mContext = null;
 
   // Lifecycle:
@@ -64,7 +63,7 @@ public class gui_act extends Activity {
   private void gui_start() {
     try {
       m_gui = new gui_gui(mContext, m_com_api); // Instantiate UI
-      if (!m_gui.gap_state_set("start")) { // Start UI. If error...
+      if (!m_gui.setState("start")) { // Start UI. If error...
         com_uti.loge("gui_start error");
         m_gui = null;
       } else {
@@ -79,7 +78,7 @@ public class gui_act extends Activity {
     try {
       if (m_gui == null)
         com_uti.loge("already stopped");
-      else if (!m_gui.gap_state_set("stop"))                          // Stop UI. If error...
+      else if (!m_gui.setState("stop"))                          // Stop UI. If error...
         com_uti.loge("gui_stop error");
       else
         com_uti.logd("gui_stop OK");
@@ -135,7 +134,7 @@ public class gui_act extends Activity {
   }
 
   public void gap_gui_clicked(View v) {
-    m_gui.gap_gui_clicked(v);
+    m_gui.onClickView(v);
   }
 
 }

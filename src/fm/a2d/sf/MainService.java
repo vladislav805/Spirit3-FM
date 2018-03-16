@@ -3,7 +3,6 @@ package fm.a2d.sf;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -14,8 +13,8 @@ import android.widget.Toast;
 import java.util.Timer;
 import java.util.TimerTask;
 
-// Service class implements Tuner API callbacks & Service Audio API callback
-public class svc_svc extends Service implements svc_tcb, svc_acb {
+// MainService class implements Tuner API callbacks & MainService Audio API callback
+public class MainService extends android.app.Service implements ServiceTunerCallback, ServiceAudioCallback {
 
   // Also see AndroidManifest.xml.
 
@@ -33,7 +32,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   // Instance data:
   private Context mContext = this;
   private com_api mApi = null;
-  private ServiceTunerAPIImpl mTunerAPI = null;
+  private TunerAPIInterface mTunerAPI = null;
   private svc_aud mAudioAPI = null;
 
 
@@ -74,7 +73,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
       }
 
       mAudioAPI = new svc_aud(this, this, mApi); // Instantiate audio        class
-      mTunerAPI = new svc_tnr(this, this, mApi);  // Instantiate tuner        class
+      mTunerAPI = new ServiceTuner(this, this, mApi);  // Instantiate tuner        class
     } catch (Throwable e) {
       e.printStackTrace();
     }
@@ -482,7 +481,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   }
 
 
-    // Callback: tuner_state_chngd & tuner_state_set in ServiceTunerAPIImpl/tnr_afm calls cb_tuner_state indirectly w/ Stop, Starting, Pause
+    // Callback: tuner_state_chngd & tuner_state_set in TunerAPIInterface/tnr_afm calls cb_tuner_state indirectly w/ Stop, Starting, Pause
   private void cb_tuner_state (String tuner_state) {
     com_uti.logd ("tuner_state: " + tuner_state);
     if (tuner_state.equalsIgnoreCase ("starting") || tuner_state.equalsIgnoreCase ("start")) {  // If tuner = Start or Starting...
@@ -590,7 +589,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     // Tuner API callbacks:
 
 
-    // Single Tuner Sub-Service callback expands to other functions:
+    // Single Tuner Sub-MainService callback expands to other functions:
 
   public void cb_tuner_key(String key, String val) {
     com_uti.logx ("key: " + key + "  val: " + val);
@@ -700,7 +699,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
     return ("libs2t_gen.so");
   }
 
-  // Hardware / API dependent part of svc_svc:
+  // Hardware / API dependent part of MainService:
   private int files_init() {
     com_uti.logd ("starting...");
 
@@ -928,7 +927,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   private void notif_state_set (boolean state) {                        // Called only by onCreate w/ state = true and onDestroy w/ state = false
     com_uti.logd ("state: " + state);
     if (!state) { // Notifications off, go to idle non-foreground state
-      stopForeground (true); // Service not in foreground state and remove notification (true)
+      stopForeground (true); // MainService not in foreground state and remove notification (true)
       return;
     }
 
@@ -937,7 +936,7 @@ public class svc_svc extends Service implements svc_tcb, svc_acb {
   }
 
   private void showNotificationAndStartForeground(boolean needStartForeground) {
-    Intent mainInt = new Intent(mContext, gui_act.class);
+    Intent mainInt = new Intent(mContext, MainActivity.class);
     mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
     PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, 134217728);
 

@@ -3,7 +3,7 @@
 
 package fm.a2d.sf;
 
-public interface svc_tcb {
+public interface ServiceTunerCallback {
 
   public abstract void cb_tuner_key          (String key, String val);
 

@@ -12,8 +12,6 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.AudioTrack;
-import android.os.Looper;
-import android.widget.Toast;
 
 import java.lang.reflect.Method;
 import java.io.RandomAccessFile;
@@ -21,14 +19,14 @@ import java.util.Timer;
 import java.util.Locale;
 
 
-public class svc_aud implements ServiceAudioAPIImpl, AudioManager.OnAudioFocusChangeListener {
+public class svc_aud implements AudioStateListener, AudioManager.OnAudioFocusChangeListener {
 
   private static int stat_constrs = 1;
 
   private AudioManager m_AM = null;
   private RadioRecorder mRecorder = null;
   private Context m_context = null;
-  private svc_acb m_svc_acb = null;
+  private ServiceAudioCallback m_svc_acb = null;
   private com_api m_com_api = null;
 
   private boolean old_htc = false;
@@ -112,8 +110,8 @@ public class svc_aud implements ServiceAudioAPIImpl, AudioManager.OnAudioFocusCh
 
   // used for "new AudioTrack"        in audio_start()
   // used for requestAudioFocus       in focus_set()  (via audio_start()/audio_stop()
-  // used for getStream(Max)Volume    in svc_svc:radio_status_send()  for unused volume reporting
-  // used for setVolumeControlStream  in gui_act:onCreate()
+  // used for getStream(Max)Volume    in MainService:radio_status_send()  for unused volume reporting
+  // used for setVolumeControlStream  in MainActivity:onCreate()
   private int audio_stream = AudioManager.STREAM_MUSIC;
 
   private int in_spkr_call_vol_poll_tmr_hndlr = 0;
@@ -138,7 +136,7 @@ public class svc_aud implements ServiceAudioAPIImpl, AudioManager.OnAudioFocusCh
 
   // Code:
 
-  public svc_aud(Context c, svc_acb cb_aud, com_api svc_com_api) {                              // Constructor
+  public svc_aud(Context c, ServiceAudioCallback cb_aud, com_api svc_com_api) {                              // Constructor
 
     com_uti.logd("stat_constrs: " + stat_constrs++);
 
@@ -290,7 +288,7 @@ API level 17 / 4.2+
 
   // Player and overall audio state control: (public's now via m_com_api)
 
-  public String audio_state_set(String desired_state) {                // Called only by svc_svc:audio_state_set() & svc_svc:audio_start()
+  public String audio_state_set(String desired_state) {                // Called only by MainService:audio_state_set() & MainService:audio_start()
     com_uti.logd("desired_state: " + desired_state + "  current audio_state: " + m_com_api.audio_state);
     if (desired_state.equalsIgnoreCase("toggle")) {                    // TOGGLE:
       if (m_com_api.audio_state.equalsIgnoreCase("start"))
@@ -1022,7 +1020,7 @@ if (intent != null)
   }
 
   // CAN_DUCK
-  // Called by svc_svc:onStartCommand() (change from UI/Widget) & svc_svc:audio_state_set() (at start from prefs)
+  // Called by MainService:onStartCommand() (change from UI/Widget) & MainService:audio_state_set() (at start from prefs)
   public String audio_output_set(String new_audio_output) {
 
     com_uti.logd("current api audio_state: " + m_com_api.audio_state + "  current api audio_output: " + m_com_api.audio_output + "  new_audio_output: " + new_audio_output);

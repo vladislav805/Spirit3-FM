@@ -1,6 +1,5 @@
 package fm.a2d.sf;
 
-import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,8 +39,8 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
 //        return;
 //      }
 
-      // radio_update above must happen before state checking to see if media button events can be sent to svc_svc
-      /*if (gui_act.m_com_api.tuner_state.equalsIgnoreCase("stop")) {
+      // radio_update above must happen before state checking to see if media button events can be sent to MainService
+      /*if (MainActivity.m_com_api.tuner_state.equalsIgnoreCase("stop")) {
         com_uti.logd("tuner_state == stop, no action");
         return;
       }*/
@@ -51,7 +50,7 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
 
         case android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY:
           com_uti.logd("audio noisy");
-          //gui_act.m_com_api.key_set("audio_state", "pause");
+          //MainActivity.m_com_api.key_set("audio_state", "pause");
           break;
 
         case Intent.ACTION_NEW_OUTGOING_CALL:
@@ -62,7 +61,7 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
           break;
 
         default:
-          TelephonyManager tm = (TelephonyManager) context.getSystemService(Service.TELEPHONY_SERVICE);
+          TelephonyManager tm = (TelephonyManager) context.getSystemService(android.app.Service.TELEPHONY_SERVICE);
           switch (tm.getCallState()) {
 
             case TelephonyManager.CALL_STATE_RINGING:
@@ -86,8 +85,8 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
   }
 
   private void send(Context ctx, String key, String value) {
-    Intent intent = new Intent(svc_svc.ACTION_SET);
-    intent.setClass(ctx, svc_svc.class);
+    Intent intent = new Intent(MainService.ACTION_SET);
+    intent.setClass(ctx, MainService.class);
     intent.putExtra(key, value);
     ctx.startService(intent);
   }

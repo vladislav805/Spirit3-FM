@@ -2,7 +2,7 @@ package fm.a2d.sf;
 
 // Tuner API
 
-public interface ServiceTunerAPIImpl {
+public interface TunerAPIInterface {
 
   public String getTunerValue(String key);
 /*

@@ -8,9 +8,9 @@ import java.util.Timer;
 
 import android.content.Context;
 
-public class svc_tnr implements ServiceTunerAPIImpl {
+public class ServiceTuner implements TunerAPIInterface {
 
-  private svc_tcb   m_svc_tcb;
+  private MainService mTuner;
   private com_api mApi;
 
   private boolean mNeedPolling = true;
@@ -24,9 +24,9 @@ public class svc_tnr implements ServiceTunerAPIImpl {
   private String    last_poll_rds_ps    = "-1";
   private String    last_poll_rds_rt    = "-1";
 
-  public svc_tnr (Context c, svc_tcb cb_tnr, com_api svc_com_api) { // Context & Tuner API callback constructor
+  public ServiceTuner(Context c, MainService cb_tnr, com_api svc_com_api) { // Context & Tuner API callback constructor
     com_uti.logd ("constructor context: " + c + "  cb_tnr: " + cb_tnr);
-    m_svc_tcb = cb_tnr;
+    mTuner = cb_tnr;
     mApi = svc_com_api;
   }
 
@@ -215,7 +215,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       }
     }
 
-    m_svc_tcb.cb_tuner_key("tuner_state", mApi.tuner_state);
+    mTuner.cb_tuner_key("tuner_state", mApi.tuner_state);
 
     return mApi.tuner_state;
   }
@@ -257,29 +257,29 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
         mApi.int_tuner_freq = com_uti.int_get(mApi.tuner_freq);
         if (mApi.int_tuner_freq >= min_freq && last_poll_freq != mApi.int_tuner_freq) {
           last_poll_freq = mApi.int_tuner_freq;
-          m_svc_tcb.cb_tuner_key(C.TUNER_FREQUENCY, mApi.tuner_freq); // Inform change
+          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, mApi.tuner_freq); // Inform change
         }
       }
 
       // RSSI:
       mApi.tuner_rssi = com_uti.s2d_get("tuner_rssi");
       if (last_poll_rssi != (last_poll_rssi = com_uti.int_get(mApi.tuner_rssi)))
-        m_svc_tcb.cb_tuner_key("tuner_rssi", mApi.tuner_rssi);                        // Inform change
+        mTuner.cb_tuner_key("tuner_rssi", mApi.tuner_rssi);                        // Inform change
 
       // MOST:
       mApi.tuner_most = com_uti.s2d_get("tuner_most");
       if (!last_poll_most.equals(mApi.tuner_most))
-        m_svc_tcb.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
+        mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
 
       // RDS ps:
       mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");
       if (!last_poll_rds_ps.equals(mApi.tuner_rds_ps))
-        m_svc_tcb.cb_tuner_key("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
+        mTuner.cb_tuner_key("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
 
       // RDS rt:
       mApi.tuner_rds_rt = com_uti.s2d_get("tuner_rds_rt                                                                    ").trim();    // !!!! Must have ~ 64 characters due to s2d design.
       if (!last_poll_rds_rt.equals(mApi.tuner_rds_rt))
-        m_svc_tcb.cb_tuner_key("tuner_rds_rt", last_poll_rds_rt = mApi.tuner_rds_rt); // Inform change
+        mTuner.cb_tuner_key("tuner_rds_rt", last_poll_rds_rt = mApi.tuner_rds_rt); // Inform change
 
       // RDS pi:
       mApi.tuner_rds_pi = com_uti.s2d_get("tuner_rds_pi");
@@ -287,7 +287,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       if (last_poll_rds_pi != rds_pi) {
         last_poll_rds_pi = rds_pi;
         mApi.tuner_rds_picl = com_uti.tnru_rds_picl_get(mApi.tuner_band, rds_pi);
-        m_svc_tcb.cb_tuner_key("tuner_rds_pi", mApi.tuner_rds_pi);                    // Inform change
+        mTuner.cb_tuner_key("tuner_rds_pi", mApi.tuner_rds_pi);                    // Inform change
       }
 
       // RDS pt:
@@ -296,7 +296,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       if (last_poll_rds_pt != rds_pt) {
         last_poll_rds_pt = rds_pt;
         mApi.tuner_rds_pt = mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get(mApi.tuner_band, rds_pt);
-        m_svc_tcb.cb_tuner_key("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
+        mTuner.cb_tuner_key("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
       }
     }
   }

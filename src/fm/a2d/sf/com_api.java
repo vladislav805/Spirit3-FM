@@ -81,8 +81,8 @@ public class com_api {
 
   public void key_set(String key, String val, String key2, String val2) {  // Presets currently require simultaneous preset frequency and name
     com_uti.logd("key: " + key + "  val: " + val + "  key2: " + key2 + "  val2: " + val2);
-    Intent intent = new Intent(svc_svc.ACTION_SET);
-    intent.setClass(m_context, svc_svc.class);
+    Intent intent = new Intent(MainService.ACTION_SET);
+    intent.setClass(m_context, MainService.class);
     intent.putExtra(key, val);
     intent.putExtra(key2, val2);
     m_context.startService(intent);
@@ -90,8 +90,8 @@ public class com_api {
 
   public void key_set(String key, String val) {
     com_uti.logd("key: " + key + "  val: " + val);
-    Intent intent = new Intent(svc_svc.ACTION_SET);
-    intent.setClass(m_context, svc_svc.class);
+    Intent intent = new Intent(MainService.ACTION_SET);
+    intent.setClass(m_context, MainService.class);
     intent.putExtra(key, val);
     m_context.startService(intent);
   }
@@ -202,7 +202,7 @@ public class com_api {
   }
 
   public static PendingIntent createPendingIntent(Context context, String key, String val) {
-    Intent intent = new Intent(svc_svc.ACTION_SET).setClass(context, svc_svc.class).putExtra(key, val);
+    Intent intent = new Intent(MainService.ACTION_SET).setClass(context, MainService.class).putExtra(key, val);
     return PendingIntent.getService(context, ++curr_pending_intent_num, intent, 134217728);
   }
 

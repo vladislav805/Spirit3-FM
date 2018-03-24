@@ -643,7 +643,6 @@ static void * rx_thread(void * arg) {
   int ret = 0;
   int stereo = 0;
   int sleep_ms = 101;
-  int seconds_disp = 60;
 
   while (rx_thread_running) { // Loop while running
     int ctr = 0;
@@ -663,8 +662,8 @@ static void * rx_thread(void * arg) {
         return NULL;
       }
 
-      int mod_factor = seconds_disp * (1010 / sleep_ms);
-      if (rx_thread_ctr % mod_factor == 0) { // Every seconds_disp seconds...
+      int mod_factor = 30 * (1010 / sleep_ms);
+      if (rx_thread_ctr % mod_factor == 0) { // Every 30 seconds...
         loge("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
 //        logd("capabilities = %d", rds_has_support_get());
         qc_test();

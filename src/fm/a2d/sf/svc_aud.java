@@ -352,7 +352,7 @@ API level 17 / 4.2+
 
     focus_set(true);                                                   // Get audio focus
 
-    pcm_audio_start(true);                                             // Start input and output
+    pcm_audio_start();                                             // Start input and output
 
     m_com_api.audio_state = "start";
     if (m_svc_acb != null)
@@ -565,14 +565,12 @@ if (intent != null)
   // Focus:
   private void focus_set(boolean focus_request) {
     com_uti.logd("focus_request: " + focus_request);
-    int ret = 0;
-    if (focus_request)                                                  // If focus desired...
-      ret = m_AM.requestAudioFocus(this, audio_stream, AudioManager.AUDIOFOCUS_GAIN);
-      //ret = m_AM.requestAudioFocus (this, AudioManager.STREAM_MUSIC, AudioManager.AUDIOFOCUS_GAIN);
-    else                                                                // If focus return...
-      ret = m_AM.abandonAudioFocus(this);
-    if (ret != AudioManager.AUDIOFOCUS_REQUEST_GRANTED)
-      com_uti.loge("ret: " + ret);
+
+    if (focus_request) { // If focus desired...
+      m_AM.requestAudioFocus(this, audio_stream, AudioManager.AUDIOFOCUS_GAIN);
+    } else {// If focus return...
+      m_AM.abandonAudioFocus(this);
+    }
   }
 
   public void onAudioFocusChange(int focusChange) {
@@ -988,10 +986,9 @@ if (intent != null)
   //pcm_read_runnable
 //pcm_write_runnable
 //min_pcm
-  private void pcm_audio_start(boolean include_read) { // Start input and output   Called only by audio_output_set() (for restart) or audio_start ()
+  private void pcm_audio_start() { // Start input and output   Called only by audio_output_set() (for restart) or audio_start ()
     pcm_write_start();
-    if (include_read)
-      pcm_read_start();
+    pcm_read_start();
     if (m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
       dai_set(true);
   }
@@ -1055,7 +1052,7 @@ if (intent != null)
     m_com_api.audio_output = new_audio_output;                          // Set new audio output
 
     if (need_restart)
-      pcm_audio_start(true);                                           // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
+      pcm_audio_start();                                           // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
     else if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
       dai_set(true);
 

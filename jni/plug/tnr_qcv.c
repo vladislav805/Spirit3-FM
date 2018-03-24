@@ -113,7 +113,7 @@ int chip_imp_api_on(int freq_lo, int freq_hi, int freq_inc) {
     loge("chip_imp_api_on init error 0x%x after %d milliseconds", value, i);
   }
 
-  ms_sleep(1000);
+  ms_sleep(500);
 
   //dev_hndl = open ("/dev/radio0", O_RDONLY | O_NONBLOCK);
   dev_hndl = open("/dev/radio0", O_RDWR | O_NONBLOCK);
@@ -447,11 +447,52 @@ int chip_ctrl_set(int id, int value) {
   int ret = ioctl(dev_hndl, VIDIOC_S_CTRL, &v4l_ctrl);
 
   if (ret < 0) {
-    loge ("chip_ctrl_set VIDIOC_S_CTRL error: %d  id: 0x%x  value: %d", errno, id, value);
+    loge("chip_ctrl_set      VIDIOC_S_CTRL FAIL %d id: 0x%x  value: %d", errno, id, value);
     //return (-1);
   } else {
-    logd ("chip_ctrl_set VIDIOC_S_CTRL OK id: %d  value: %d", id, value);
+    logd("chip_ctrl_set      VIDIOC_S_CTRL  OK     id: 0x%x  value: %d", id, value);
   }
+
+  return ret;
+}
+
+/**
+ * Запрос на то, что умеет устройство
+ */
+int chip_capb_get() {
+  int ret;
+
+  struct v4l2_capability v4l_cap;
+  memset(v4l_cap.reserved, 0, sizeof(v4l_cap.reserved));
+
+  ret = ioctl(dev_hndl, VIDIOC_QUERYCAP, &v4l_cap);
+  if (ret < 0) {
+      return -1;
+  } else {
+      return v4l_cap.capabilities;
+  }
+}
+
+int chip_tuner_get() {
+  int ret = 0;
+  v4l_tuner.index = 0; // Tuner index = 0
+  v4l_tuner.type = V4L2_TUNER_RADIO;
+  memset(v4l_tuner.reserved, 0, sizeof(v4l_tuner.reserved));
+
+  // !! Need power on first ??
+
+  /**
+   * https://linuxtv.org/downloads/v4l-dvb-apis/uapi/v4l/vidioc-g-tuner.html
+   */
+  ret = ioctl(dev_hndl, VIDIOC_G_TUNER, &v4l_tuner);
+
+  if (ret < 0) {
+    loge("chip_tuner_get: error");
+    return -1;
+  }
+
+  logd("chip_tuner_get VIDIOC_G_TUNER success: capability: 0x%x; rxsubchans: %d; audmode: %d; signal: %d", v4l_tuner.capability,  v4l_tuner.rxsubchans, v4l_tuner.audmode, v4l_tuner.signal);
+  logd("chip_tuner_get VIDIOC_G_TUNER rds support: %d", v4l_tuner.capability & V4L2_TUNER_CAP_RDS_CONTROLS);
 
   return ret;
 }
@@ -472,6 +513,15 @@ char * prop_get(const char * prop) {
 int v4l_transmit = 0;
 int v4l_antenna = 0;
 
+#define V4L2_CTRL_CLASS_FM_TX       0x009b0000     /* FM Modulator controls */
+#define V4L2_TUNER_CAP_RDS          0x0080         /* RDS capture is supported */
+#define V4L2_TUNER_CAP_RDS_BLOCK_IO 0x0100
+#define V4L2_TUNER_CAP_RDS_CONTROLS 0x0200
+#define V4L2_CID_FM_TX_CLASS_BASE   (V4L2_CTRL_CLASS_FM_TX | 0x900)
+#define V4L2_CID_FM_TX_CLASS        (V4L2_CTRL_CLASS_FM_TX | 1)
+#define V4L2_CID_TUNE_POWER_LEVEL   (V4L2_CID_FM_TX_CLASS_BASE + 113)
+
+
 /**
  * Включение чипа
  */
@@ -482,21 +532,6 @@ int chip_imp_pwr_on(int pwr_rds) {
     loge("dev_hndl <= 0");
     return -1;
   }
-
-/*  ret = chip_stro_req_set (3); // Mono, to set index = 0 ?
-  if (ret) {
-    ret = chip_stro_req_set (0); // Stereo
-    if (ret) {
-      //return (ret);
-      loge ("chip_imp_pwr_on chip_stro_req_seterror: %d", ret);                 // Continue since we use chip_imp_pwr_on () to detect V4L now and this is not vital
-    }
-  }*/
-    //chip_imp_mute_set (1);                                                      // Mute for now   !! Hangs when not on yet
-
-  #define V4L2_CTRL_CLASS_FM_TX      0x009b0000      /* FM Modulator controls */
-  #define V4L2_CID_FM_TX_CLASS_BASE  (V4L2_CTRL_CLASS_FM_TX | 0x900)
-  //#define V4L2_CID_FM_TX_CLASS       (V4L2_CTRL_CLASS_FM_TX | 1)
-  #define V4L2_CID_TUNE_POWER_LEVEL  (V4L2_CID_FM_TX_CLASS_BASE + 113)
 
   int new_state = 1; // Rx
   v4l_transmit = 0; // !!
@@ -517,9 +552,9 @@ int chip_imp_pwr_on(int pwr_rds) {
     logd("chip_imp_pwr_on PRIVATE_IRIS_STATE 1 success for: %d", new_state);
   }
 
-  //chip_ctrl_get (V4L2_CID_TUNE_POWER_LEVEL);
-  chip_ctrl_set (V4L2_CID_TUNE_POWER_LEVEL, 7);
-  //chip_ctrl_get (V4L2_CID_TUNE_POWER_LEVEL);
+  //chip_ctrl_get(V4L2_CID_TUNE_POWER_LEVEL);
+  chip_ctrl_set(V4L2_CID_TUNE_POWER_LEVEL, 7);
+  //chip_ctrl_get(V4L2_CID_TUNE_POWER_LEVEL);
 
   v4l_tuner.index = 0; // Tuner index = 0
   v4l_tuner.type = V4L2_TUNER_RADIO;
@@ -575,9 +610,9 @@ int chip_imp_pwr_on(int pwr_rds) {
     // 0 = External/headset antenna for OneS/XL/Evo 4G/All others
     // 1 = internal for Xperia T - Z1
     ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_ANTENNA, v4l_antenna - 2);
-    logd ("chip_imp_pwr_on PRIVATE_IRIS_ANTENNA ret: %d  v4l_antenna: %d", ret, v4l_antenna);
+    logd("chip_imp_pwr_on PRIVATE_IRIS_ANTENNA ret: %d  v4l_antenna: %d", ret, v4l_antenna);
   }
-
+// здесь была инициализация RDS, судя по дезассеблеру
   band_setup();
 
   logd("chip_imp_pwr_on done");
@@ -604,13 +639,13 @@ int chip_imp_pwr_off(int pwr_rds) {
   /**
    * 0 = FM_OFF, 1 = FM_RECV, 2 = FM_TRANS, 3 = FM_RESET
    */
-  if (chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_STATE, 0) < 0) {
+  if (chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_STATE, 0) < 0) {
     loge("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 error");
   } else {
     logd("chip_imp_pwr_off PRIVATE_IRIS_STATE 0 success");
   }
 
-  ms_sleep(2000);
+  ms_sleep(800);
   logd("chip_imp_pwr_off done");
   return 0;
 }
@@ -638,7 +673,7 @@ int chip_imp_freq_set(int freq) {
   ret = ioctl(dev_hndl, VIDIOC_S_FREQUENCY, &v4l_freq);
 
   if (ret < 0) {
-    loge ("chip_imp_freq_set VIDIOC_S_FREQUENCY errno: %d", errno);
+    loge("chip_imp_freq_set VIDIOC_S_FREQUENCY errno: %d", errno);
     return (-1);
   }
 
@@ -688,7 +723,7 @@ int chip_imp_stro_set(int stro) { //
   /**
    * https://linuxtv.org/downloads/v4l-dvb-apis/uapi/v4l/vidioc-g-tuner.html?highlight=v4l2_tuner_mode_stereo
    */
-  v4l_tuner.audmode = stro ? V4L2_TUNER_MODE_STEREO : V4L2_TUNER_MODE_MONO;
+  v4l_tuner.audmode = /*stro ?*/ V4L2_TUNER_MODE_STEREO /*: V4L2_TUNER_MODE_MONO*/ ;
 
   ret = ioctl(dev_hndl, VIDIOC_S_TUNER, &v4l_tuner);
   if (ret < 0) {
@@ -1112,23 +1147,6 @@ const char SPACE_CHAR = 32;
 const int RT_DATA_OFFSET_IND = 5;
 const int RT_A_B_FLAG_IND = 4;
 
-int rds_has_support_get() {
-  int ret;
-
-  struct v4l2_capability v4l_cap;
-  //v4l_cap.tuner = 0; // Tuner index = 0
-  //v4l_cap.type = V4L2_TUNER_RADIO;
-  memset(v4l_cap.reserved, 0, sizeof(v4l_cap.reserved));
-
-  ret = ioctl(dev_hndl, VIDIOC_QUERYCAP, &v4l_cap);
-  if (ret < 0) {
-      return -1;
-  } else {
-      return v4l_cap.capabilities;
-  }
-}
-
-
 
 /*
   int rbds_set (int rbds) {
@@ -1317,18 +1335,15 @@ void qc_test() {
   int argc = 0;
   char ** argv = NULL;
 
-  //int src_mo = 0;
-  int sft_mu = 0;
-  int sig_th = 0;
-  int snr_th = 0;
-  int ihi_th = 0;
-  int ilo_th = 0;
-  //src_mo = chip_ctrl_get (V4L2_CID_PRIVATE_IRIS_SRCHMODE);
-  sft_mu = chip_ctrl_get (V4L2_CID_PRIVATE_IRIS_SOFT_MUTE);
-  sig_th = chip_ctrl_get (V4L2_CID_PRIVATE_IRIS_SIGNAL_TH);
-  snr_th = chip_ctrl_get (V4L2_CID_PRIVATE_SINR_THRESHOLD);
-  ihi_th = chip_ctrl_get (V4L2_CID_PRIVATE_INTF_HIGH_THRESHOLD);
-  ilo_th = chip_ctrl_get (V4L2_CID_PRIVATE_INTF_LOW_THRESHOLD);
+  int src_mo = chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_SRCHMODE);
+  int sft_mu = chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_SOFT_MUTE);
+  int sig_th = chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_SIGNAL_TH);
+  int snr_th = chip_ctrl_get(V4L2_CID_PRIVATE_SINR_THRESHOLD);
+  int ihi_th = chip_ctrl_get(V4L2_CID_PRIVATE_INTF_HIGH_THRESHOLD);
+  int ilo_th = chip_ctrl_get(V4L2_CID_PRIVATE_INTF_LOW_THRESHOLD);
+  int rds_st = chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSON);
+  int rds_bf = chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSD_BUF);
+
 //D/v4l chip_ctrl_get VIDIOC_G_CTRL OK:         id:                                SOFT_MUTE 30 (0x800001e)  value:   1 (0x01)  0/1     BAD: 2
 //D/v4l chip_ctrl_get VIDIOC_G_CTRL OK:         id:                                SIGNAL_TH  8 (0x8000008)  value:   0 (0x00)  0
 //D/v4l chip_ctrl_get VIDIOC_G_CTRL OK:         id:                           SINR_THRESHOLD 47 (0x800002f)  value:   7 (0x07)  3/7
@@ -1337,35 +1352,28 @@ void qc_test() {
 
 //D/v4l chip_ctrl_set VIDIOC_S_CTRL OK:         id:                                SOFT_MUTE 30 (0x800001e)  value:   1 (0x01)
 
-  if (argc > 1)
-    sft_mu = atoi (argv [1]);
-  if (argc > 2)
-    sig_th = atoi (argv [2]);
-  if (argc > 3)
-    snr_th = atoi (argv [3]);
-  if (argc > 4)
-    ihi_th = atoi (argv [4]);
-  if (argc > 5)
-    ilo_th = atoi (argv [5]);
+  char* sepLine = "=============================";
 
-  logd ("sft_mu: %d", sft_mu);
+  logd(sepLine);
+  logd("  Search mode: %d", src_mo);
+  logd("  Soft mute: %d", sft_mu);
+  logd("  Signal threshold: %d", sig_th);
+  logd("  snr_th: %d", snr_th);
+  logd("  Intf high threshold: %d", ihi_th);
+  logd("  Intf low threshold: %d", ilo_th);
+  logd("  RDS on: %d", rds_st);
+  logd("  RDS buffer: %d", rds_bf);
+  logd(sepLine);
+  chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_RDSON, 1);
+  logd(sepLine);
+  logd("  RDS on: %d", (int) chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSON));
+  logd("  RDS std: %d", (int) chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDS_STD));
+  logd("  tuner: %d", (int) chip_tuner_get());
+
+  logd(sepLine);
 
   //src_mo = 1;
   //if (argc > 1)
   //  chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_SRCHMODE, src_mo);
-
-  if (sft_mu != -1000000 && argc > 1)
-//    if (sft_mu != -1000000)
-    chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_SOFT_MUTE, sft_mu);
-
-
-  if (sig_th != -1000000 && argc > 2)
-    chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_SIGNAL_TH, sig_th);
-  if (snr_th != -1000000 && argc > 3)
-    chip_ctrl_set (V4L2_CID_PRIVATE_SINR_THRESHOLD, snr_th);
-  if (ihi_th != -1000000 && argc > 4)
-    chip_ctrl_set (V4L2_CID_PRIVATE_INTF_HIGH_THRESHOLD, ihi_th);
-  if (ilo_th != -1000000 && argc > 5)
-    chip_ctrl_set (V4L2_CID_PRIVATE_INTF_LOW_THRESHOLD, ilo_th);
 
 }

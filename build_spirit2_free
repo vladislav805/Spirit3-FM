@@ -13,11 +13,8 @@ export PROJ="sf"
 #mkdir libs/armeabi
 
 android update project --target android-21 --path . --name $PROJ
-
-
 echo /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build start
 time /home/vlad805/Android/Sdk/ndk-bundle/build/ndk-build 2>&1 | grep "error:"
-
 mv libs/armeabi/s2d libs/armeabi/libs2d.so
 mv libs/armeabi/ssd libs/armeabi/libssd.so
 

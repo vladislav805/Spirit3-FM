@@ -636,6 +636,8 @@ int evt_get(int just_poll) { // Called only from af_switch() w/ just_poll=1 or r
 int rx_thread_running = 0;
 int rx_thread_ctr = 0;
 
+void qc_test();
+
 static void * rx_thread(void * arg) {
   logd("rx_thread: %p", arg);
   int ret = 0;
@@ -663,8 +665,9 @@ static void * rx_thread(void * arg) {
 
       int mod_factor = seconds_disp * (1010 / sleep_ms);
       if (rx_thread_ctr % mod_factor == 0) { // Every seconds_disp seconds...
-        logd("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
-        logd("capabilities = %d", rds_has_support_get());
+        loge("rx_thread HERE: %3.3d  evt: %3.3d", rx_thread_ctr, evt);
+//        logd("capabilities = %d", rds_has_support_get());
+        qc_test();
       }
     }
 

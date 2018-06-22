@@ -734,6 +734,9 @@ int tuner_init() {
     int ret = native_alsa_cmd (3, key, value);
     return (ret);
   }
+  static int alsa_long_set(char *key, long value) { // неправильно
+    return native_alsa_cmd(2, key, value);
+  }
 
   static int sys_run (char * cmd) {
     int ret = system (cmd);                                             // !! Binaries like ssd that write to stdout cause C system() to crash !
@@ -766,16 +769,62 @@ int tuner_init() {
 
 // AFE_PCM_TX ???
 // https://stackoverflow.com/questions/21024851/redirecting-audio-creating-alternate-sound-paths-in-android
-int qcv_digital_input_on () {
-  alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
-  alsa_bool_set ("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
-  ms_sleep (100);
-  return (0);
+int qcv_digital_input_on() {
+  alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 1);
+  alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 0);                 // Turn off microphone path
+
+  // START FROM LATEST VERSION
+  //alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 0); // Turn off microphone path to MM 1 (already was)
+  //alsa_enum_set("SLIM_0_TX Channels", 1);          // 2 Set SLIMBus TX channels     to "2"
+  //alsa_enum_set("SLIM_0_TX Channels", 0);
+  //alsa_enum_set("SLIM_0_TX Channels", 1);          // 2 Set SLIMBus TX channels     to "2"
+
+  // MotoG, Z1 re-enable camcorder microphone sometimes !
+  alsa_long_set("ADC1 Volume", 0);
+  alsa_long_set("ADC2 Volume", 0);
+  alsa_long_set("ADC3 Volume", 0);
+  //alsa_long_set("ADC4 Volume", 0);                 // ADC4 not used on MOG
+  alsa_long_set("DEC1 Volume", 0);
+  alsa_long_set("DEC2 Volume", 0);                   // Xperia Z1
+  //if (!msm8226_get()) {                              // If not MotoG msm8226 chipset...
+    alsa_long_set("ADC4 Volume", 0);                 // Xperia Z1
+    alsa_long_set("ADC5 Volume", 0);                 // Xperia Z1
+    //alsa_long_set("ADC6 Volume", 0);
+    alsa_long_set("DEC3 Volume", 0);                 // Xperia Z1
+    //alsa_long_set("DEC4 Volume", 0);
+    alsa_long_set("DEC5 Volume", 0);
+    //alsa_long_set ("DEC6 Volume", 0);
+    //alsa_long_set ("DEC7 Volume", 0);
+    //alsa_long_set ("DEC8 Volume", 0);
+    //alsa_long_set ("DEC9 Volume", 0);
+ // }
+
+
+  alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 1); // Internal FM audio source to MM 1
+  //alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 0);    // Turn off microphone path to MM 1
+  // END FROM LATEST VERSION
+  ms_sleep(100);
+  return 0;
 }
-int qcv_digital_input_off () {
-  alsa_bool_set ("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
-  ms_sleep (100);
-  return (0);
+int qcv_digital_input_off() {
+
+  // START FROM LATEST VERSION
+  alsa_long_set("ADC1 Volume", 19);
+  alsa_long_set("ADC2 Volume", 19);
+  alsa_long_set("ADC3 Volume", 19);
+  alsa_long_set("DEC1 Volume", 84);
+  alsa_long_set("DEC2 Volume", 84);
+ // if (!msm8226_get()) {
+    alsa_long_set("ADC4 Volume", 19);
+    alsa_long_set("ADC5 Volume", 19);
+    alsa_long_set("DEC3 Volume", 84);
+    alsa_long_set("DEC5 Volume", 84);
+  //}
+  // END FROM LATEST VERSION
+
+  alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
+  ms_sleep(100);
+  return 0;
 }
 
 int dev_digital_input_on() {

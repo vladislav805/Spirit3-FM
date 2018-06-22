@@ -5,7 +5,7 @@ package fm.a2d.sf;
  */
 public class C {
 
-  public static final int BUILD = 20180316;
+  public static final int BUILD = 20180620;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
   public static final String GUI_START_COUNT = "radio_gui_start_count";

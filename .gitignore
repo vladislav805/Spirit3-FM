@@ -26,3 +26,4 @@ libs/
 bin/
 obj/
 .idea
+local.properties

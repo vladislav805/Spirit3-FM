@@ -38,7 +38,7 @@ public class com_api {
   // RW CFG api for tuner_freq & tuner_thresh consistency issues: CFG vs chip current values
   public String tuner_state = "stop";          // RW ... api States:   stop, start, pause, resume
 
-  public String tuner_band = "";//US";         // RW CFG set Values:   US, EU, JAPAN, CHINA, EU_50K_OFFSET     (Set before Tuner Start)
+  public final String tuner_band = "EU";//US";         // RW CFG set Values:   US, EU, JAPAN, CHINA, EU_50K_OFFSET     (Set before Tuner Start)
   public String tuner_freq = "";//-1";         // RW CFG api Values:   String  form: 50.000 - 499.999  (76-108 MHz)
   public int int_tuner_freq = 0;//-1;          // ""                 Integer form in kilohertz
   public String tuner_stereo = "";//Stereo";   // RW CFG set Values:   mono, stereo, switch, blend, ... ?
@@ -122,7 +122,7 @@ public class com_api {
         radio_name_prst[ctr] = new_radio_name_prst;
     }
 
-    String new_audio_state = extras.getString("audio_state", DEFAULT_DETECT);//stop");
+    String new_audio_state = extras.getString(C.AUDIO_STATE, DEFAULT_DETECT);//stop");
     String new_audio_output = extras.getString("audio_output", DEFAULT_DETECT);//headset");
     String new_audio_stereo = extras.getString("audio_stereo", DEFAULT_DETECT);//Stereo");
     String new_audio_record_state = extras.getString("audio_record_state", DEFAULT_DETECT);//stop");
@@ -148,8 +148,6 @@ public class com_api {
     String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);
     String new_tuner_scan_state = extras.getString(C.TUNER_SCAN_STATE, DEFAULT_DETECT);
 
-    if (!new_tuner_band.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_band = new_tuner_band;
     if (!new_tuner_freq.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_freq = new_tuner_freq;
     if (!new_tuner_stereo.equalsIgnoreCase(DEFAULT_DETECT))

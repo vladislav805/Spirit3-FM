@@ -12,8 +12,6 @@ import android.app.Dialog;
 import android.content.DialogInterface;
 import android.content.Context;
 import android.content.Intent;
-import android.view.animation.Animation;
-import android.view.animation.AnimationUtils;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
 import java.util.Locale;
@@ -45,7 +43,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private TextView mViewRSSI = null;
   private TextView mViewState = null;
   private TextView mViewStereo = null;
-  private TextView mViewBand = null;
   private TextView mViewFrequency = null;
   private TextView mViewRecordDuration = null;
 
@@ -128,7 +125,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewRSSI = (TextView) mActivity.findViewById(R.id.tv_rssi);
     mViewState = (TextView) mActivity.findViewById(R.id.tv_state);  // Phase
     mViewStereo = (TextView) mActivity.findViewById(R.id.tv_most);
-    mViewBand = (TextView) mActivity.findViewById(R.id.tv_band);
 
 //    m_tv_picl = (TextView) mActivity.findViewById(R.id.tv_picl);
 //    m_tv_ps = (TextView) mActivity.findViewById(R.id.tv_ps);
@@ -185,15 +181,11 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     int startGuiCount = com_uti.prefs_get(mContext, C.GUI_START_COUNT, 0);
     startGuiCount++;
 
-    if (startGuiCount <= 1) { // If first 1 runs...
-      mApi.key_set(C.TUNER_BAND, "EU");
-    } else {
-      setTunerBand(com_uti.prefs_get(mContext, C.TUNER_BAND, "EU"));
-    }
+    setTunerBand(com_uti.prefs_get(mContext, C.TUNER_BAND, "EU"));
 
-    onStarted(startGuiCount);
+    openDialogIntro(startGuiCount);
 
-    mApi.key_set("audio_state", "start"); // Start audio service
+    mApi.key_set(C.AUDIO_STATE, C.AUDIO_STATE_START); // Start audio service
 
     updateUIViewsByPowerState(true); // !!!! Move later to Radio API callback
 
@@ -232,13 +224,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       setFrequency(String.valueOf(current / 10.0f));
     }
   };
-
-  /**
-   * Вызывается когда в первый раз происходит запуск приложения
-   */
-  private void onStarted(int count) {
-    openDialogIntro(count);
-  }
 
   /**
    * Enables/disables buttons based on power
@@ -336,7 +321,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private void resetAllViews() {
     mViewState.setText("");
     mViewStereo.setText("");
-    mViewBand.setText("");
     mViewRSSI.setText("");
 //    m_tv_ps.setText("");
 //    m_tv_picl.setText("");
@@ -354,7 +338,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
             .setView(root)
-            .setCancelable(true);
+            .setCancelable(false);
 
     mIntroDialog = dialog.create();
     mIntroDialog.show();
@@ -364,8 +348,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Изменение частотного диапазона
    */
   private void setTunerBand(String band) {
-    mApi.tuner_band = band;
-    com_uti.tnru_band_set(band); // To setup band values; different process than service
+    com_uti.setTunerBand(band); // To setup band values; different process than service
     mApi.key_set(C.TUNER_BAND, band);
   }
 
@@ -548,8 +531,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       //onFrequencyChanged(mApi.getFloatFrequencyMHz());
     }
 
-    mViewBand.setText(mApi.tuner_band);
-
     updateSignalStretch();
 
     if (mApi.tuner_most.equalsIgnoreCase("Mono"))
@@ -704,7 +685,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         break;
 
       case R.id.iv_play_toggle:
-        mApi.key_set("audio_state", "Toggle");
+        mApi.key_set(C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
         break;
 
       case R.id.iv_record:

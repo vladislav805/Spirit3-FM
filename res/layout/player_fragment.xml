@@ -174,18 +174,6 @@
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal"
         android:maxLines="1" />
-    <TextView
-        android:id="@+id/tv_band"
-        android:contentDescription="Band"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:textSize="10dp"
-        android:textStyle="normal"
-        android:textColor="#ffa3a3a3"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:maxLines="1"/>
   </LinearLayout>
 
   <HorizontalScrollView

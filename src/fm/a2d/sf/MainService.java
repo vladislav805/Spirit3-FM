@@ -181,14 +181,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
         tuner_freq_set(val);
       }
 
-      val = extras.getString(C.TUNER_BAND, "");
-      if (!val.isEmpty()) {
-        mTunerAPI.setTunerValue(C.TUNER_BAND, val);
-        com_uti.prefs_set(mContext, C.TUNER_BAND, val);
-        mApi.tuner_band = val;
-        com_uti.tnru_band_set(mApi.tuner_band);
-      }
-
       val = extras.getString("tuner_stereo", "");
       if (!val.isEmpty()) {
         mTunerAPI.setTunerValue("tuner_stereo", val);
@@ -207,7 +199,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
 
 
       // Audio:
-      val = extras.getString("audio_state", "");
+      val = extras.getString(C.AUDIO_STATE, "");
       if (!val.isEmpty()) {
         audio_state_set(val);
       }
@@ -309,7 +301,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
       send_intent.putExtra("radio_freq_prst_" + i, plst_freq [i]);
     }
 
-    send_intent.putExtra("audio_state",        mApi.audio_state);
+    send_intent.putExtra(C.AUDIO_STATE,        mApi.audio_state);
     send_intent.putExtra("audio_output",       mApi.audio_output);
     send_intent.putExtra("audio_stereo",       mApi.audio_stereo);
     send_intent.putExtra("audio_record_state", mApi.audio_record_state);
@@ -557,8 +549,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   private void tuner_prefs_init () { // Load tuner prefs
     String band = com_uti.prefs_get (mContext, C.TUNER_BAND, "EU");
     mTunerAPI.setTunerValue(C.TUNER_BAND, band);
-    mApi.tuner_band = band;
-    com_uti.tnru_band_set (band);
+    com_uti.setTunerBand(band);
 
     String stereo = com_uti.prefs_get (mContext, "tuner_stereo", "Stereo");
     mTunerAPI.setTunerValue("tuner_stereo", stereo);
@@ -938,9 +929,9 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   private void showNotificationAndStartForeground(boolean needStartForeground) {
     Intent mainInt = new Intent(mContext, MainActivity.class);
     mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
-    PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, 134217728);
+    PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, PendingIntent.FLAG_UPDATE_CURRENT);
 
-    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, "audio_state", "toggle");
+    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, C.AUDIO_STATE, "toggle");
     PendingIntent pendingKill = com_api.createPendingIntent(mContext, "tuner_state", "stop");
     PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", C.RECORD_STATE_TOGGLE);
 

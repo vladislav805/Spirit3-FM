@@ -125,10 +125,6 @@ public class ServiceTuner implements TunerAPIInterface {
 
     else if (mApi.isTunerStarted())          // If tuner_state = Start...
       return (com_uti.s2d_set (key, val));                                // Set via s2d
-
-        // Else if not on:
-    else if (key.equalsIgnoreCase(C.TUNER_BAND))
-      return (mApi.tuner_band = val);
     else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY))
       return (mApi.tuner_freq = val);
     else if (key.equalsIgnoreCase ("tuner_stereo"))

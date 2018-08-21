@@ -588,10 +588,14 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     if (state.equals(C.RECORD_STATE_START)) {
       Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.anim_recording);
       mViewRecord.setImageResource(R.drawable.btn_record_press);
-      mViewRecord.startAnimation(animation);
+      if (mViewRecord.getAnimation() == null) {
+      	mViewRecord.startAnimation(animation);
+	  }
     } else {
       mViewRecord.setImageResource(R.drawable.btn_record);
-      mViewRecord.clearAnimation();
+      if (mViewRecord.getAnimation() != null) {
+		mViewRecord.clearAnimation();
+	  }
     }
   }
 

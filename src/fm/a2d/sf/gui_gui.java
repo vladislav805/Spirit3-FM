@@ -37,7 +37,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private boolean mVisualizerDisabled = true;
 
   // TODO: User Interface:
-  private Animation m_ani_button = null;
   private Typeface mDigitalFont;
 
   private LinearLayout mViewListPresets = null;
@@ -70,7 +69,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private ImageView mViewMute = null;
 
   private ImageView m_iv_out = null; // ImageView for Speaker/Headset toggle
-  private ImageView m_iv_pwr = null;
   private ImageView mViewSignal = null;
 
   // Seek frequency line
@@ -126,8 +124,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mActivity.findViewById(R.id.main_wrap).setLayoutParams(new LinearLayout.LayoutParams(mDisplayMetrics.widthPixels, ViewGroup.LayoutParams.MATCH_PARENT));
 
     mDigitalFont = Typeface.createFromAsset(mContext.getAssets(), "fonts/digital-number.ttf");
-
-    m_ani_button = AnimationUtils.loadAnimation(mContext, R.anim.ani_button);// Set button animation
 
     mViewRSSI = (TextView) mActivity.findViewById(R.id.tv_rssi);
     mViewState = (TextView) mActivity.findViewById(R.id.tv_state);  // Phase
@@ -248,10 +244,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Enables/disables buttons based on power
    */
   private void updateUIViewsByPowerState(boolean power) {
-    if (m_iv_pwr != null) {
-      m_iv_pwr.setImageResource(power ? R.drawable.dial_power_on : R.drawable.dial_power_off);
-    }
-
     if (!power) {
       // Set all displayable text fields to initial OFF defaults
       resetAllViews();
@@ -311,8 +303,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
       mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
-      //m_iv_pwr.setVisibility(View.INVISIBLE);
-      //mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
       int audio_sessid = com_uti.int_get(mApi.audio_sessid);
       showToast("sessid: " + audio_sessid);
       //if (audio_sessid > 0) {
@@ -321,8 +311,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     } else {
       mVisualizerDisabled = true;
       mActivity.findViewById(R.id.vis).setVisibility(View.INVISIBLE);
-      //m_iv_pwr.setVisibility(View.VISIBLE);
-      //mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
       gui_vis_stop();
     }
     com_uti.prefs_set(mContext, "gui_visualizer_state", state);
@@ -812,17 +800,11 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
 
-      m_iv_pwr.setVisibility(View.INVISIBLE);
-      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.INVISIBLE);
-
       int audio_sessid = com_uti.int_get(mApi.audio_sessid);
       if (audio_sessid > 0)
         do_gui_vis_start(audio_sessid);
     } else {
       mVisualizerDisabled = true;
-
-      m_iv_pwr.setVisibility(View.VISIBLE);
-      mActivity.findViewById(R.id.frequency_bar).setVisibility(View.VISIBLE);
 
       gui_vis_stop();
     }
@@ -851,11 +833,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     int id = view.getId();
     switch (id) {
       case R.id.cb_visu:
-        if (((CheckBox) view).isChecked()) {
-            visualizer_state_set("Start");
-        } else {
-            visualizer_state_set("Stop");
-        }
+        visualizer_state_set(((CheckBox) view).isChecked() ? "Start" : "Stop");
         break;
     }
   }

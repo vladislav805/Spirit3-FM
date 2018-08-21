@@ -703,6 +703,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
       case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
         mApi.key_set("audio_output", "toggle");
+        break;
 
       case R.id.tv_freq:
         openDialogChangeFrequency();

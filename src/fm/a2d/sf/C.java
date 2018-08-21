@@ -10,6 +10,12 @@ public class C {
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
   public static final String GUI_START_COUNT = "radio_gui_start_count";
 
+  public static final String TUNER_STATE = "tuner_state";
+  public static final String TUNER_STATE_START = "start";
+  public static final String TUNER_STATE_STARTING = "starting";
+  public static final String TUNER_STATE_STOP = "stop";
+  public static final String TUNER_STATE_STOPPING = "stopping";
+
   public static final String TUNER_BAND = "tuner_band";
   public static final String TUNER_FREQUENCY = "tuner_freq";
   public static final String TUNER_FREQUENCY_UP = "up";

@@ -745,7 +745,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     switch (v.getId()) {
 
       case R.id.iv_play_toggle:
-        mApi.key_set("tuner_state", "Stop");
+        mApi.key_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
         return true;
 
     }

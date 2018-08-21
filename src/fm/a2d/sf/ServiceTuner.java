@@ -6,6 +6,7 @@ package fm.a2d.sf;
 import java.util.TimerTask;
 import java.util.Timer;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 
 public class ServiceTuner implements TunerAPIInterface {
@@ -40,8 +41,8 @@ public class ServiceTuner implements TunerAPIInterface {
     else if (key.equalsIgnoreCase ("test"))
       return (com_uti.s2d_get (key));
 
-    else if (key.equalsIgnoreCase ("tuner_state"))
-      return (mApi.tuner_state);
+    else if (key.equalsIgnoreCase(C.TUNER_STATE))
+      return mApi.tuner_state;
 
     else if (mApi.isTunerStarted())
       return (com_uti.s2d_get (key));
@@ -114,8 +115,8 @@ public class ServiceTuner implements TunerAPIInterface {
     if (key == null)
       return "";
 
-    else if (key.equalsIgnoreCase ("tuner_state"))                      // If tuner_state...
-      return (tuner_state_set (val));
+    else if (key.equalsIgnoreCase (C.TUNER_STATE)) // If tuner_state...
+      return setTunerState(val);
 
     else if (key.equalsIgnoreCase ("radio_nop"))                        // If radio_nop...
       return (com_uti.s2d_set (key, val));                              // Set via s2d
@@ -163,55 +164,52 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 */
 
 
+  private boolean isTunerStarted() {
+    return mApi.tuner_state.equalsIgnoreCase(C.TUNER_STATE_START);
+  }
 
-  private String tuner_state_set(String state) {
-    com_uti.logd ("state: " + state + "  mApi.tuner_state: " + mApi.tuner_state);
+  private boolean isTunerStarting() {
+    return mApi.tuner_state.equalsIgnoreCase(C.TUNER_STATE_STARTING);
+  }
 
-    // START:
-    if (state.equalsIgnoreCase("start")) {
-      if (!mApi.tuner_state.equalsIgnoreCase("start") && !mApi.tuner_state.equalsIgnoreCase("starting")) {         // If not already started or starting
-        mApi.tuner_state = "Starting"; // !! Already set
+  private boolean isTunerStopped() {
+    return mApi.tuner_state.equalsIgnoreCase(C.TUNER_STATE_STOP);
+  }
 
-        int ret = 0;
+  @SuppressLint("SdCardPath")
+  private String setTunerState(String state) {
+    com_uti.logd("state: " + state + "; mApi.tuner_state: " + mApi.tuner_state);
 
-        if (com_uti.file_get("/mnt/sdcard/sf/sys_bin")) {
-          ret = com_uti.sys_run("killall s2d 1>/dev/null 2>/dev/null ; /system/bin/s2d " + com_uti.device + " 1>/dev/null 2>/dev/null", true);
-        } else {
-          ret = com_uti.sys_run("killall libs2d.so 1>/dev/null 2>/dev/null ; /data/data/fm.a2d.sf/lib/libs2d.so " + com_uti.device + "  1>/dev/null 2>/dev/null", true);
-        }
+    if (state.equalsIgnoreCase(C.TUNER_STATE_START)) {
+      if (!isTunerStarted() && !isTunerStarting()) { // If not already started or starting
+        mApi.tuner_state = C.TUNER_STATE_STARTING; // !! Already set
 
-        com_uti.logd ("daemon kill/start ret: " + ret);
+        int ret = com_uti.sys_run("killall libs2d.so 1>/dev/null 2>/dev/null ; /data/data/fm.a2d.sf/lib/libs2d.so " + com_uti.device + "  1>/dev/null 2>/dev/null", true);
 
-        com_uti.ms_sleep(200);   // !!!! MUST have delay here
+        com_uti.logd("daemon kill/start ret: " + ret);
+
+        com_uti.ms_sleep(200); // !!!! MUST have delay here
         com_uti.loge("800 ms delay starting..., fix later");
-        com_uti.ms_sleep(600);    // Extra stock HTC One M7 ?
+        com_uti.ms_sleep(400); // Extra stock HTC One M7 ?
+        //                ^ was 600
 
-
-        mApi.tuner_state = com_uti.s2d_set ("tuner_state", "Start"); // State = Start
-        com_uti.logd ("start tuner_state: " + mApi.tuner_state);
+        mApi.tuner_state = com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_START); // State = Start
+        com_uti.logd("start tuner_state: " + mApi.tuner_state);
         pollStart(); // Start polling for changes
       }
-    } else if (state.equalsIgnoreCase ("stop")) { // STOP
-      if (!mApi.tuner_state.equalsIgnoreCase("stop")) { // If not already stopped...
-        pollStop();                                          // Stop polling for changes
-        mApi.tuner_state = "Stopping";
+    } else if (state.equalsIgnoreCase(C.TUNER_STATE_STOP)) {
+      if (!isTunerStopped()) {
+        pollStop(); // Stop polling for changes
+        mApi.tuner_state = C.TUNER_STATE_STOPPING;
 
-        com_uti.s2d_set("tuner_state", "Stop");
-        com_uti.ms_sleep (500); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
+        com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
+        com_uti.ms_sleep(500); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
 
-        mApi.tuner_state = "Stop";
-
-/*
-//com_uti.loge ("!!!! Should run killall libs2d.so here, after waiting a bit. But killing may kill UDP port !!!!");
-        if (com_uti.file_get ("/mnt/sdcard/sf/sys_bin"))
-          com_uti.sys_run ("killall s2d", true);  // To be sure
-        else
-          com_uti.sys_run ("killall libs2d.so", true);  // To be sure
-*/
+        mApi.tuner_state = C.TUNER_STATE_STOP;
       }
     }
 
-    mTuner.cb_tuner_key("tuner_state", mApi.tuner_state);
+    mTuner.cb_tuner_key(C.TUNER_STATE, mApi.tuner_state);
 
     return mApi.tuner_state;
   }

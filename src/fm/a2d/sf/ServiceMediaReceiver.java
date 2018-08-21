@@ -29,8 +29,6 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
   @Override
   public void onReceive(Context context, Intent intent) {
     try {
-
-
       String action = intent.getAction();
       if (action == null) {
         return;
@@ -55,22 +53,16 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
           break;
 
         case Intent.ACTION_NEW_OUTGOING_CALL:
-          send(context, "tuner_state", "Stop");
-
-        case Intent.ACTION_MEDIA_BUTTON:
-          handle_key_event(context, (KeyEvent) intent.getExtras ().get (Intent.EXTRA_KEY_EVENT));
+          send(context, C.TUNER_STATE, C.TUNER_STATE_STOP);
           break;
 
         default:
           TelephonyManager tm = (TelephonyManager) context.getSystemService(android.app.Service.TELEPHONY_SERVICE);
           switch (tm.getCallState()) {
 
-            case TelephonyManager.CALL_STATE_RINGING:
-              send(context, "tuner_state", "Stop");
-              break;
-
             case TelephonyManager.CALL_STATE_OFFHOOK:
-              send(context, "tuner_state", "Stop");
+            case TelephonyManager.CALL_STATE_RINGING:
+              send(context, C.TUNER_STATE, C.TUNER_STATE_STOP);
               break;
 
             case TelephonyManager.CALL_STATE_IDLE:
@@ -91,8 +83,4 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
     intent.putExtra(key, value);
     ctx.startService(intent);
   }
-
-  private void handle_key_event(Context context, KeyEvent key_event) {
-  }
-
 }

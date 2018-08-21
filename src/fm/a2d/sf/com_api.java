@@ -138,11 +138,10 @@ public class com_api {
     if (!new_audio_sessid.equalsIgnoreCase(DEFAULT_DETECT))
       audio_sessid = new_audio_sessid;
 
-    String new_tuner_state = extras.getString("tuner_state", DEFAULT_DETECT);
+    String new_tuner_state = extras.getString(C.TUNER_STATE, DEFAULT_DETECT);
     if (!new_tuner_state.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_state = new_tuner_state;
 
-    String new_tuner_band = extras.getString(C.TUNER_BAND, DEFAULT_DETECT);
     String new_tuner_freq = extras.getString(C.TUNER_FREQUENCY, DEFAULT_DETECT);
     String new_tuner_stereo = extras.getString("tuner_stereo", DEFAULT_DETECT);
     String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);

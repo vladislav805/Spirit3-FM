@@ -164,7 +164,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
 
 
       // Tuner:
-      val = extras.getString("tuner_state", "");
+      val = extras.getString(C.TUNER_STATE, "");
       if (!val.isEmpty()) {
         tuner_state_set(val);
       }
@@ -240,7 +240,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
 
 
   private void putTunerExtra(Intent intent) {
-    intent.putExtra("tuner_state", mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
+    intent.putExtra(C.TUNER_STATE, mApi.tuner_state);//mTunerAPI.getTunerValue(C.TUNER_STATE));
     intent.putExtra(C.TUNER_BAND, mApi.tuner_band);
     String freq_khz = mTunerAPI.getTunerValue(C.TUNER_FREQUENCY);
     int ifreq = com_uti.int_get (freq_khz);
@@ -301,7 +301,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
     intent.putExtra("audio_sessid", mApi.audio_sessid);
 
     if (mTunerAPI == null) {
-      intent.putExtra("tuner_state", "stop");
+      intent.putExtra(C.TUNER_STATE, C.TUNER_STATE_STOP);
     } else {
       putTunerExtra(intent);
     }
@@ -456,9 +456,9 @@ public class MainService extends android.app.Service implements ServiceTunerCall
         return (mApi.tuner_state);
       }
     }
-    else if (state.equalsIgnoreCase ("stop")) {                         // If Stop...
-      mAudioAPI.audio_state_set ("Stop");                               // Set Audio State  synchronously to Stop
-      mTunerAPI.setTunerValue("tuner_state", "stop");                      // Set Tuner State asynchronously to Stop
+    else if (state.equalsIgnoreCase("stop")) { // If Stop...
+      mAudioAPI.audio_state_set("Stop"); // Set Audio State  synchronously to Stop
+      mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_STOP); // Set Tuner State asynchronously to Stop
       return (mApi.tuner_state);                                   // Return new tuner state
     }
                                                                         // Else if not stop...
@@ -504,7 +504,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
 
       mTunerAPI.setTunerValue("radio_nop",   "Start");                     // 1st packet always fails, so this is a NOP
 
-      mTunerAPI.setTunerValue("tuner_state", "Start");                     // This starts the daemon
+      mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_START);                     // This starts the daemon
 
       if (tuner_state_start_tmr != null)
         tuner_state_start_tmr.cancel ();                                // Stop one shot poll timer
@@ -579,8 +579,8 @@ public class MainService extends android.app.Service implements ServiceTunerCall
     }
 //*/
     if (key != null) {
-      if (key.equalsIgnoreCase ("tuner_state"))
-        cb_tuner_state (val);
+      if (key.equalsIgnoreCase (C.TUNER_STATE))
+        cb_tuner_state(val);
       else if (key.equals(C.TUNER_FREQUENCY))
         cb_tuner_freq (val);
       else if (key.equalsIgnoreCase ("tuner_rssi"))
@@ -680,23 +680,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   private int files_init() {
     com_uti.logd ("starting...");
 
-    if (com_uti.file_get ("/mnt/sdcard/sf/sys_bin")) {
-      String lib_name = lib_name_get ();  //"libs2t_ssl.so";
-      String cmd = "";
-      cmd += ("mount -o remount,rw /system 1>/dev/null 2>/dev/null; ");
-      cmd += ("cp /data/data/fm.a2d.sf/lib/libssd.so /system/bin/ssd 1>/dev/null 2>/dev/null; ");
-      cmd += ("chmod 755 /system/bin/ssd 1>/dev/null 2>/dev/null; ");
-      cmd += ("cp /data/data/fm.a2d.sf/lib/libs2d.so /system/bin/s2d 1>/dev/null 2>/dev/null; ");
-      cmd += ("chmod 755 /system/bin/s2d 1>/dev/null 2>/dev/null; ");
-      cmd += ("cp /data/data/fm.a2d.sf/lib/" + lib_name + " /system/lib/libs2t.so 1>/dev/null 2>/dev/null; ");
-      cmd += ("chmod 644 /system/lib/libs2t.so 1>/dev/null 2>/dev/null; ");
-      cmd += ("mount -o remount,ro /system 1>/dev/null 2>/dev/null; ");
-      cmd += ("echo -n 1>/dev/null 2>/dev/null");
-      com_uti.sys_run (cmd, true);
-      com_uti.logd ("Done installing system binaries to /system/bin/");
-    }
-
-
     //String bsb_full_filename = com_uti.file_create (mContext, R.raw.busybox,  "busybox",       true);
     //    String ssd_full_filename = "";
     //if (com_uti.ssd_via_sys_run)
@@ -781,8 +764,8 @@ public class MainService extends android.app.Service implements ServiceTunerCall
     mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
     PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, PendingIntent.FLAG_UPDATE_CURRENT);
 
-    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, C.AUDIO_STATE, "toggle");
-    PendingIntent pendingKill = com_api.createPendingIntent(mContext, "tuner_state", "stop");
+    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
+    PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
     PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", C.RECORD_STATE_TOGGLE);
 
     Notification.Builder notify = new Notification.Builder(this)

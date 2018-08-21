@@ -89,7 +89,7 @@ public class com_api {
   }
 
   public void key_set(String key, String val) {
-    com_uti.logd("key: " + key + "  val: " + val);
+    com_uti.logd("key: " + key + "; val: " + val);
     Intent intent = new Intent(MainService.ACTION_SET);
     intent.setClass(m_context, MainService.class);
     intent.putExtra(key, val);

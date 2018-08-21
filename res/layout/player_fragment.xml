@@ -64,8 +64,7 @@
 
 <!-- Volume & Mute/unmute display -->
     <ImageView
-        android:visibility="gone"
-            android:id="@+id/iv_mute"
+            android:id="@+id/iv_audio_out"
             android:contentDescription="@string/header_volume"
             android:src="@drawable/ic_volume_up"
             android:focusable="true"
@@ -78,6 +77,7 @@
 <!-- Stereo -->
     <TextView
         android:id="@+id/tv_most"
+        android:visibility="gone"
         android:contentDescription="@string/header_stereo"
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
@@ -155,26 +155,6 @@
         android:layout_height="match_parent"/>
 
   </FrameLayout>
-
-  <LinearLayout
-      android:visibility="gone"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:layout_weight="1"
-      android:orientation="horizontal">
-    <TextView
-        android:id="@+id/tv_state"
-        android:contentDescription="State"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:layout_weight="1"
-        android:textSize="10dp"
-        android:textStyle="normal"
-        android:textColor="#ffa3a3a3"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:maxLines="1" />
-  </LinearLayout>
 
   <HorizontalScrollView
       android:id="@+id/seek_scroll_frequency"

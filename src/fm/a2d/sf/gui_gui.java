@@ -43,7 +43,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
   // Info
   private TextView mViewRSSI = null;
-  private TextView mViewState = null;
   private TextView mViewStereo = null;
   private TextView mViewFrequency = null;
   private TextView mViewRecordDuration = null;
@@ -67,7 +66,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private ImageView mViewPlayToggle = null;
   private ImageView mViewMute = null;
 
-  private ImageView m_iv_out = null; // ImageView for Speaker/Headset toggle
+  private ImageView mViewAudioOut = null; // ImageView for Speaker/Headset toggle
   private ImageView mViewSignal = null;
 
   // Seek frequency line
@@ -125,7 +124,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mDigitalFont = Typeface.createFromAsset(mContext.getAssets(), "fonts/digital-number.ttf");
 
     mViewRSSI = (TextView) mActivity.findViewById(R.id.tv_rssi);
-    mViewState = (TextView) mActivity.findViewById(R.id.tv_state);  // Phase
     mViewStereo = (TextView) mActivity.findViewById(R.id.tv_most);
 
 //    m_tv_picl = (TextView) mActivity.findViewById(R.id.tv_picl);
@@ -167,6 +165,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewSeekFrequency = (SeekBar) mActivity.findViewById(R.id.sb_freq_seek);
     mViewSeekFrequency.setMax(205);
     mViewSeekFrequency.setOnSeekBarChangeListener(mOnSeekFrequencyChanged);
+
+    mViewAudioOut = (ImageView) mActivity.findViewById(R.id.iv_audio_out);
+    mViewAudioOut.setOnClickListener(this);
 
     mViewFrequency.setTypeface(mDigitalFont);
     mViewRSSI.setTypeface(mDigitalFont);
@@ -285,7 +286,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     }
   }
 
-  private void visualizer_state_set(String state) {
+  private void visualizer_state_set(int state) {
     com_uti.logd("state: " + state);
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
@@ -321,7 +322,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
 
   private void resetAllViews() {
-    mViewState.setText("");
     mViewStereo.setText("");
     mViewRSSI.setText("");
 //    m_tv_ps.setText("");
@@ -701,8 +701,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         mApi.key_set("audio_record_state", C.RECORD_STATE_TOGGLE);
         break;
 
-      //case R.id.iv_out: -> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
-      //  mApi.key_set("audio_output", "toggle");
+      case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
+        mApi.key_set("audio_output", "toggle");
 
       case R.id.tv_freq:
         openDialogChangeFrequency();

@@ -3,6 +3,7 @@ package fm.a2d.sf;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.media.AudioManager;
 import android.telephony.TelephonyManager;
 import android.view.KeyEvent;
 
@@ -48,9 +49,9 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
 
       switch (action) {
 
-        case android.media.AudioManager.ACTION_AUDIO_BECOMING_NOISY:
+        case AudioManager.ACTION_AUDIO_BECOMING_NOISY:
           com_uti.logd("audio noisy");
-          //MainActivity.m_com_api.key_set("audio_state", "pause");
+          //MainActivity.m_com_api.key_set(C.AUDIO_STATE, C.AUDIO_STATE_PAUSE);
           break;
 
         case Intent.ACTION_NEW_OUTGOING_CALL:

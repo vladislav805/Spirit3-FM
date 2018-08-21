@@ -7,7 +7,7 @@
   <string name="header_volume">Volume</string>
   <string name="header_stereo">Mono / Stereo</string>
   <string name="nill" translatable="false"/>
-  <string name="dialog_frequency_title">Set Frequency</string>
+  <string name="dialog_frequency_title">Set frequency</string>
   <string name="dialog_ok">OK</string>
   <string name="dialog_cancel">Cancel</string>
   <string name="application_name">Spirit3</string>

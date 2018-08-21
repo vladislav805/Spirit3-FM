@@ -1141,29 +1141,17 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
 
 
   // Tuner FM utility functions:
-  public static int tnru_band_set(String band) {
-    com_uti.logd("band: " + band);
-    com_uti.band_freq_lo = 87500; // Actually  87900 for US
-    com_uti.band_freq_hi = 108000; // Actually 107900 for US
+  public static void setTunerBand(String band) {
+    com_uti.band_freq_lo = 87500;
+    com_uti.band_freq_hi = 108000;
     com_uti.band_freq_inc = 100;
     com_uti.band_freq_odd = 0;
 
-    if (band.equalsIgnoreCase("US")) {
-      com_uti.band_freq_inc = 200;
-      com_uti.band_freq_odd = 1;
-    } else if (band.equalsIgnoreCase("EU")) {
-    } else if (band.equalsIgnoreCase("JAPAN")) {
-      com_uti.band_freq_lo = 76000;
-      com_uti.band_freq_hi = 90000;
-    } else if (band.equalsIgnoreCase("CHINA")) {
-      com_uti.band_freq_lo = 70000;
-      com_uti.band_freq_inc = 50;
-    } else if (band.equalsIgnoreCase("EU_50K_OFFSET")) {
+    if (band.equalsIgnoreCase("EU_50K_OFFSET")) {
       com_uti.band_freq_inc = 50;
     }
 
-    com_uti.logd("lo: " + com_uti.band_freq_lo + "  hi: " + com_uti.band_freq_hi + "  inc: " + com_uti.band_freq_inc + "  odd: " + band_freq_odd);
-    return (0);
+    com_uti.logd("low: " + com_uti.band_freq_lo + "; high: " + com_uti.band_freq_hi + "; inc: " + com_uti.band_freq_inc + "; odd: " + band_freq_odd);
   }
 
 

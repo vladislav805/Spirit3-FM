@@ -1023,9 +1023,9 @@ if (intent != null)
     com_uti.logd("current api audio_state: " + m_com_api.audio_state + "  current api audio_output: " + m_com_api.audio_output + "  new_audio_output: " + new_audio_output);
     if (new_audio_output.equalsIgnoreCase("toggle")) {                 // If toggle...
       if (m_com_api.audio_output.equalsIgnoreCase("speaker"))          // If Speaker...
-        new_audio_output = "Headset";                                   // Switch to Headset...
+        new_audio_output = "headset";                                   // Switch to Headset...
       else
-        new_audio_output = "Speaker";                                   // Or switch to Speaker...
+        new_audio_output = "speaker";                                   // Or switch to Speaker...
     }
 
     boolean need_restart = false;
@@ -1034,15 +1034,18 @@ if (intent != null)
       if (need_restart)
         pcm_audio_stop(true);
       setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_UNAVAILABLE, "");        // Headset unavailable
-      if (com_uti.device == com_uti.DEV_GS1)
-        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADPHONE, DEVICE_STATE_UNAVAILABLE, "");    // "Headphone" also unavailable ?
+
+
+      m_AM.setMode(AudioManager.MODE_NORMAL);
+      m_AM.setSpeakerphoneOn(true);
+
     } else {                                                                                      // If -> Headset...
       if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase("speaker")) {                 // If headset plugged in and last_out was speaker...
         if (need_restart)
           pcm_audio_stop(true);
         setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, "");        // Headset available
-        if (com_uti.device == com_uti.DEV_GS1)
-          setDeviceConnectionState(DEVICE_OUT_WIRED_HEADPHONE, DEVICE_STATE_AVAILABLE, "");    // "Headphone" also available ?
+        m_AM.setMode(AudioManager.MODE_IN_COMMUNICATION);
+        m_AM.setSpeakerphoneOn(false);
       } else {
         need_restart = false;
         audio_routing_get();

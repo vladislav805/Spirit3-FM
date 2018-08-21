@@ -14,6 +14,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 // MainService class implements Tuner API callbacks & MainService Audio API callback
+@SuppressWarnings("WeakerAccess")
 public class MainService extends android.app.Service implements ServiceTunerCallback, ServiceAudioCallback {
 
   // Also see AndroidManifest.xml.
@@ -32,7 +33,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   // Instance data:
   private Context mContext = this;
   private com_api mApi = null;
-  private TunerAPIInterface mTunerAPI = null;
+  private ServiceTuner mTunerAPI = null;
   private svc_aud mAudioAPI = null;
 
 
@@ -50,8 +51,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   private int                   preset_num  = 0;
 
   private Timer                 tuner_state_start_tmr = null;
-
-  private BluetoothAdapter      m_bt_adapter    = null;
 
   private NotificationManager mNotificationManager = null;
 
@@ -224,7 +223,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
         com_uti.prefs_set(mContext, "audio_stereo", val);
       }
 
-      radio_status_send(); // Return results
+      sendRadioStatus(); // Return results
     } catch (Throwable e) {
       e.printStackTrace();
     }
@@ -235,15 +234,14 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   // For state and status updates:
   private void displays_update(String caller) { // Update all "displays"
     // Update widgets, apps, etc. and get resulting Intent
-    mApi.radio_update(radio_status_send()); // Get current data in Radio API using Intent (To update all dynamic/external data)
+    mApi.radio_update(sendRadioStatus()); // Get current data in Radio API using Intent (To update all dynamic/external data)
     notif_radio_update(); // Update notification shade
   }
 
 
-  private void tuner_extras_put (Intent send_intent) {
-
-    send_intent.putExtra ("tuner_state", mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
-    send_intent.putExtra (C.TUNER_BAND, mApi.tuner_band);//mTunerAPI.getTunerValue ("tuner_band"));
+  private void putTunerExtra(Intent intent) {
+    intent.putExtra("tuner_state", mApi.tuner_state);//mTunerAPI.getTunerValue ("tuner_state"));
+    intent.putExtra(C.TUNER_BAND, mApi.tuner_band);
     String freq_khz = mTunerAPI.getTunerValue(C.TUNER_FREQUENCY);
     int ifreq = com_uti.int_get (freq_khz);
     if (ifreq >= 50000 && ifreq < 500000) {
@@ -251,73 +249,68 @@ public class MainService extends android.app.Service implements ServiceTunerCall
       mApi.int_tuner_freq = ifreq;
     }
     com_uti.logx ("mApi.tuner_freq: " + mApi.getStringFrequencyMHz() + "  mApi.int_tuner_freq: " + mApi.getIntFrequencyKHz());
-    send_intent.putExtra (C.TUNER_FREQUENCY, mApi.getStringFrequencyMHz());
+    intent.putExtra (C.TUNER_FREQUENCY, mApi.getStringFrequencyMHz());
 
-    //send_intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
-    //send_intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
-    //send_intent.putExtra ("tuner_scan_state",   mTunerAPI.getTunerValue ("tuner_scan_state"));
+    //intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
+    //intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
+    //intent.putExtra ("tuner_scan_state",   mTunerAPI.getTunerValue ("tuner_scan_state"));
 
-    //send_intent.putExtra ("tuner_rds_state",    mTunerAPI.getTunerValue ("tuner_rds_state"));
-    //send_intent.putExtra ("tuner_rds_af_state", mTunerAPI.getTunerValue ("tuner_rds_af_state"));
-    //send_intent.putExtra ("tuner_rds_ta_state", mTunerAPI.getTunerValue ("tuner_rds_ta_state"));
+    //intent.putExtra ("tuner_rds_state",    mTunerAPI.getTunerValue ("tuner_rds_state"));
+    //intent.putExtra ("tuner_rds_af_state", mTunerAPI.getTunerValue ("tuner_rds_af_state"));
+    //intent.putExtra ("tuner_rds_ta_state", mTunerAPI.getTunerValue ("tuner_rds_ta_state"));
 
-    //send_intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
-    //send_intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
+    //intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
+    //intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
 
-    send_intent.putExtra ("tuner_rssi",         String.valueOf(mApi.getRssi()));      //mTunerAPI.getTunerValue ("tuner_rssi"));
-    //send_intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
-    send_intent.putExtra ("tuner_most",         mApi.isStereo() ? "stereo" : "mono");      //mTunerAPI.getTunerValue ("tuner_most"));
+    intent.putExtra ("tuner_rssi",         String.valueOf(mApi.getRssi()));      //mTunerAPI.getTunerValue ("tuner_rssi"));
+    //intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
+    intent.putExtra ("tuner_most",         mApi.isStereo() ? "stereo" : "mono");      //mTunerAPI.getTunerValue ("tuner_most"));
 
-    send_intent.putExtra ("tuner_rds_pi",       mApi.tuner_rds_pi);    //mTunerAPI.getTunerValue ("tuner_rds_pi"));
-    send_intent.putExtra ("tuner_rds_picl",     mApi.tuner_rds_picl);  //mTunerAPI.getTunerValue ("tuner_rds_picl"));
-    //send_intent.putExtra ("tuner_rds_pt",       mApi.tuner_rds_pt);  //mTunerAPI.getTunerValue ("tuner_rds_pt"));
-    send_intent.putExtra ("tuner_rds_ptyn",     mApi.tuner_rds_ptyn);  //mTunerAPI.getTunerValue ("tuner_rds_ptyn"));
-    send_intent.putExtra ("tuner_rds_ps",       mApi.tuner_rds_ps);    //mTunerAPI.getTunerValue ("tuner_rds_ps"));
-    send_intent.putExtra ("tuner_rds_rt",       mApi.tuner_rds_rt);    //mTunerAPI.getTunerValue ("tuner_rds_rt"));
+    intent.putExtra ("tuner_rds_pi",       mApi.tuner_rds_pi);    //mTunerAPI.getTunerValue ("tuner_rds_pi"));
+    intent.putExtra ("tuner_rds_picl",     mApi.tuner_rds_picl);  //mTunerAPI.getTunerValue ("tuner_rds_picl"));
+    //intent.putExtra ("tuner_rds_pt",       mApi.tuner_rds_pt);  //mTunerAPI.getTunerValue ("tuner_rds_pt"));
+    intent.putExtra ("tuner_rds_ptyn",     mApi.tuner_rds_ptyn);  //mTunerAPI.getTunerValue ("tuner_rds_ptyn"));
+    intent.putExtra ("tuner_rds_ps",       mApi.tuner_rds_ps);    //mTunerAPI.getTunerValue ("tuner_rds_ps"));
+    intent.putExtra ("tuner_rds_rt",       mApi.tuner_rds_rt);    //mTunerAPI.getTunerValue ("tuner_rds_rt"));
 
-    //send_intent.putExtra ("tuner_rds_af",       mTunerAPI.getTunerValue ("tuner_rds_af"));
-    //send_intent.putExtra ("tuner_rds_ms",       mTunerAPI.getTunerValue ("tuner_rds_ms"));
-    //send_intent.putExtra ("tuner_rds_ct",       mTunerAPI.getTunerValue ("tuner_rds_ct"));
-    //send_intent.putExtra ("tuner_rds_tmc",      mTunerAPI.getTunerValue ("tuner_rds_tmc"));
-    //send_intent.putExtra ("tuner_rds_tp",       mTunerAPI.getTunerValue ("tuner_rds_tp"));
-    //send_intent.putExtra ("tuner_rds_ta",       mTunerAPI.getTunerValue ("tuner_rds_ta"));
-    //send_intent.putExtra ("tuner_rds_taf",      mTunerAPI.getTunerValue ("tuner_rds_taf"));
+    //intent.putExtra ("tuner_rds_af",       mTunerAPI.getTunerValue ("tuner_rds_af"));
+    //intent.putExtra ("tuner_rds_ms",       mTunerAPI.getTunerValue ("tuner_rds_ms"));
+    //intent.putExtra ("tuner_rds_ct",       mTunerAPI.getTunerValue ("tuner_rds_ct"));
+    //intent.putExtra ("tuner_rds_tmc",      mTunerAPI.getTunerValue ("tuner_rds_tmc"));
+    //intent.putExtra ("tuner_rds_tp",       mTunerAPI.getTunerValue ("tuner_rds_tp"));
+    //intent.putExtra ("tuner_rds_ta",       mTunerAPI.getTunerValue ("tuner_rds_ta"));
+    //intent.putExtra ("tuner_rds_taf",      mTunerAPI.getTunerValue ("tuner_rds_taf"));
   }
 
-  private Intent radio_status_send() { // Send all radio state & status info
+  private Intent sendRadioStatus() { // Send all radio state & status info
 
-    mAudioAPI.audio_sessid_get (); // Better to update here ?
+    mAudioAPI.audio_sessid_get(); // Better to update here ?
 
-    com_uti.logx ("audio_state: " + mApi.audio_state + "  audio_output: " + mApi.audio_output +
-                "  audio_stereo: " + mApi.audio_stereo + "  audio_record_state: " + mApi.audio_record_state);
+    com_uti.logx("audio_state: " + mApi.audio_state + "; audio_output: " + mApi.audio_output + "; audio_stereo: " + mApi.audio_stereo + "; audio_record_state: " + mApi.audio_record_state);
 
-    Intent send_intent = new Intent(ACTION_GET);
+    Intent intent = new Intent(ACTION_GET);
 
-    send_intent.putExtra("radio_phase",        mApi.radio_phase);
-    send_intent.putExtra("radio_cdown",        mApi.radio_cdown);
-    send_intent.putExtra("radio_error",        mApi.radio_error);
+    intent.putExtra("radio_phase", mApi.radio_phase);
+    intent.putExtra("radio_cdown", mApi.radio_cdown);
+    intent.putExtra("radio_error", mApi.radio_error);
 
-    for (int i = 0; i < preset_num; i ++) { // Send preset list
-      send_intent.putExtra("radio_freq_prst_" + i, plst_freq [i]);
-    }
-
-    send_intent.putExtra(C.AUDIO_STATE,        mApi.audio_state);
-    send_intent.putExtra("audio_output",       mApi.audio_output);
-    send_intent.putExtra("audio_stereo",       mApi.audio_stereo);
-    send_intent.putExtra("audio_record_state", mApi.audio_record_state);
-    send_intent.putExtra("audio_sessid",       mApi.audio_sessid);
+    intent.putExtra(C.AUDIO_STATE, mApi.audio_state);
+    intent.putExtra("audio_output", mApi.audio_output);
+    intent.putExtra("audio_stereo", mApi.audio_stereo);
+    intent.putExtra("audio_record_state", mApi.audio_record_state);
+    intent.putExtra("audio_sessid", mApi.audio_sessid);
 
     if (mTunerAPI == null) {
-      send_intent.putExtra("tuner_state",      "stop");
+      intent.putExtra("tuner_state", "stop");
     } else {
-      tuner_extras_put (send_intent);
+      putTunerExtra(intent);
     }
     try {
-      mContext.sendStickyBroadcast(send_intent);                      // Send Sticky Broadcast w/ all info
+      mContext.sendBroadcast(intent); // Send Broadcast w/ all info
     } catch (Throwable e) {
-      e.printStackTrace ();
+      e.printStackTrace();
     }
-    return send_intent;
+    return intent;
   }
 
 
@@ -382,7 +375,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
     com_uti.logd ("phase: " + phase + "  cdown: " + cdown);
     mApi.radio_phase = phase;
     mApi.radio_cdown = "" + cdown;
-    //radio_status_send ();                                            // Update widgets, apps, etc. (displays_update too intense ?)
+    //sendRadioStatus ();                                            // Update widgets, apps, etc. (displays_update too intense ?)
   }
 
   private void phase_error_set (String phase, String error) {
@@ -390,7 +383,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
     mApi.radio_phase = phase;
     mApi.radio_error = error;
     mApi.radio_cdown = "0";
-    //radio_status_send ();                                            // Update widgets, apps, etc. (displays_update too intense ?)
+    //sendRadioStatus ();                                            // Update widgets, apps, etc. (displays_update too intense ?)
   }
 
 
@@ -505,14 +498,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
         //phase_error_set ("Files Init", "File Errors: " + ret);
         //return;
       }
-      if (com_uti.device == com_uti.DEV_ONE || com_uti.device == com_uti.DEV_LG2 || com_uti.device == com_uti.DEV_XZ2) {
-        phase_cdown_set ("BCom Init", 20);
-        ret = bcom_init ();
-        if (ret != 0) {
-          phase_error_set ("BCom Init", "BCom Error: " + ret);
-          return;
-        }
-      }
+
       com_uti.logd ("Starting Tuner...");
       phase_cdown_set ("Tuner Start", 20);
 
@@ -708,7 +694,7 @@ public class MainService extends android.app.Service implements ServiceTunerCall
       cmd += ("echo -n 1>/dev/null 2>/dev/null");
       com_uti.sys_run (cmd, true);
       com_uti.logd ("Done installing system binaries to /system/bin/");
-    }    
+    }
 
 
     //String bsb_full_filename = com_uti.file_create (mContext, R.raw.busybox,  "busybox",       true);
@@ -752,142 +738,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
   }
 
 
-
-
-
-/* OLD: 4 states:
-    BT Off                                                            Use UART  (or BT on and install/use shim if possible)
-    BT On & (Shim Not Installed or Shim Old)    Install Shim, BT Off, Use UART      First run before reboot or first boot after ROM update with no addon.d fix
-    BT On &  Shim     Installed & NOT Active                  BT Off, Use UART      Need reboot & BT to be active
-    BT On &  Shim     Installed &     Active                          Use SHIM
-*/
-
-  // Install shim if needed (May change BT state & warm restart). Determine UART or SHIM Mode & create/delete "use_shim" flag file for s2d. Turn BT off if needed.
-  private int bcom_init () {
-    com_uti.logd ("start");
-
-    String short_filename = "use_shim";
-    String full_filename = mContext.getFilesDir () + "/" + short_filename;
-
-    if (com_uti.file_get (full_filename)) {                               // If use_shim flag is set...
-      com_uti.logd ("Removing file: " + full_filename);
-      com_uti.sys_run ("rm " + full_filename, true);                      // Remove file/flag
-    }
-
-      if (bt_get ()) {
-        com_uti.logd ("UART mode needed but BT is on; turn BT Off");
-        bt_set (false, true);                                           // Bluetooth off, and wait for off
-        com_uti.logd ("Start 4 second delay after BT Off");
-        com_uti.ms_sleep (4000);                                        // Extra 4 second delay to ensure BT is off !!
-        com_uti.logd ("End 4 second delay after BT Off");
-      }
-
-// BT is? KitKat:   service call bluetooth_manager 4                                                TRANSACTION_isEnabled
-// BT On  KitKat:   service call bluetooth_manager 6        Older:  service call bluetooth 3
-// BT On- KitKat:   service call bluetooth_manager 7                                                TRANSACTION_enableNoAutoConnect
-// BT Off KitKat:   service call bluetooth_manager 8        Older:  service call bluetooth 4
-
-
-    return 0;
-  }
-
-  private void bt_wait (boolean wait_on) {
-    int ctr = 0;
-    boolean done = false;
-
-    while (! done && ctr ++ < 90 ) {                                    // While not done and 9 seconds has not elapsed...
-      com_uti.ms_sleep (100);                                             // Wait 0.1 second
-      if (wait_on)                                                      // If waiting for BT on...
-        done = bt_get ();                                               // Done if BT on
-      else                                                              // Else if waiting for BT off...
-        done = ! bt_get ();                                             // Done if BT off
-    }
-    return;
-  }
-
-
-  private boolean bta_get () {
-    m_bt_adapter = BluetoothAdapter.getDefaultAdapter ();                // Just do this once, shouldn't change
-    if (m_bt_adapter == null) {
-      com_uti.loge ("BluetoothAdapter.getDefaultAdapter () returned null");
-      return (false);
-    }
-    return (true);
-  }
-
-  private boolean bt_get () {                            // !! Should check with pid_get ("bluetoothd"), "brcm_patchram_plus", "btld", "hciattach" etc. for consistency w/ fm_hrdw
-    boolean ret = false;                                                //      BUT: if isEnabled () doesn't work, m_bt_adapter.enable () and m_bt_adapter.disable () may not work either.
-    if (m_bt_adapter == null)
-      if (! bta_get ())
-        return (false);
-    ret = m_bt_adapter.isEnabled ();
-    com_uti.logd ("bt_get isEnabled (): " + ret);
-    return (ret);
-  }
-
-// bttest is_enabled
-// bttest enable
-// bttest disable
-// Alternate/libbluedroid uses rfkill and ctl.stop/ctl.start bluetoothd
-
-  private int bt_set ( boolean bt_pwr, boolean wait ) {
-    if (m_bt_adapter == null)
-      if (! bta_get ())
-        return (-1);
-
-    boolean bt = bt_get ();
-    if (bt_pwr && bt) {
-      com_uti.logd ("bt_set BT already on");
-      return (0);
-    }
-    if (! bt_pwr && ! bt) {
-      com_uti.logd ("bt_set BT already off");
-      return (0);
-    }
-    if (bt_pwr) {                                                       // If request for BT on
-      com_uti.logd ("bt_set BT turning on");
-
-      try {
-        m_bt_adapter.enable ();                                       // Start enable BT
-      }
-      catch (Throwable e) {
-        com_uti.loge ("bt_set m_bt_adapter.disable () Exception");
-      }
-
-      if (! wait)                                                       // If no wait
-        return (0);                                                     // Done w/ no error
-
-      bt_wait (true);                                                   // Wait until BT is on or times out
-      bt = bt_get ();
-      if (bt) {
-        com_uti.logd ("bt_set BT on success");
-        return (0);
-      }
-      com_uti.loge ("bt_set BT on error");
-      return (-1);
-    }
-    else {
-      com_uti.logd ("bt_set BT turning off");
-      try {
-        m_bt_adapter.disable ();                                        // Start disable BT
-      }
-      catch (Throwable e) {
-        com_uti.loge ("bt_set m_bt_adapter.disable () Exception");
-      }
-
-      if (! wait)                                                       // If no wait
-        return (0);                                                     // Done w/ no error
-
-      bt_wait (false);                                                  // Wait until BT is off or times out
-      bt = bt_get ();
-      if (! bt) {
-        com_uti.logd ("bt_set BT off success");
-        return (0);
-      }
-      com_uti.loge ("bt_set BT off error");
-      return (-1);
-    }
-  }
 
 
     // Remote control client, for lockscreen and BT AVRCP:

@@ -282,7 +282,7 @@ API level 17 / 4.2+
   // Command handlers:
 
   public String audio_sessid_get() {                                  // Handle audio session changes
-    return (m_com_api.audio_sessid);
+    return m_com_api.audio_sessid;
   }
 
 

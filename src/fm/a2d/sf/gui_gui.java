@@ -155,8 +155,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewPlayToggle.setOnClickListener(this);
     mViewPlayToggle.setOnLongClickListener(this);
 
-    mViewMute = (ImageView) mActivity.findViewById(R.id.iv_mute);
-    mViewMute.setOnClickListener(this);
+    /*mViewMute = (ImageView) mActivity.findViewById(R.id.iv_mute);
+    mViewMute.setOnClickListener(this);*/
 
     mViewSignal = (ImageView) mActivity.findViewById(R.id.iv_signal);
     mViewListPresets = (LinearLayout) mActivity.findViewById(R.id.preset_list);
@@ -286,7 +286,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     }
   }
 
-  private void visualizer_state_set(int state) {
+  private void visualizer_state_set(String state) {
     com_uti.logd("state: " + state);
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
@@ -685,13 +685,13 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   @Override
   public void onClick(View v) {
     switch (v.getId()) {
-      case R.id.iv_mute:
+     /* case R.id.iv_mute:
         AudioManager m_am = (AudioManager) mContext.getSystemService(Context.AUDIO_SERVICE);
         if (m_am != null) {
           // Display volume change
           m_am.setStreamVolume(AudioManager.STREAM_MUSIC, m_am.getStreamVolume(AudioManager.STREAM_MUSIC), AudioManager.FLAG_SHOW_UI);
         }
-        break;
+        break;*/
 
       case R.id.iv_play_toggle:
         mApi.key_set(C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
@@ -823,7 +823,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     int id = view.getId();
     switch (id) {
       case R.id.cb_visu:
-        visualizer_state_set(((CheckBox) view).isChecked() ? "Start" : "Stop");
+        boolean is = ((CheckBox) view).isChecked();
+        visualizer_state_set(is ? "Start" : "Stop");
         break;
     }
   }

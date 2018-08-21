@@ -240,15 +240,7 @@ public final class com_uti {
   }
 
   public static long ms_get() {
-    //com_uti.logd ("ms: " + ms);
     return System.currentTimeMillis();
-  }
-
-  public static String utc_timestamp_get() {
-    Date date = Calendar.getInstance().getTime();
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd_HH-mm-ss.SSSZ", Locale.US);
-    sdf.setTimeZone(TimeZone.getDefault());
-    return sdf.format(date);
   }
 
   public static boolean file_delete(String filename) {
@@ -693,17 +685,17 @@ Evo 4G LTE  jewel
     } catch (Exception e) {//NameNotFoundException e) {
       //e.printStackTrace ();
     }
-    return (version);
+    return version;
   }
 
 
   // Preferences:
   static int int_parse(String str) {
     try {
-      return (Integer.parseInt(str));
+      return Integer.parseInt(str);
     } catch (Exception e) {
+      return 0;
     }
-    return (0);
   }
 
 
@@ -723,7 +715,7 @@ Evo 4G LTE  jewel
   public static String prefs_get(Context context, String key, String def) {
     String res = def;
     try {
-      SharedPreferences sp = context.getSharedPreferences(prefs_file, MODE_MULTI_PROCESS);
+      SharedPreferences sp = context.getSharedPreferences(prefs_file, Context.MODE_MULTI_PROCESS);
       res = sp.getString(key, def);   // java.lang.ClassCastException if wrong type !!
     } catch (Exception ignore) { }
     com_uti.logd("key: " + key + "  def: " + def + "  res: " + res);
@@ -744,7 +736,7 @@ Evo 4G LTE  jewel
   public static void prefs_set(Context context, String prefs_file, String key, String val) {
     com_uti.logd("String: " + key + " = " + val);
     try {
-      SharedPreferences sp = context.getSharedPreferences(prefs_file, Context.MODE_PRIVATE | MODE_MULTI_PROCESS);
+      SharedPreferences sp = context.getSharedPreferences(prefs_file, Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS);
       SharedPreferences.Editor ed = sp.edit();
       ed.putString(key, val);
       ed.commit();

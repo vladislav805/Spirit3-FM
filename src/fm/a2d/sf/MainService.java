@@ -3,6 +3,7 @@ package fm.a2d.sf;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.Service;
 import android.bluetooth.BluetoothAdapter;
 import android.content.Context;
 import android.content.Intent;
@@ -15,7 +16,7 @@ import java.util.TimerTask;
 
 // MainService class implements Tuner API callbacks & MainService Audio API callback
 @SuppressWarnings("WeakerAccess")
-public class MainService extends android.app.Service implements ServiceTunerCallback, ServiceAudioCallback {
+public class MainService extends Service implements ServiceTunerCallback, ServiceAudioCallback {
 
   // Also see AndroidManifest.xml.
 
@@ -56,8 +57,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
 
   @Override
   public void onCreate() { // When service newly created...
-    com_uti.logd ("SVC_SVC ON_CREATE");
-
     try {
       //com_uti.strict_mode_set(true); // Enable strict mode; disabled for now
       com_uti.strict_mode_set(false);  // !!!! Disable strict mode so we can send network packets from Java
@@ -206,7 +205,6 @@ public class MainService extends android.app.Service implements ServiceTunerCall
       val = extras.getString("audio_output", "");
       if (!val.isEmpty()) {
         mAudioAPI.audio_output_set(val);
-        com_uti.prefs_set(mContext, "audio_output", val);
       }
 
       val = extras.getString("audio_record_state", "");

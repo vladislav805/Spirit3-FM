@@ -19,7 +19,7 @@ import java.util.Timer;
 import java.util.Locale;
 
 
-public class svc_aud implements AudioStateListener, AudioManager.OnAudioFocusChangeListener {
+public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 
   private static int stat_constrs = 1;
 
@@ -1048,7 +1048,7 @@ if (intent != null)
         audio_routing_get();
       }
     }
-
+    com_uti.prefs_set(m_context, "audio_output", new_audio_output);
     m_com_api.audio_output = new_audio_output;                          // Set new audio output
 
     if (need_restart)

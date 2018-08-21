@@ -366,7 +366,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
             .setView(root)
-            .setCancelable(false);
+            .setCancelable(true);
 
     mIntroDialog = dialog.create();
     mIntroDialog.show();

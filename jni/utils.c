@@ -6,7 +6,6 @@
 #include <dirent.h>
 #include <android/log.h>
 #include <memory.h>
-#include "man_ver.h"
 
 int stat(const char *path, struct stat *buf);
 // Utilities: Used by many

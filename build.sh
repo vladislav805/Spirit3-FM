@@ -6,6 +6,24 @@ abi=armeabi-v7a
 nowdate=$(date +'%Y%m%d')
 apkname="Spirit3-$nowdate"
 
+for i in "$@"
+do
+case $i in
+	-p|--install)
+		INSTALL=1
+	;;
+
+	-n=*|--name=*)
+		apkname="${i#*=}"
+	;;
+	
+	*)
+		# unknown option
+	;;
+esac
+done
+
+
 export KEYSTORE_FILE="/home/user/androidkeystore.jks"
 export KEYSTORE_PASS="myNadusik"
 export KEY_NAME="alias"
@@ -26,5 +44,7 @@ zipalign -f 4 bin/$PROJ-release-unaligned.apk bin/$PROJ-release.apk
 mv bin/$PROJ-release.apk bin/$apkname.apk
 rm -rf bin/$PROJ-*
 
-#adb install -r bin/$PROJ-release.apk
-#adb shell am start -n fm.a2d.sf/fm.a2d.sf.MainActivity
+if (( INSTALL = 1 )); then
+	adb install -r bin/$apkname.apk
+	adb shell am start -n fm.a2d.sf/fm.a2d.sf.MainActivity
+fi

@@ -5,6 +5,8 @@ import android.graphics.Typeface;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.*;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.*;
 import android.media.AudioManager;
 import android.app.AlertDialog;
@@ -583,7 +585,14 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   }
 
   private void setRecordAudioState(String state) {
-    mViewRecord.setImageResource(state.equals(C.RECORD_STATE_START) ? R.drawable.btn_record_press : R.drawable.btn_record);
+    if (state.equals(C.RECORD_STATE_START)) {
+      Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.anim_recording);
+      mViewRecord.setImageResource(R.drawable.btn_record_press);
+      mViewRecord.startAnimation(animation);
+    } else {
+      mViewRecord.setImageResource(R.drawable.btn_record);
+      mViewRecord.clearAnimation();
+    }
   }
 
   private int SIGNAL_EDGES[] = new int[] {15, 25, 35, 45};

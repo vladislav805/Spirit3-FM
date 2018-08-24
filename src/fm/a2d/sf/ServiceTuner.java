@@ -1,6 +1,3 @@
-
-    // Tuner Sub-service
-
 package fm.a2d.sf;
 
 import java.util.TimerTask;
@@ -9,7 +6,10 @@ import java.util.Timer;
 import android.annotation.SuppressLint;
 import android.content.Context;
 
-public class ServiceTuner implements TunerAPIInterface {
+// Tuner Sub-service
+
+@SuppressWarnings("WeakerAccess")
+public class ServiceTuner {
 
   private MainService mTuner;
   private com_api mApi;
@@ -17,15 +17,12 @@ public class ServiceTuner implements TunerAPIInterface {
   private boolean mNeedPolling = true;
   private boolean mIsPolling = false;
   private Timer mPollingTimer;
-  private int       last_poll_freq      = -1;
-  private int       last_poll_rssi      = -1;
-  private String    last_poll_most      = "-1";
-  private int       last_poll_rds_pi    = -1;
-  private int       last_poll_rds_pt    = -1;
-  private String    last_poll_rds_ps    = "-1";
-  private String    last_poll_rds_rt    = "-1";
+  private int last_poll_freq = -1;
+  private int last_poll_rssi = -1;
+  private String last_poll_most = "-1";
 
-  public ServiceTuner(Context c, MainService cb_tnr, com_api svc_com_api) { // Context & Tuner API callback constructor
+  // Context & Tuner API callback constructor
+  public ServiceTuner(Context c, MainService cb_tnr, com_api svc_com_api) {
     com_uti.logd ("constructor context: " + c + "  cb_tnr: " + cb_tnr);
     mTuner = cb_tnr;
     mApi = svc_com_api;
@@ -59,12 +56,12 @@ public class ServiceTuner implements TunerAPIInterface {
     else if (key.equals(C.TUNER_SCAN_STATE))
       return mApi.tuner_scan_state;
 
-    else if (key.equalsIgnoreCase ("tuner_rds_state"))
+    /*else if (key.equalsIgnoreCase ("tuner_rds_state"))
       return (mApi.tuner_rds_state);
     else if (key.equalsIgnoreCase ("tuner_rds_af_state"))
       return (mApi.tuner_rds_af_state);
     else if (key.equalsIgnoreCase ("tuner_rds_ta_state"))
-      return (mApi.tuner_rds_ta_state);
+      return (mApi.tuner_rds_ta_state);*/
 
     else if (key.equalsIgnoreCase ("tuner_extra_cmd"))
       return (mApi.tuner_extra_cmd);
@@ -78,7 +75,7 @@ public class ServiceTuner implements TunerAPIInterface {
     else if (key.equalsIgnoreCase ("tuner_most"))
       return (mApi.tuner_most);
 
-    else if (key.equalsIgnoreCase ("tuner_rds_pi"))
+    /*else if (key.equalsIgnoreCase ("tuner_rds_pi"))
       return (mApi.tuner_rds_pi);
     else if (key.equalsIgnoreCase ("tuner_rds_picl"))
       return (mApi.tuner_rds_picl);
@@ -104,48 +101,47 @@ public class ServiceTuner implements TunerAPIInterface {
     else if (key.equalsIgnoreCase ("tuner_rds_ta"))
       return (mApi.tuner_rds_ta);
     else if (key.equalsIgnoreCase ("tuner_rds_taf"))
-      return (mApi.tuner_rds_taf);
+      return (mApi.tuner_rds_taf);*/
 
     else
       return ("0");  //return ("");
 
   }
 
-  public String setTunerValue(String key, String val) {
-    if (key == null)
-      return "";
+  public void setTunerValue(String key, String val) {
+    if (key == null) {
+      return;
+    }
 
-    else if (key.equalsIgnoreCase (C.TUNER_STATE)) // If tuner_state...
-      return setTunerState(val);
-
-    else if (key.equalsIgnoreCase ("radio_nop"))                        // If radio_nop...
-      return (com_uti.s2d_set (key, val));                              // Set via s2d
+    if (key.equalsIgnoreCase(C.TUNER_STATE)) { // If tuner_state...
+      setTunerState(val);
+    } else if (key.equalsIgnoreCase ("radio_nop")) {// If radio_nop...
+      com_uti.s2d_set(key, val);
+    }
 
     //else if (key.equalsIgnoreCase (C.TUNER_BAND))
     //  return (tuner_band_set (val));
 
     else if (mApi.isTunerStarted())          // If tuner_state = Start...
-      return (com_uti.s2d_set (key, val));                                // Set via s2d
-    else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY))
-      return (mApi.tuner_freq = val);
-    else if (key.equalsIgnoreCase ("tuner_stereo"))
-      return (mApi.tuner_stereo = val);
-    else if (key.equalsIgnoreCase ("tuner_thresh"))
-      return (mApi.tuner_thresh = val);
-    else if (key.equals(C.TUNER_SCAN_STATE))
-      return (mApi.tuner_scan_state = val);
-
-    else if (key.equalsIgnoreCase ("tuner_rds_state"))
-      return (mApi.tuner_rds_state = val);
-    else if (key.equalsIgnoreCase ("tuner_rds_af_state"))
-      return (mApi.tuner_rds_af_state = val);
-    else if (key.equalsIgnoreCase ("tuner_rds_ta_state"))
-      return (mApi.tuner_rds_ta_state = val);
-
-    else if (key.equalsIgnoreCase ("tuner_extra_cmd"))
-      return (mApi.tuner_extra_cmd = val);
-    else
-      return "0";
+    {
+      com_uti.s2d_set(key, val);
+    } else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY)) {
+      mApi.tuner_freq = val;
+    } else if (key.equalsIgnoreCase ("tuner_stereo")) {
+      mApi.tuner_stereo = val;
+    } else if (key.equalsIgnoreCase ("tuner_thresh")) {
+      mApi.tuner_thresh = val;
+    } else if (key.equals(C.TUNER_SCAN_STATE)) {
+      mApi.tuner_scan_state = val;
+    } else if (key.equalsIgnoreCase ("tuner_rds_state")) {
+      mApi.tuner_rds_state = val;
+    } else if (key.equalsIgnoreCase ("tuner_rds_af_state")) {
+      mApi.tuner_rds_af_state = val;
+    } else if (key.equalsIgnoreCase ("tuner_rds_ta_state")) {
+      mApi.tuner_rds_ta_state = val;
+    } else if (key.equalsIgnoreCase ("tuner_extra_cmd")) {
+      mApi.tuner_extra_cmd = val;
+    }
 
   }
 
@@ -203,7 +199,8 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
         mApi.tuner_state = C.TUNER_STATE_STOPPING;
 
         com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
-        com_uti.ms_sleep(500); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
+        com_uti.ms_sleep(400); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
+        //                ^ was 500
 
         mApi.tuner_state = C.TUNER_STATE_STOP;
       }
@@ -243,13 +240,15 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       }
 
       // Frequency:
-      int min_freq = 65000;
-      String temp_freq_str = com_uti.s2d_get(C.TUNER_FREQUENCY);
-      int temp_freq_int = com_uti.int_get(temp_freq_str);
-      if (temp_freq_int >= min_freq) {
-        mApi.tuner_freq = temp_freq_str;
+      String tempFrequencyStr = com_uti.s2d_get(C.TUNER_FREQUENCY);
+
+      int tempFrequencyInt = com_uti.int_get(tempFrequencyStr);
+
+      if (tempFrequencyInt >= 65000) {
+        mApi.tuner_freq = tempFrequencyStr;
         mApi.int_tuner_freq = com_uti.int_get(mApi.tuner_freq);
-        if (mApi.int_tuner_freq >= min_freq && last_poll_freq != mApi.int_tuner_freq) {
+
+        if (last_poll_freq != mApi.int_tuner_freq) {
           last_poll_freq = mApi.int_tuner_freq;
           mTuner.cb_tuner_key(C.TUNER_FREQUENCY, mApi.tuner_freq); // Inform change
         }
@@ -266,7 +265,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
         mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
 
       // RDS ps:
-      mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");
+      /*mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");
       if (!last_poll_rds_ps.equals(mApi.tuner_rds_ps))
         mTuner.cb_tuner_key("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
 
@@ -291,7 +290,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
         last_poll_rds_pt = rds_pt;
         mApi.tuner_rds_pt = mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get(mApi.tuner_band, rds_pt);
         mTuner.cb_tuner_key("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
-      }
+      }*/
     }
   }
 

@@ -308,14 +308,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private void setupPresets() {
     mPresetViews = new PresetView[com_api.PRESET_COUNT];
     for (int idx = 0; idx < mPresetViews.length; idx++) { // For all presets...
-      String freq = com_uti.prefs_get(mContext, "radio_freq_prst_" + idx, "");
-
-      Log.i(TAG, "setupPresets: for index " + idx);
-
+      String freq = com_uti.prefs_get(mContext, C.PRESET_KEY + idx, "");
       mPresetViews[idx] = new PresetView(mContext);
-
       mPresetViews[idx].populate(idx, freq).setListeners(mOnClickPresetListener, mOnLongClickPresetListener);
-
       mViewListPresets.addView(mPresetViews[idx]);
     }
   }
@@ -641,11 +636,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private void setPreset(PresetView preset, String frequency) {
     preset.populate(frequency);
 
-    // !! Current implementation requires simultaneous (одновременно)
-    mApi.key_set(
-            "radio_name_prst_" + preset.getIndex(), frequency,
-            "radio_freq_prst_" + preset.getIndex(), frequency
-    );
+    com_uti.prefs_set(mContext, C.PRESET_KEY + preset.getIndex(), frequency);
   }
 
   /**

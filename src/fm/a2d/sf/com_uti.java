@@ -31,25 +31,13 @@ public final class com_uti {
   private static int stat_constrs = 1;
 
   public static boolean ssd_via_sys_run = false;
-  private static String ssd_cmd = "";
-  public static boolean ssd_commit_all = false;
-  public static boolean ssd_commit_su = true;
   private static String sys_cmd = "";
-  private static boolean motorola_stock_set = false;
-  private static boolean motorola_stock = false;
-  private static boolean samsung_stock_set = false;
-  private static boolean samsung_stock = false;
   private static boolean lg2_stock_set = false;
   private static boolean lg2_stock = false;
   private static boolean htc_have = false;
   private static boolean htc_have_set = false;
   private static boolean htc_stock_set = false;
   private static boolean htc_stock = false;
-  public static boolean htc_gpe_set = false;
-  public static boolean htc_gpe = false;
-
-  public static final int android_version = android.os.Build.VERSION.SDK_INT;
-
 
   //                                      Tuner   Audio
   public static final int DEV_UNK = -1;
@@ -71,16 +59,11 @@ public final class com_uti {
 
   private static int dg_s2d_cmd_sem = 0;
   private static boolean dg_s2d_log = true;//false;
-  private static InetAddress loop;
-  private static boolean loop_set = false;
   //private static boolean enable_non_audio = true;
 
 
   private static final int DEF_BUF = 512;
   private static boolean s2d_cmd_log = false;
-  private static int s2d_cmd_num = 0;
-  private static boolean s2d_audio_data_get_log = false;
-  private static int s2d_audio_data_get_num = 0;
 
   private static int band_freq_lo = 87500;
   private static int band_freq_hi = 108000;
@@ -507,11 +490,6 @@ failure to promptly write the input stream or read the output stream of the subp
     return (htc_have);
   }
 
-
-  private static boolean is_gs3_note2() {
-    return m_device.startsWith("T03G") || m_device.startsWith("GT-N71") || m_device.startsWith("GALAXYN71") ||  m_device.startsWith("M0") || m_device.startsWith("GALAXYS3") ||  m_device.startsWith("I93") || m_device.startsWith("GT-I93");
-  }
-
 /* OMNIROM:
 
 GT-N7100    T03G
@@ -586,31 +564,7 @@ Evo 4G LTE  jewel
 
     int dev = DEV_UNK;
 
-    if (file_get("/mnt/sdcard/sf/dev_gen"))
-      dev = (DEV_GEN);
-    else if (file_get("/mnt/sdcard/sf/dev_sdr"))
-      dev = (DEV_SDR);
-    else if (file_get("/mnt/sdcard/sf/dev_gs1"))
-      dev = (DEV_GS1);
-    else if (file_get("/mnt/sdcard/sf/dev_gs2"))
-      dev = (DEV_GS2);
-    else if (file_get("/mnt/sdcard/sf/dev_gs3"))
-      dev = (DEV_GS3);
-    else if (file_get("/mnt/sdcard/sf/dev_one"))
-      dev = (DEV_ONE);
-    else if (file_get("/mnt/sdcard/sf/dev_lg2"))
-      dev = (DEV_LG2);
-    else if (file_get("/mnt/sdcard/sf/dev_xz2"))
-      dev = (DEV_XZ2);
-    else if (file_get("/mnt/sdcard/sf/dev_qcv"))
-      dev = (DEV_QCV);
-    else if (file_get("/mnt/sdcard/sf/dev_unk"))
-      dev = (DEV_UNK);
-
-    else if (is_gs3_note2())
-      dev = (DEV_GS3);
-
-    else if (m_manufacturer.startsWith("SONY") && file_get("/system/lib/libbt-fmrds.so"))     // ? Z2/Z3 need to be more specific ?
+    if (m_manufacturer.startsWith("SONY") && file_get("/system/lib/libbt-fmrds.so"))     // ? Z2/Z3 need to be more specific ?
       dev = (DEV_XZ2);
     else if (m_device.startsWith("SGP5") || m_device.startsWith("SOT") || m_device.startsWith("SO-05") || m_device.startsWith("D65") || m_device.startsWith("SO-03") || m_device.startsWith("CASTOR") || m_device.startsWith("SIRIUS") ||
             m_device.startsWith("D66") || m_device.startsWith("D58") || m_device.startsWith("LEO"))
@@ -640,22 +594,26 @@ Evo 4G LTE  jewel
     else if (htc_one_onemini_get())
       dev = (DEV_ONE);
 
+    else if (m_manufacturer.contains("XIAOMI"))
+      dev = DEV_QCV;
+
     else if (motog_get())
       dev = (DEV_QCV);
 
     else if (m_board.startsWith("GALBI") || m_device.startsWith("G2") || m_device.startsWith("LS980") || m_device.startsWith("D80") || m_device.startsWith("ZEE"))  // "zee" RayGlobe Flex - ls980
       dev = (DEV_LG2);
 
-    else
-      dev = (DEV_UNK);
-
 
     if (dev == DEV_UNK) {
       // From android_fmradio.cpp
-      if (com_uti.file_get("/dev/radio0") && com_uti.file_get("/sys/devices/platform/APPS_FM.6")) { // Qualcomm is always V4L and has this FM /sys directory
+
+      // Qualcomm is always V4L and has this FM /sys directory
+      if (com_uti.file_get("/dev/radio0") && com_uti.file_get("/sys/devices/platform/APPS_FM.6")) {
         dev = DEV_QCV;  // Redundant, see 
-      } else if (com_uti.file_get("/dev/radio0") || com_uti.file_get("/dev/fmradio")) {               // Samsung always have one of these driver names for Samsung Silicon Labs driver
-        //if (com_uti.file_get (plg_gs1.codec_reg))
+      } else
+
+      // Samsung always have one of these driver names for Samsung Silicon Labs driver
+      if (com_uti.file_get("/dev/radio0") || com_uti.file_get("/dev/fmradio")) {
         if (com_uti.file_get("/sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg"))
           dev = DEV_GS1;
         else if (com_uti.file_get("/sys/kernel/debug/asoc/U1-YMU823") || com_uti.file_get("/sys/devices/platform/soc-audio/MC1N2 AIF1") || com_uti.file_get("/sys/kernel/debug/asoc/U1-YMU823/mc1n2.6-003a"))
@@ -925,8 +883,19 @@ Evo 4G LTE  jewel
    * Datagram command API
    */
 
+  private static final int RADIO_NOP_TIMEOUT = 100;
+
   private static DatagramSocket ds = null;
 
+  /**
+   * Отправка команды нативной программе через сокеты
+   * @param cmd_len длина команды
+   * @param cmd_buf команда
+   * @param res_len длина ответа
+   * @param res_buf ответ
+   * @param rx_tmo таймаут в мс
+   * @return код возврата
+   */
   private static int dg_s2d_cmd(int cmd_len, byte[] cmd_buf, int res_len, byte[] res_buf, int rx_tmo) {
     int len = 0;
 
@@ -954,15 +923,15 @@ Evo 4G LTE  jewel
       ds.setSoTimeout(rx_tmo);
 
       //if (!loop_set) {
-      loop_set = true;
-      loop = InetAddress.getByName("127.0.0.1");
+      //boolean loop_set = true;
+      //InetAddress loop = InetAddress.getByName("127.0.0.1");
       //}
 
       // Send
-      dps = new DatagramPacket(cmd_buf, cmd_len, loop, 2122);
+      dps = new DatagramPacket(cmd_buf, cmd_len, InetAddress.getByName("127.0.0.1"), 2122);
       ds.send(dps);
       ds.receive(dps);
-      // java.net.PortUnreachableException        Caused by: libcore.io.ErrnoException: recvfrom failed: ECONNREFUSED (Connection refused)
+      // java.net.PortUnreachableException Caused by: libcore.io.ErrnoException: recvfrom failed: ECONNREFUSED (Connection refused)
       // java.net.SocketTimeoutException
       //com_uti.logd ("After  receive() cmd: " + cmd);
 
@@ -971,7 +940,7 @@ Evo 4G LTE  jewel
       len = dps.getLength();
 
       if (dg_s2d_log) {
-        com_uti.logd("After  getLength() cmd: " + cmd + "  len: " + len);
+        com_uti.logd("After getLength() cmd: " + cmd + "  len: " + len);
         if (rx_tmo == 1002) {
           com_uti.logd("hexstr res: " + (com_uti.ba_to_hexstr(receivedBuffer)).substring(0, len * 2));
         } else {
@@ -981,13 +950,14 @@ Evo 4G LTE  jewel
 
       // 0 is valid length, eg empty RT
       if (len < 0) {
-        com_uti.loge("cmd: " + cmd + "  len: " + len);
+        com_uti.loge("cmd: " + cmd + "; len: " + len);
       } else {
         System.arraycopy(receivedBuffer, 0, res_buf, 0, len);
       }
-      //com_uti.loge ("4444");
     } catch (SocketTimeoutException e) {
-      com_uti.loge("java.net.SocketTimeoutException rx_tmo: " + rx_tmo + "  cmd: " + cmd);
+      if (rx_tmo != RADIO_NOP_TIMEOUT) {
+        com_uti.loge("java.net.SocketTimeoutException rx_tmo: " + rx_tmo + "  cmd: " + cmd);
+      }
     } catch (Throwable e) {
       com_uti.loge("Exception: " + e + "  rx_tmo: " + rx_tmo + "  cmd: " + cmd);
       e.printStackTrace();
@@ -996,17 +966,32 @@ Evo 4G LTE  jewel
     return len;
   }
 
+  /**
+   * Получение значения параметра от нативного кода
+   * @param key ключ параметра
+   * @return значение от API
+   */
   public static String s2d_get(String key) {
     return s2d_cmd("g " + key);
   }
 
+  /**
+   * Изменение параметра в нативном коде
+   * @param key ключ параметра
+   * @param val новое значение
+   * @return ответ от нативного API
+   */
   public static String s2d_set(String key, String val) {
     String res = s2d_cmd("s " + key + " " + val);
-    com_uti.logd("key: " + key + "  val: " + val + "  res: " + res);
+    com_uti.logd("s2d_set: " + key + " = " + val + " // => " + res);
     return res;
   }
 
-
+  /**
+   * Якобы всегда падает первый запрос. Поэтому при старте тюнера
+   * вызывается ни на что не влияющий s radio_nop start, который
+   * выбрасывает SocketTimeout. Для него же сделан и таймаут меньше
+   */
   private static String s2d_cmd(String command) {
     int commandLength = command.length();
     if (s2d_cmd_log) {
@@ -1025,7 +1010,7 @@ Evo 4G LTE  jewel
     if (command.equalsIgnoreCase("s tuner_state Start")) {
       rx_timeout = 15000;
     } else if (command.equalsIgnoreCase("s radio_nop Start")) {
-      rx_timeout = 100; // Always fails so make it short
+      rx_timeout = RADIO_NOP_TIMEOUT; // Always fails so make it short
     }
 
     resultLength = dg_s2d_cmd(commandLength, commandBuffer, resultLength, resultBuffer, rx_timeout);
@@ -1042,11 +1027,12 @@ Evo 4G LTE  jewel
       result = result.substring(0, resultLength);     // Remove extra data
       if (s2d_cmd_log)
         com_uti.logd("res: \"" + result + "\"");
-    } else if (resultLength == 0)
-      result = "";             // Empty string
-    else
+    } else if (resultLength == 0) {
+      result = ""; // Empty string
+    } else {
       com_uti.loge("res_len: " + resultLength + "  cmd: " + command);
-    return (result);
+    }
+    return result;
   }
 
 

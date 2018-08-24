@@ -3,6 +3,7 @@ package fm.a2d.sf;
 /**
  * vlad805 (c) 2018
  */
+@SuppressWarnings("WeakerAccess")
 public class C {
 
   public static final int BUILD = 20180821;
@@ -15,6 +16,7 @@ public class C {
   public static final String TUNER_STATE_STARTING = "starting";
   public static final String TUNER_STATE_STOP = "stop";
   public static final String TUNER_STATE_STOPPING = "stopping";
+  public static final String TUNER_STATE_TOGGLE = "toggle";
 
   public static final String TUNER_BAND = "tuner_band";
   public static final String TUNER_FREQUENCY = "tuner_freq";
@@ -35,4 +37,6 @@ public class C {
   public static final String TUNER_SCAN_STATE = "tuner_scan_state";
   public static final String TUNER_SCAN_UP = "up";
   public static final String TUNER_SCAN_DOWN = "down";
+
+  public static final String PRESET_KEY = "preset_frequency";
 }

@@ -79,14 +79,6 @@ public class com_api {
     com_uti.logd("context: " + context);
   }
 
-  public void key_set(String key, String val, String key2, String val2) {  // Presets currently require simultaneous preset frequency and name
-    com_uti.logd("key: " + key + "  val: " + val + "  key2: " + key2 + "  val2: " + val2);
-    Intent intent = new Intent(MainService.ACTION_SET);
-    intent.setClass(m_context, MainService.class);
-    intent.putExtra(key, val);
-    intent.putExtra(key2, val2);
-    m_context.startService(intent);
-  }
 
   public void key_set(String key, String val) {
     com_uti.logd("key: " + key + "; val: " + val);
@@ -112,15 +104,6 @@ public class com_api {
     String new_radio_error = extras.getString("radio_error", DEFAULT_DETECT);
     if (!new_radio_error.equalsIgnoreCase(DEFAULT_DETECT))
       radio_error = new_radio_error;
-
-    for (int ctr = 0; ctr < PRESET_COUNT; ctr++) {
-      String new_radio_freq_prst = extras.getString("radio_freq_prst_" + ctr, DEFAULT_DETECT);//88500");
-      String new_radio_name_prst = extras.getString("radio_name_prst_" + ctr, DEFAULT_DETECT);//885");
-      if (!new_radio_freq_prst.equalsIgnoreCase(DEFAULT_DETECT))
-        radio_freq_prst[ctr] = new_radio_freq_prst;
-      if (!new_radio_name_prst.equalsIgnoreCase(DEFAULT_DETECT))
-        radio_name_prst[ctr] = new_radio_name_prst;
-    }
 
     String new_audio_state = extras.getString(C.AUDIO_STATE, DEFAULT_DETECT);//stop");
     String new_audio_output = extras.getString("audio_output", DEFAULT_DETECT);//headset");
@@ -182,7 +165,7 @@ public class com_api {
       tuner_qual = new_tuner_qual;
     if (!new_tuner_most.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_most = new_tuner_most;
-
+/*
     String new_tuner_rds_pt = extras.getString("tuner_rds_pt", DEFAULT_DETECT);
     String new_tuner_rds_ptyn = extras.getString("tuner_rds_ptyn", DEFAULT_DETECT);
     String new_tuner_rds_ps = extras.getString("tuner_rds_ps", DEFAULT_DETECT);
@@ -194,17 +177,13 @@ public class com_api {
     if (!new_tuner_rds_ps.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_rds_ps = new_tuner_rds_ps;
     if (!new_tuner_rds_rt.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rds_rt = new_tuner_rds_rt;
+      tuner_rds_rt = new_tuner_rds_rt;*/
 
   }
 
   public static PendingIntent createPendingIntent(Context context, String key, String val) {
     Intent intent = new Intent(MainService.ACTION_SET).setClass(context, MainService.class).putExtra(key, val);
-    return PendingIntent.getService(context, ++curr_pending_intent_num, intent, 134217728);
-  }
-
-  public float getFloatFrequencyMHz() {
-    return Float.valueOf(tuner_freq);
+    return PendingIntent.getService(context, ++curr_pending_intent_num, intent, PendingIntent.FLAG_UPDATE_CURRENT);
   }
 
   public String getStringFrequencyMHz() {

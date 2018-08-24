@@ -5,14 +5,12 @@
   <string name="button_next">Следующая</string>
   <string name="button_play_toggle">Воспр./пауза</string>
   <string name="button_stop">Предыдущая</string>
-  <string name="dialog_cancel">Отмена</string>
-  <string name="dialog_frequency_title">Изменить частоту</string>
-  <string name="dialog_ok">ОК</string>
+  <string name="dialog_frequency_title">Выбрать частоту</string>
   <string name="dialog_startup_build">сборка %d</string>
   <string name="frequency">Частота</string>
   <string name="header_cd_rssi">Кач. сигнала</string>
   <string name="header_record">Запись</string>
-  <string name="header_stereo">Мини / стерео</string>
+  <string name="header_stereo">Моно / стерео</string>
   <string name="header_volume">Громкость</string>
   <string name="notification_button_pause">Пауза</string>
   <string name="notification_button_play">Продолжить</string>

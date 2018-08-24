@@ -372,12 +372,12 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     dialog
         .setTitle(mContext.getString(R.string.dialog_frequency_title))
         .setView(textEntryView)
-        .setPositiveButton(mContext.getString(R.string.dialog_ok), new DialogInterface.OnClickListener() {
+        .setPositiveButton(mContext.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
             setFrequency(freqEditView.getEditableText().toString().replace(",", "."));
           }
         })
-        .setNegativeButton(mContext.getString(R.string.dialog_cancel), new DialogInterface.OnClickListener() {
+        .setNegativeButton(mContext.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
           }
         }).create().show();
@@ -662,7 +662,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
                   setPreset((PresetView) v, mApi.getStringFrequencyMHz());
                 }
               })
-              .setNeutralButton(mContext.getString(R.string.preset_dialog_cancel), new DialogInterface.OnClickListener() {
+              .setNeutralButton(mContext.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
                 @Override
                 public void onClick(DialogInterface dialog, int which) {
                   dialog.cancel();

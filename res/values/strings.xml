@@ -8,8 +8,6 @@
   <string name="header_stereo">Mono / Stereo</string>
   <string name="nill" translatable="false"/>
   <string name="dialog_frequency_title">Set frequency</string>
-  <string name="dialog_ok">OK</string>
-  <string name="dialog_cancel">Cancel</string>
   <string name="application_name">Spirit3</string>
   <string name="seek_down">Seek down</string>
   <string name="frequency">Frequency</string>

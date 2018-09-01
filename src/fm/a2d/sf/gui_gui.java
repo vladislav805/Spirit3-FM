@@ -292,7 +292,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       mVisualizerDisabled = false;
       mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
       int audio_sessid = com_uti.int_get(mApi.audio_sessid);
-      showToast("sessid: " + audio_sessid);
       //if (audio_sessid > 0) {
         do_gui_vis_start(audio_sessid);
       //}
@@ -692,9 +691,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         mApi.key_set("audio_record_state", C.RECORD_STATE_TOGGLE);
         break;
 
-      case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
+      /*case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
         mApi.key_set("audio_output", "toggle");
-        break;
+        break;*/
 
       case R.id.tv_freq:
         openDialogChangeFrequency();

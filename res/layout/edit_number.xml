@@ -8,7 +8,7 @@
 
   <EditText
       android:id="@+id/edit_number"
-      android:contentDescription="Frequency"
+      android:contentDescription="@string/frequency"
       android:layout_height="wrap_content"
       android:layout_width="match_parent"
       android:scrollHorizontally="true"

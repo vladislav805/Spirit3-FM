@@ -1,8 +1,8 @@
 # Spirit 3
 Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) only for QualComm based processors.
 
-![Screens of application](docs_images/screens.png)
-![Screen of notification](docs_images/screen-record.png)
+![Screens of application](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screens.png)
+![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
 #### build 20180620 ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=74367538))
@@ -56,7 +56,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 
 
 Все неравнодушные, желающие помочь, те, кто девайсами на процессорах QualComm.
-Просьба написать мне в [QMS 4pda](http://4pda.ru/forum/index.php?act=qms&mid=3786628) с темой **"Spirit 3 на `%device_name%`"**, если моя сборка Spirit3:
+Просьба написать мне в [QMS 4pda](https://4pda.ru/forum/index.php?act=qms&mid=3786628) с темой **"Spirit 3 на `%device_name%`"**, если моя сборка Spirit3:
 * **работает**: версию ОС (и указать, если это **не AOSP**: CyanogenMod/LinageOS, MIUI, etc)
 
     В таком случае я добавлю Ваше устройство в список устройств на котором приложение "официально" работает.
@@ -78,5 +78,5 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
     * `s2d......`
     
 ## Contributions
-* Author: [Mike Reid](https://github.com/mikereidis) ![Rest in peace](http://cs5-3.4pda.to/11327050.gif) (c) 2010-2015
-* Modification: [Vladislav Veluga](http://github.com/vladislav805) (c) 2018
+* Author: [Mike Reid](https://github.com/mikereidis) ![Rest in peace](https://cs5-3.4pda.to/11327050.gif) (c) 2010-2015
+* Modification: [Vladislav Veluga](https://github.com/vladislav805) (c) 2018

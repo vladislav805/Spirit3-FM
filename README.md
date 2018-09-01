@@ -1,8 +1,8 @@
 # Spirit 3
 Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) only for QualComm based processors.
 
-![Screens of application](.images/screens.png)
-![Screen of notification](.images/screen-record.png)
+![Screens of application](docs_images/screens.png)
+![Screen of notification](docs_images/screen-record.png)
 
 ## Changelog
 #### build 20180620 ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=74367538))

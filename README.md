@@ -31,6 +31,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ? | Устройство | ОС | Версия ОС/SDK | QSD | MSM |  
 | - | ---------- | -- | ------------- | --- | --- |
 | :heavy_check_mark: | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
+| :heavy_check_mark: | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
 | :heavy_check_mark: | Sony Xperia L | CyanogenMod 12.1 | 5.1 / 22 | S4 Plus | 8230 |
 | :heavy_check_mark: | Xiaomi Mi Max | MIUI ? | 7.x / ? | 650 | 8956 |
 | :heavy_exclamation_mark: | YotaPhone 2* | AOSP | 6.0.1 / 23 | 801 | 8974 |

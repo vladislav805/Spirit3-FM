@@ -28,24 +28,24 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 
 ## Официально работает
 
-| ? | Устройство | ОС | Версия ОС/SDK | QSD | MSM |  
-| - | ---------- | -- | ------------- | --- | --- |
-| :heavy_check_mark: | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
-| :heavy_check_mark: | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
-| :heavy_check_mark: | Xiaomi Mi Max | MIUI ? | 7.x / ? | 650 | 8956 |
-| :heavy_check_mark: | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? / ? | 625 | 8953 |
-| :heavy_check_mark: | Sony Xperia L | CyanogenMod 12.1 | 5.1 / 22 | S4 Plus | 8230 |
-| :heavy_exclamation_mark: | YotaPhone 2* | AOSP | 6.0.1 / 23 | 801 | 8974 |
-| :question: | ZTE Nubia Z7 mini | ? | ? / ? | 801 | 8974AA |
-| :question: | Xiaomi Redmi Note 4X | ? | ? / ? | 625 | 8953 |
+| ? | Устройство | ОС | Версия ОС | QSD | MSM |  
+|:-:| ---------- | -- |:-------------:|:---:|:---:|
+| ☑ | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
+| ☑ | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
+| ☑ | Xiaomi Mi Max | MIUI ? | 7.x / ? | 650 | 8956 |
+| ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? / ? | 625 | 8953 |
+| ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 / 22 | S4 Plus | 8230 |
+| □ | YotaPhone 2* | AOSP | 6.0.1 / 23 | 801 | 8974 |
+| ? | ZTE Nubia Z7 mini | ? | ? / ? | 801 | 8974AA |
+| ? | Xiaomi Redmi Note 4X | ? | ? / ? | 625 | 8953 |
 
 | Иконка | Описание |
-| ------ | -------- |
-| :heavy_check_mark: | всё работает |
-| :heavy_exclamation_mark: | есть незначительные ошибки |
-| :question: | неизвестно (но работала предыдущая версия модификации) |
+|:------:| -------- |
+| ☑ | всё работает |
+| □ | есть незначительные ошибки |
+| ? | неизвестно (но работала предыдущая версия модификации) |
 
-> Таблица составлена по данным от добровольцев форума 4pda, кроме первых двух строк (они есть у меня).
+> Таблица составлена по данным от добровольцев форума 4pda, кроме Mi A1 и Xperia L (они есть у меня).
 
       
 ## Известные проблемы
@@ -55,9 +55,8 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 
 ## Feedback
 
-
 Все неравнодушные, желающие помочь, те, кто девайсами на процессорах QualComm.
-Просьба написать мне в [QMS 4pda](https://4pda.ru/forum/index.php?act=qms&mid=3786628) с темой **"Spirit 3 на `%device_name%`"**, если моя сборка Spirit3:
+Просьба написать мне в [QMS 4pda](https://4pda.ru/forum/index.php?act=qms&mid=3786628) с темой **"Spirit 3 на `%device_name%`"** или мне в [Telegram](tg://resolve?domain=vladislav805) если моя сборка Spirit3:
 * **работает**: версию ОС (и указать, если это **не AOSP**: CyanogenMod/LinageOS, MIUI, etc)
 
     В таком случае я добавлю Ваше устройство в список устройств на котором приложение "официально" работает.

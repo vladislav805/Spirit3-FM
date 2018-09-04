@@ -5,6 +5,8 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import fm.a2d.sf.R;
 
+import static android.util.TypedValue.COMPLEX_UNIT_DIP;
+
 /**
  * vlad805 (c) 2018
  */
@@ -20,7 +22,7 @@ public class PresetView extends Button {
     setLayoutParams(new ViewGroup.LayoutParams((int) context.getResources().getDimension(R.dimen.preset_item_width), ViewGroup.LayoutParams.MATCH_PARENT));
 
     setHapticFeedbackEnabled(true);
-    setTextSize(context.getResources().getDimension(R.dimen.preset_item_text_size));
+    setTextSize(COMPLEX_UNIT_DIP, context.getResources().getDimension(R.dimen.preset_item_text_size));
   }
 
 

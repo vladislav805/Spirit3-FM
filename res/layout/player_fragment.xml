@@ -2,18 +2,19 @@
 
 <!-- Top Level: -->
 <LinearLayout
-    xmlns:tools="http://schemas.android.com/tools"
-
     android:orientation="vertical"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
+
 <!-- Top display area: record button/indicator top left, volume (speaker image) top right, PS, RT -->
   <LinearLayout
       android:layout_width="match_parent"
       android:layout_height="@dimen/header_height"
       android:layout_gravity="center"
       android:orientation="horizontal">
+
 <!-- RSSI -->
     <LinearLayout
         android:layout_marginStart="@dimen/header_horizontal_margin"
@@ -64,15 +65,16 @@
 
 <!-- Volume & Mute/unmute display -->
     <ImageView
-            android:id="@+id/iv_audio_out"
-            android:contentDescription="@string/header_volume"
-            android:src="@drawable/ic_volume_up"
-            android:focusable="true"
-            android:clickable="true"
-            android:layout_weight="2"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:scaleType="center" />
+        android:id="@+id/iv_audio_out"
+        android:contentDescription="@string/header_volume"
+        android:visibility="gone"
+        android:src="@drawable/ic_volume_up"
+        android:focusable="true"
+        android:clickable="true"
+        android:layout_weight="2"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:scaleType="center" />
 
 <!-- Stereo -->
     <TextView
@@ -87,6 +89,8 @@
         android:gravity="center_vertical|center_horizontal"
         android:layout_gravity="center_vertical|center_horizontal"
         android:maxLines="1" />
+
+<!-- Record -->
     <LinearLayout
         android:orientation="horizontal"
         android:layout_weight="3"
@@ -113,15 +117,15 @@
     </LinearLayout>
   </LinearLayout>
 
-
-  <!-- Frequency -->
+<!-- Frequency -->
   <FrameLayout
       android:layout_marginTop="@dimen/seek_frequency_margin_vertical"
       android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
       android:layout_marginLeft="@dimen/seek_frequency_margin_horizontal"
       android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
       android:layout_width="match_parent"
-      android:layout_height="@dimen/seek_frequency_height"
+      android:layout_height="0dp"
+      android:layout_weight="1"
       android:orientation="vertical"
       android:baselineAligned="false">
 <!-- android:background="@drawable/sel_stop_bg" -->
@@ -141,7 +145,6 @@
     <TextView
         android:id="@+id/tv_freq"
         android:contentDescription="@string/frequency"
-        android:text="@string/test_mhz"
         android:textSize="@dimen/frequency_mhz_font_size"
         android:textColor="@color/primary_blue"
         android:textAlignment="center"
@@ -174,7 +177,6 @@
           android:layout_marginStart="2dp"
           android:layout_marginEnd="2dp"
           android:contentDescription="@string/nill"/>
-      <!--suppress AndroidUnknownAttribute -->
       <SeekBar
           android:progressDrawable="@drawable/frequency_seek_style"
           android:thumb="@drawable/frequency_seek_thumb"

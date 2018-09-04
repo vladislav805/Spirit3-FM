@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="fm.a2d.sf"
     android:versionCode="101"
-    android:versionName="3.0" >
+    android:versionName="3.0.1" >
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" />
 
@@ -44,7 +44,7 @@
     <service
         android:name="fm.a2d.sf.MainService"
         android:process=":s"
-        android:label="Spirit2 Free FM Service"
+        android:label="Spirit3 FM Service"
         android:enabled="true"
         android:exported="true">
       <intent-filter>

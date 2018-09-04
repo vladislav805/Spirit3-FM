@@ -246,14 +246,21 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
   </LinearLayout>
-  <CheckBox
-      android:id="@+id/cb_visu"
+  <LinearLayout
+      android:layout_gravity="center_vertical"
+      android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="20dp"
-      android:checked="false"
-      android:text="@string/button_visualizer"
-      android:button="@drawable/checkbox_selector"
-      android:onClick="gap_gui_clicked"
-      android:contentDescription="@string/button_visualizer" />
+      android:layout_height="32dp">
+    <CheckBox
+        android:id="@+id/cb_visu"
+        android:padding="6dp"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:checked="false"
+        android:text="@string/button_visualizer"
+        android:button="@drawable/checkbox_selector"
+        android:onClick="gap_gui_clicked"
+        android:contentDescription="@string/button_visualizer" />
+  </LinearLayout>
 </LinearLayout>
 

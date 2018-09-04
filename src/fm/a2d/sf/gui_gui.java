@@ -647,8 +647,11 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     public void onClick(int action, PresetView v) {
       switch (action) {
         case PresetView.MENU_CREATE:
-        case PresetView.MENU_REPLACE:
           setPreset(v, mApi.getStringFrequencyMHz(), v.getTitle());
+          break;
+
+        case PresetView.MENU_REPLACE:
+          setPreset(v, mApi.getStringFrequencyMHz(), null);
           break;
 
         case PresetView.MENU_REMOVE:

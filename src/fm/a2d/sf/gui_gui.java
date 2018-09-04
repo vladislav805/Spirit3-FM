@@ -529,12 +529,14 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
     updateSignalStretch();
 
-    if (mApi.tuner_most.equalsIgnoreCase("Mono"))
+    /*if (mApi.tuner_most.equalsIgnoreCase("Mono"))
       mViewStereo.setText("");
     else if (mApi.tuner_most.equalsIgnoreCase("Stereo"))
       mViewStereo.setText("S");
     else
-      mViewStereo.setText("");
+      mViewStereo.setText("");*/
+
+
 /*
     mViewState.setText("" + mApi.tuner_state + " " + mApi.audio_state);
     m_tv_picl.setText(mApi.tuner_rds_picl);

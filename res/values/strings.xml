@@ -30,5 +30,6 @@
   <string name="dialog_startup">Spirit3 is starting up… Please, wait…</string>
   <string name="toast_record_stop">Record saved</string>
   <string name="dialog_startup_build">build %d</string>
+  <string name="button_visualizer">Visualizer</string>
 
 </resources>

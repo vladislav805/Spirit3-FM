@@ -26,4 +26,5 @@
   <string name="seek_up">Поиск позднее</string>
   <string name="toast_record_stop">Запись сохранена</string>
   <string name="button_previous">Предыдущая</string>
+  <string name="button_visualizer">Визуализатор</string>
 </resources>

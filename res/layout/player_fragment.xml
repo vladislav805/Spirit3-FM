@@ -238,13 +238,20 @@
       android:layout_width="match_parent"
       android:layout_height="160dp"
       android:layout_marginTop="10dp"
-      android:layout_marginBottom="10dp"
-      android:contentDescription="Visualizer">
+      android:layout_marginBottom="10dp">
     <fm.a2d.sf.view.VisualizerView
         android:id="@+id/gui_vis"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
   </LinearLayout>
-  <CheckBox android:id="@+id/cb_visu" android:layout_width="match_parent" android:layout_height="0dp" android:checked="false" android:text="Visual" android:layout_weight="1.0" android:onClick="gap_gui_clicked" android:contentDescription="Visualizer" />
+  <CheckBox
+      android:id="@+id/cb_visu"
+      android:layout_width="match_parent"
+      android:layout_height="20dp"
+      android:checked="false"
+      android:text="@string/button_visualizer"
+      android:button="@drawable/checkbox_selector"
+      android:onClick="gap_gui_clicked"
+      android:contentDescription="@string/button_visualizer" />
 </LinearLayout>
 

@@ -6,6 +6,10 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.Toast;
@@ -660,10 +664,20 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
     PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", C.RECORD_STATE_TOGGLE);
 
+    Bitmap b = Bitmap.createBitmap(64,64, Bitmap.Config.ARGB_8888);
+
+    Paint p = new Paint();
+    p.setColor(0xffffffff);
+    p.setTextSize(20);
+    Canvas c = new Canvas(b);
+    c.drawText(mApi.tuner_freq, 0, 0, p);
+
+    BitmapDrawable bd = new BitmapDrawable(getResources(), b);
+
     Notification.Builder notify = new Notification.Builder(this)
         .setContentTitle(mContext.getString(R.string.application_name))
         .setContentText(getString(R.string.notification_starting))
-        .setSmallIcon(R.drawable.ic_radio)
+        .setSmallIcon(bd)
         .setContentIntent(pendingMain)
         .setOngoing(true);
     if (mApi != null) {

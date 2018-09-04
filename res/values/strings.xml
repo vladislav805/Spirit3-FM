@@ -35,5 +35,6 @@
   <string name="popup_preset_replace">Replace by current</string>
   <string name="popup_preset_rename">Rename</string>
   <string name="popup_preset_remove">Delete</string>
+  <string name="preset_rename_title">Rename preset</string>
 
 </resources>

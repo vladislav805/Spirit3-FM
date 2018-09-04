@@ -742,29 +742,32 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     final EditText et = new EditText(mContext);
     String title = v.getTitle();
 
-    et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-    et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(8)});
-
     if (title == null) {
       title = "";
     }
 
+    et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(8)});
     et.setText(title);
     et.setSelection(0, title.length());
 
-    ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int which) {
-        setPreset(v, v.getFrequency(), et.getText().toString());
-      }
-    }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-      @Override
-      public void onClick(DialogInterface dialog, int which) {
-        dialog.cancel();
-      }
-    });
 
-    ab.setView(et).create().show();
+    ab.setTitle(R.string.preset_rename_title)
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            setPreset(v, v.getFrequency(), et.getText().toString());
+          }
+        })
+        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            dialog.cancel();
+          }
+        })
+        .setView(et)
+        .create()
+        .show();
   }
 
 

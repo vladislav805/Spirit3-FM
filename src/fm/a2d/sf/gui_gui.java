@@ -3,12 +3,10 @@ package fm.a2d.sf;
 import android.app.Activity;
 import android.graphics.Typeface;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
-import android.media.AudioManager;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -308,8 +306,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mPresetViews = new PresetView[com_api.PRESET_COUNT];
     for (int idx = 0; idx < mPresetViews.length; idx++) { // For all presets...
       String freq = com_uti.prefs_get(mContext, C.PRESET_KEY + idx, "");
+      String title = com_uti.prefs_get(mContext, C.PRESET_KEY_NAME + idx, "");
       mPresetViews[idx] = new PresetView(mContext);
-      mPresetViews[idx].populate(idx, freq).setListeners(mOnClickPresetListener, mOnLongClickPresetListener);
+      mPresetViews[idx].populate(idx, freq, title).setListeners(mOnClickPresetListener, mMenuPresetListener);
       mViewListPresets.addView(mPresetViews[idx]);
     }
   }
@@ -624,7 +623,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       PresetView preset = (PresetView) v;
 
       if (preset.isEmpty()) { // If no preset yet...
-        setPreset(preset, mApi.getStringFrequencyMHz());
+        setPreset(preset, mApi.getStringFrequencyMHz(), "");
       } else {
         setFrequency(preset.getFrequency());
       }
@@ -634,43 +633,32 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   /**
    * Save preset in memory
    */
-  private void setPreset(PresetView preset, String frequency) {
-    preset.populate(frequency);
+  private void setPreset(PresetView preset, String frequency, String title) {
+    preset.populate(frequency, title);
 
     com_uti.prefs_set(mContext, C.PRESET_KEY + preset.getIndex(), frequency);
+    com_uti.prefs_set(mContext, C.PRESET_KEY_NAME + preset.getIndex(), title);
   }
 
   /**
    * Long click: Show preset change options
    */
-  private View.OnLongClickListener mOnLongClickPresetListener = new View.OnLongClickListener() {
-    public boolean onLongClick(final View v) {
-      v.performHapticFeedback(HapticFeedbackConstants.LONG_PRESS);
-      AlertDialog.Builder ab = new AlertDialog.Builder(mContext);
-      ab
-              .setIcon(R.drawable.ic_radio)
-              .setCancelable(false)
-              .setTitle(mContext.getString(R.string.preset_dialog_title))
-              .setPositiveButton(mContext.getString(R.string.preset_dialog_remove), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                  setPreset((PresetView) v, null);
-                }
-              })
-              .setNegativeButton(mContext.getString(R.string.preset_dialog_replace), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                  setPreset((PresetView) v, mApi.getStringFrequencyMHz());
-                }
-              })
-              .setNeutralButton(mContext.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialog, int which) {
-                  dialog.cancel();
-                }
-              });
-      ab.create().show();
-      return true;
+  private PresetView.OnMenuPresetSelected mMenuPresetListener = new PresetView.OnMenuPresetSelected() {
+    public void onClick(int action, PresetView v) {
+      switch (action) {
+        case PresetView.MENU_CREATE:
+        case PresetView.MENU_REPLACE:
+          setPreset(v, mApi.getStringFrequencyMHz(), v.getTitle());
+          break;
+
+        case PresetView.MENU_REMOVE:
+          setPreset(v, null, v.getTitle());
+          break;
+
+        case PresetView.MENU_RENAME:
+          // todo
+          break;
+      }
     }
   };
 

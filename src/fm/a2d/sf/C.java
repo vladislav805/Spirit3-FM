@@ -39,4 +39,5 @@ public class C {
   public static final String TUNER_SCAN_DOWN = "down";
 
   public static final String PRESET_KEY = "preset_frequency";
+  public static final String PRESET_KEY_NAME = "preset_title";
 }

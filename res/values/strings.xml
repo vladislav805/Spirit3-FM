@@ -31,8 +31,9 @@
   <string name="toast_record_stop">Record saved</string>
   <string name="dialog_startup_build">build %d</string>
   <string name="button_visualizer">Visualizer</string>
-  <string name="popup_preset_create">Добавить</string>
-  <string name="popup_preset_rename">Переименовать</string>
-  <string name="popup_preset_remove">Удалить</string>
+  <string name="popup_preset_create">Add here</string>
+  <string name="popup_preset_replace">Replace by current</string>
+  <string name="popup_preset_rename">Rename</string>
+  <string name="popup_preset_remove">Delete</string>
 
 </resources>

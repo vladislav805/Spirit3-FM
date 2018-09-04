@@ -5,7 +5,19 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
-#### build 20180620 ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=74367538))
+#### build 20180905 (3.0.1)
+> Изменена подпись из-за моей криворукости. Перед установкой версий 3.0.1 и выше, если была установлена 3.0, нужно удалить старую
+* Поднят minSDK до 21 (Android 5.0);
+* Увеличено количество пресетов до 30;
+* Немного приведен в порядок экран:
+    * Уменьшен размер текста на кнопках пресетов;
+    * Иконка записи передвинута вправо;
+    * Включатель визуализатора обзавелся иконкой;
+* Управление пресетов теперь выполняется через Popup
+* Теперь пресетам можно давать имена. Имя может быть до 8 символов;
+
+
+#### build 20180620 (3.0) ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=74367538))
 * Убран звук микрофона из эфира на некоторых устройствах
 
 #### build 20180316 ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=71410712))

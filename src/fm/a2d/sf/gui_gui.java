@@ -2,6 +2,7 @@ package fm.a2d.sf;
 
 import android.app.Activity;
 import android.graphics.Typeface;
+import android.text.InputFilter;
 import android.util.DisplayMetrics;
 import android.view.*;
 import android.view.animation.Animation;
@@ -742,7 +743,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     String title = v.getTitle();
 
     et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-    et.setMaxWidth(8);
+    et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(8)});
 
     if (title == null) {
       title = "";

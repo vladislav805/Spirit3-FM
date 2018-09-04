@@ -29,12 +29,13 @@ public class MainActivity extends Activity {
     com_uti.logd("stat_creates: " + stat_creates++);
     mContext = this;
 
+    // Must be done from an Activity
+    setVolumeControlStream(AudioManager.STREAM_MUSIC);
+
     if (m_com_api == null) {
       m_com_api = new com_api(mContext);
     }
 
-    // Must be done from an Activity
-    setVolumeControlStream(AudioManager.STREAM_MUSIC);
     gui_start();
     initBroadcastListener();
   }
@@ -96,9 +97,7 @@ public class MainActivity extends Activity {
         public void onReceive(Context context, Intent intent) {
           String action = intent.getAction();
 
-          //com_uti.logx("intent: " + intent + "  action: " + action);
-
-          if (!action.equalsIgnoreCase("fm.a2d.sf.result.get")) {
+          if (action == null || !action.equalsIgnoreCase("fm.a2d.sf.result.get")) {
             return;
           }
 

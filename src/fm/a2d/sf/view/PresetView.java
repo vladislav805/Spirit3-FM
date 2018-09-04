@@ -1,7 +1,6 @@
 package fm.a2d.sf.view;
 
 import android.content.Context;
-import android.view.HapticFeedbackConstants;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -86,7 +85,8 @@ public class PresetView extends Button {
       popupMenu.getMenu().add(1, MENU_CREATE, 1, c.getString(R.string.popup_preset_create));
     } else {
       popupMenu.getMenu().add(1, MENU_RENAME, 1, c.getString(R.string.popup_preset_rename));
-      popupMenu.getMenu().add(1, MENU_REMOVE, 2, c.getString(R.string.popup_preset_remove));
+      popupMenu.getMenu().add(1, MENU_REPLACE, 2, c.getString(R.string.popup_preset_replace));
+      popupMenu.getMenu().add(1, MENU_REMOVE, 3, c.getString(R.string.popup_preset_remove));
     }
 
     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

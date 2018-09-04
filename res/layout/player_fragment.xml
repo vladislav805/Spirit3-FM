@@ -49,19 +49,19 @@
 
 <!-- PS -->
     <TextView
-            android:id="@+id/tv_ps"
-            android:contentDescription="@string/header_rds_ps"
-            android:text="@string/application_name"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="#ffffffff"
-            android:gravity="center"
-            android:layout_width="0dip"
-            android:layout_height="match_parent"
-            android:maxLines="1"
-            android:shadowColor="#ff000000"
-            android:shadowDy="1.0"
-            android:layout_weight="8" />
+        android:id="@+id/tv_ps"
+        android:contentDescription="@string/header_rds_ps"
+        android:text="@string/application_name"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="#ffffffff"
+        android:gravity="center"
+        android:layout_width="0dip"
+        android:layout_height="match_parent"
+        android:maxLines="1"
+        android:shadowColor="#ff000000"
+        android:shadowDy="1.0"
+        android:layout_weight="8" />
 
 <!-- Volume & Mute/unmute display -->
     <ImageView

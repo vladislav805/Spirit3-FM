@@ -37,6 +37,7 @@ public class PresetView extends Button {
     setMaxLines(1);
     setLayoutParams(new ViewGroup.LayoutParams((int) context.getResources().getDimension(R.dimen.preset_item_width), ViewGroup.LayoutParams.MATCH_PARENT));
 
+    setAllCaps(false);
     setHapticFeedbackEnabled(true);
     setTextSize(COMPLEX_UNIT_DIP, context.getResources().getDimension(R.dimen.preset_item_text_size));
   }

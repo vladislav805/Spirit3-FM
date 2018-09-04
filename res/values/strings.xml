@@ -8,7 +8,7 @@
   <string name="header_stereo">Mono / Stereo</string>
   <string name="nill" translatable="false"/>
   <string name="dialog_frequency_title">Set frequency</string>
-  <string name="application_name">Spirit3</string>
+  <string name="application_name">Spirit 3</string>
   <string name="seek_down">Seek down</string>
   <string name="frequency">Frequency</string>
   <string name="seek_up">Seek up</string>
@@ -27,7 +27,7 @@
   <string name="preset_dialog_remove">Remove</string>
   <string name="preset_dialog_replace">Replace</string>
   <string name="preset_dialog_cancel">Cancel</string>
-  <string name="dialog_startup">Spirit3 is starting up… Please, wait…</string>
+  <string name="dialog_startup">Initializing Spirit 3… Please, wait…</string>
   <string name="toast_record_stop">Record saved</string>
   <string name="dialog_startup_build">build %d</string>
   <string name="button_visualizer">Visualizer</string>

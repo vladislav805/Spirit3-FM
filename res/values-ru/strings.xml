@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <string name="dialog_startup">Spirit3 запускается… Пожалуйста, подождите…</string>
-  <string name="application_name">Spirit3</string>
+  <string name="dialog_startup">Инициализация Spirit 3… Пожалуйста, подождите…</string>
+  <string name="application_name">Spirit 3</string>
   <string name="button_next">Следующая</string>
   <string name="button_play_toggle">Воспр./пауза</string>
   <string name="button_stop">Предыдущая</string>

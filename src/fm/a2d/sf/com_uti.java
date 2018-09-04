@@ -71,7 +71,7 @@ public final class com_uti {
   private static int band_freq_odd = 0;
 
 
-  public com_uti() {                                                    // Default constructor
+  public com_uti() { // Default constructor
     com_uti.logd("stat_constrs: " + stat_constrs++);
 
     Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {

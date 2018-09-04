@@ -3,6 +3,7 @@
 
 package fm.a2d.sf;
 
+import android.annotation.SuppressLint;
 import android.media.MediaRecorder;
 import android.media.AudioFormat;
 import android.media.AudioRecord;
@@ -426,12 +427,9 @@ For the latter, you can use Context.startService() to send a command to the serv
 
   private void headset_plgd_lstnr_stop() {
     com_uti.logd("m_hdst_lstnr: " + m_hdst_lstnr);
-    try {
-      if (m_hdst_lstnr != null)
-        m_context.unregisterReceiver(m_hdst_lstnr);
-    } catch (Throwable e) {
-      com_uti.loge("Throwable: " + e);
-      //e.printStackTrace ();
+    if (m_hdst_lstnr != null) {
+      m_context.unregisterReceiver(m_hdst_lstnr);
+      m_hdst_lstnr = null;
     }
   }
 
@@ -443,8 +441,9 @@ For the latter, you can use Context.startService() to send a command to the serv
           String action = intent.getAction();
           com_uti.logd("headset_plgd_lstnr_start onReceive intent action: " + action);
 
-          if (action.equals(Intent.ACTION_HEADSET_PLUG))
+          if (action != null && action.equals(Intent.ACTION_HEADSET_PLUG)) {
             headset_plgd_handler(intent);
+          }
 
           //else if (action.equals ("android.bluetooth.a2dp.action.SINK_STATE_CHANGED"))
           //  sink_state_handler (intent);
@@ -523,36 +522,37 @@ if (intent != null)
     com_uti.logd("samp_rate: " + m_samplerate + "  chan_out: " + chan_out + "  at_min_size: " + at_min_size + "  m_audiotrack: " + m_audiotrack);
     try {
       m_audiotrack = new AudioTrack(audio_stream, m_samplerate, chan_out, AudioFormat.ENCODING_PCM_16BIT, at_min_size, AudioTrack.MODE_STREAM);
-      if (m_audiotrack == null)
+      /*if (m_audiotrack == null) {
         return (-1);
-      m_audiotrack.play();                                           // java.lang.IllegalStateException: play() called on uninitialized AudioTrack.
+      }*/
+      m_audiotrack.play(); // java.lang.IllegalStateException: play() called on uninitialized AudioTrack.
     } catch (Throwable e) {
       com_uti.loge("Throwable: " + e);
       e.printStackTrace();
     }
 
     if (pcm_write_thread_active)
-      return (-1);
+      return -1;
 
     pcm_write_thread = new Thread(pcm_write_runnable, "pcm_write");
     com_uti.logd("pcm_write_thread: " + pcm_write_thread);
     if (pcm_write_thread == null) {
       com_uti.loge("pcm_write_thread == null");
-      return (-1);
+      return -1;
     }
     pcm_write_thread_active = true;
 
-    try {                                                       // !!!! Thread may already be started
-      if (pcm_write_thread.getState() == java.lang.Thread.State.NEW || pcm_write_thread.getState() == java.lang.Thread.State.TERMINATED) {
-        //com_uti.logd ("thread priority: " + pcm_write_thread.getPriority ());   // Get 5
+    try { // !!!! Thread may already be started
+      Thread.State st = pcm_write_thread.getState();
+      if (st == java.lang.Thread.State.NEW || st == java.lang.Thread.State.TERMINATED) {
         pcm_write_thread.start();
       }
     } catch (Throwable e) {
       com_uti.loge("Throwable: " + e);
       e.printStackTrace();
-      return (-1);
+      return -1;
     }
-    return (0);
+    return 0;
   }
 
   private int pcm_write_stop() {
@@ -1048,9 +1048,10 @@ if (intent != null)
         m_AM.setSpeakerphoneOn(false);
       } else {
         need_restart = false;
-        audio_routing_get();
       }
     }
+    audio_routing_get();
+
     com_uti.prefs_set(m_context, "audio_output", new_audio_output);
     m_com_api.audio_output = new_audio_output;                          // Set new audio output
 
@@ -1073,12 +1074,14 @@ if (intent != null)
   private static final int DEVICE_STATE_UNAVAILABLE = 0;
   private static final int DEVICE_STATE_AVAILABLE = 1;
 
-  private int setDeviceConnectionState(final int device, final int state, final String address) {   // Called by audio_output_off () & audio_output_set ()
+  // Called by audio_output_off() & audio_output_set()
+  @SuppressLint("PrivateApi")
+  private int setDeviceConnectionState(final int device, final int state, final String address) {
     int ret = -3;
-    com_uti.logd("device: " + device + "  state: " + state + "  address: '" + address + "'");
+    com_uti.logd("device: " + device + "; state: " + state + "; address: '" + address + "'");
     audio_routing_get();
     try {
-      Class<?> audioSystem = Class.forName("android.media.AudioSystem");        // Use reflection
+      Class<?> audioSystem = Class.forName("android.media.AudioSystem"); // Use reflection
       Method setDeviceConnectionState = audioSystem.getMethod("setDeviceConnectionState", int.class, int.class, String.class);
       ret = (Integer) setDeviceConnectionState.invoke(audioSystem, device, state, address);
       com_uti.logd("ret: " + ret);
@@ -1089,24 +1092,25 @@ if (intent != null)
     return (ret);
   }
 
-
-  public int audio_routing_get() {
+  private int audio_routing_get() {
     int ctr = 0, bits = 0, ret = 0, ret_bits = 0;
-    String bin_out = "";
+    StringBuilder bin_out = new StringBuilder();
     for (ctr = 31; ctr >= 0; ctr--) {
       bits = 1 << ctr;
       ret = getDeviceConnectionState(bits, "");
-      //com_uti.logd ("getDeviceConnectionState for " + bits + "  is: " + ret);
-      bin_out += ret;
-      if (ctr % 4 == 0)                                                 // Every 4 bits...
-        bin_out += " ";                                                 // Add separator space
-      if (ret == 1)
+      bin_out.append(ret);
+      if (ctr % 4 == 0) { // Every 4 bits...
+        bin_out.append(" "); // Add separator space
+      }
+      if (ret == 1) {
         ret_bits |= bits;
+      }
     }
     com_uti.logd("getDeviceConnectionState: " + bin_out + "  ret_bits: " + ret_bits);
-    return (ret_bits);
+    return ret_bits;
   }
 
+  @SuppressLint("PrivateApi")
   private int getDeviceConnectionState(final int device, final String address) {   // Reflector
     int ret = -5;
     try {

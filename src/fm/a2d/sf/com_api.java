@@ -16,7 +16,7 @@ public class com_api {
   public String radio_cdown = "999";
   public String radio_error = "";
 
-  public static final int PRESET_COUNT = 16;
+  public static final int PRESET_COUNT = 30;
 
   public String[] radio_freq_prst = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",};
   public String[] radio_name_prst = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",};

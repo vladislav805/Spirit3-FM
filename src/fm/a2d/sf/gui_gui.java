@@ -656,7 +656,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
           break;
 
         case PresetView.MENU_RENAME:
-          // todo
+          openRenamePresetDialog(v);
           break;
       }
     }
@@ -731,6 +731,36 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
     }
     return false;
+  }
+
+  private void openRenamePresetDialog(final PresetView v) {
+    final AlertDialog.Builder ab = new AlertDialog.Builder(mContext);
+    final EditText et = new EditText(mContext);
+    String title = v.getTitle();
+
+    et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    et.setMaxWidth(8);
+
+    if (title == null) {
+      title = "";
+    }
+
+    et.setText(title);
+    et.setSelection(0, title.length());
+
+    ab.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        setPreset(v, v.getFrequency(), et.getText().toString());
+      }
+    }).setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+      @Override
+      public void onClick(DialogInterface dialog, int which) {
+        dialog.cancel();
+      }
+    });
+
+    ab.setView(et).create().show();
   }
 
 

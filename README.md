@@ -5,8 +5,9 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
-#### build 20180905 (3.0.1)
+#### build 20180905 (3.0.1) ([4pda](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=76716257))
 > Изменена подпись из-за моей криворукости. Перед установкой версий 3.0.1 и выше, если была установлена 3.0, нужно удалить старую
+
 * Поднят minSDK до 21 (Android 5.0);
 * Увеличено количество пресетов до 30;
 * Немного приведен в порядок экран:

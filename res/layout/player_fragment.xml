@@ -198,8 +198,7 @@
       android:gravity="center_vertical|center_horizontal"
       android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:layout_weight="1">
+      android:layout_height="@dimen/button_control_size">
     <ImageView
         android:id="@+id/iv_seekdn"
         android:contentDescription="@string/seek_down"

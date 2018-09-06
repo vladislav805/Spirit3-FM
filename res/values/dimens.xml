@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <dimen name="preset_list_height">80dp</dimen>
+  <dimen name="preset_list_height">60dp</dimen>
   <dimen name="preset_item_width">100dp</dimen>
   <dimen name="preset_item_text_size">9dp</dimen>
 

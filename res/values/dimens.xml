@@ -14,6 +14,7 @@
   <dimen name="frequency_qualifier_width">8dp</dimen>
   <dimen name="frequency_qualifier_height">20dp</dimen>
   <dimen name="frequency_mhz_font_size">85sp</dimen>
+  <dimen name="frequency_mhz_height">60dp</dimen>
 
   <dimen name="button_seek_size">44dp</dimen>
   <dimen name="button_control_size">40dp</dimen>
@@ -28,4 +29,5 @@
   <dimen name="visualizer_vertical_margin">5dp</dimen>
 
   <dimen name="settings_height">28dp</dimen>
+
 </resources>

@@ -1,6 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<!-- Top Level: -->
 <LinearLayout
     android:orientation="vertical"
     android:layout_width="match_parent"
@@ -123,9 +121,7 @@
       android:layout_marginLeft="@dimen/seek_frequency_margin_horizontal"
       android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
       android:layout_width="match_parent"
-      android:layout_height="0dp"
-      android:minHeight="89sp"
-      android:layout_weight="1"
+      android:layout_height="@dimen/frequency_mhz_height"
       android:orientation="vertical"
       android:baselineAligned="false">
 <!-- Fake frequency -->
@@ -169,10 +165,9 @@
 <!-- Seek frequency -->
   <HorizontalScrollView
       android:id="@+id/seek_scroll_frequency"
-      android:layout_marginTop="8dp"
       android:layout_marginBottom="8dp"
       android:layout_width="match_parent"
-      android:layout_height="120dp">
+      android:layout_height="100dp">
     <LinearLayout
         android:gravity="center_vertical"
         android:orientation="vertical"
@@ -203,7 +198,8 @@
       android:gravity="center_vertical|center_horizontal"
       android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content">
+      android:layout_height="0dp"
+      android:layout_weight="1">
     <ImageView
         android:id="@+id/iv_seekdn"
         android:contentDescription="@string/seek_down"

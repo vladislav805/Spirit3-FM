@@ -265,7 +265,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewSeekDown.setEnabled(power);
     mViewRecord.setEnabled(power);
 
-    mViewPlayToggle.setAlpha(alpha);
     mViewPrevious.setAlpha(alpha);
     mViewNext.setAlpha(alpha);
     mViewSeekDown.setAlpha(alpha);

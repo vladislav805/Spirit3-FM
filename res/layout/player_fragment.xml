@@ -125,6 +125,7 @@
       android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
       android:layout_width="match_parent"
       android:layout_height="0dp"
+      android:minHeight="100sp"
       android:layout_weight="1"
       android:orientation="vertical"
       android:baselineAligned="false">
@@ -158,6 +159,13 @@
         android:layout_height="match_parent"/>
 
   </FrameLayout>
+  <TextView
+      android:id="@+id/curr_name_station"
+      android:textAlignment="center"
+      android:textSize="27sp"
+      android:layout_width="match_parent"
+      android:layout_height="30dp"
+    />
 
   <HorizontalScrollView
       android:id="@+id/seek_scroll_frequency"

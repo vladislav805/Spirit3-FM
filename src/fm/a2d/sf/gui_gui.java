@@ -15,6 +15,8 @@ import android.content.Context;
 import android.content.Intent;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
+import org.w3c.dom.Text;
+
 import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
@@ -45,6 +47,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private TextView mViewStereo = null;
   private TextView mViewFrequency = null;
   private TextView mViewRecordDuration = null;
+  private TextView mViewName = null;
 
   // RDS data:
 //  private TextView m_tv_picl = null;
@@ -172,6 +175,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewRSSI.setTypeface(mDigitalFont);
     ((TextView) mActivity.findViewById(R.id.tv_freq_fake)).setTypeface(mDigitalFont);
 
+    mViewName = (TextView) mActivity.findViewById(R.id.curr_name_station);
+
     setupPresets();
 
     updateUIViewsByPowerState(false);
@@ -238,17 +243,36 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
     mViewFrequency.setShadowLayer(power ? 20 : 0, 0, 0, mContext.getResources().getColor(R.color.primary_blue_shadow));
 
-    int color = mContext.getResources().getColor(R.color.primary_blue);
+    int primaryColor = mContext.getResources().getColor(R.color.primary_blue);
     if (!power) {
       //noinspection NumericOverflow
-      color = (color & 0x00ffffff) | (0x88 << 24);
+      primaryColor = (primaryColor & 0x00ffffff) | (0x88 << 24);
     }
-    mViewFrequency.setTextColor(color);
+    int grayColor = mContext.getResources().getColor(R.color.header_grey);
+    if (!power) {
+      //noinspection NumericOverflow
+      grayColor = (grayColor & 0x00ffffff) | (0x88 << 24);
+    }
+
+    float alpha = power ? 1f : .6f;
+
+    mViewFrequency.setTextColor(primaryColor);
 
     // Power button is always enabled
+    mViewPrevious.setEnabled(power);
+    mViewNext.setEnabled(power);
     mViewSeekUp.setEnabled(power);
     mViewSeekDown.setEnabled(power);
-    mViewRecord.setEnabled(true);
+    mViewRecord.setEnabled(power);
+
+    mViewPlayToggle.setAlpha(alpha);
+    mViewPrevious.setAlpha(alpha);
+    mViewNext.setAlpha(alpha);
+    mViewSeekDown.setAlpha(alpha);
+    mViewSeekUp.setAlpha(alpha);
+    mViewRecord.setAlpha(alpha);
+
+    mViewRSSI.setTextColor(grayColor);
 //    m_tv_rt.setEnabled(power);
 
     for (int idx = 0; idx < com_api.PRESET_COUNT; idx++) { // For all presets...
@@ -317,7 +341,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
   private void resetAllViews() {
     mViewStereo.setText("");
-    mViewRSSI.setText("");
+    mViewRSSI.setText("0");
 //    m_tv_ps.setText("");
 //    m_tv_picl.setText("");
 //    m_tv_ptyn.setText("");

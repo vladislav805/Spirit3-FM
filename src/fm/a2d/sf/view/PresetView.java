@@ -1,6 +1,9 @@
 package fm.a2d.sf.view;
 
 import android.content.Context;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.RelativeSizeSpan;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,15 +51,22 @@ public class PresetView extends Button {
     mIndex = index;
     mTitle = title;
 
-    setText(
-        isEmpty()
-            ? "+"
-            : (
-                mTitle != null && !mTitle.isEmpty()
-                  ? mTitle
-                  : mFrequency
-            )
-    );
+    if (isEmpty()) {
+      setText("+");
+    } else {
+
+      int n = mFrequency.length();
+      String name = (mTitle != null ? mTitle : "");
+      int m = name.length();
+
+      Spannable span = new SpannableString(mFrequency + "\n" + name);
+//Big font till you find `\n`
+      span.setSpan(new RelativeSizeSpan(1f), 0, n, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+//Small font from `\n` to the end
+      span.setSpan(new RelativeSizeSpan(.7f), n, n + m + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+      setText(span);
+    }
 
     return this;
   }

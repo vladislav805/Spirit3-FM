@@ -3,6 +3,7 @@ package fm.a2d.sf.view;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,7 +38,7 @@ public class PresetView extends Button {
   public PresetView(Context context) {
     super(context);
 
-    setMaxLines(1);
+    setMaxLines(2);
     setLayoutParams(new ViewGroup.LayoutParams((int) context.getResources().getDimension(R.dimen.preset_item_width), ViewGroup.LayoutParams.MATCH_PARENT));
 
     setAllCaps(false);
@@ -56,14 +57,17 @@ public class PresetView extends Button {
     } else {
 
       int n = mFrequency.length();
-      String name = (mTitle != null ? mTitle : "");
+      String name = (mTitle != null ? mTitle : "-");
       int m = name.length();
+      String full = mFrequency + "\n" + name;
 
-      Spannable span = new SpannableString(mFrequency + "\n" + name);
-//Big font till you find `\n`
+      Spannable span = new SpannableString(full);
       span.setSpan(new RelativeSizeSpan(1f), 0, n, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
-//Small font from `\n` to the end
-      span.setSpan(new RelativeSizeSpan(.7f), n, n + m + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      span.setSpan(new RelativeSizeSpan(.7f), n + 1, n + m + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+
+      if (mTitle == null) {
+        span.setSpan(new ForegroundColorSpan(0x88ffffff), n + 1, n + m + 1,  Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+      }
 
       setText(span);
     }

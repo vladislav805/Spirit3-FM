@@ -1,8 +1,13 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.InputFilter;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.Spanned;
+import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.view.*;
 import android.view.animation.Animation;
@@ -474,7 +479,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   /**
    * Показ сообщения пользователю
    */
-  private void showToast(String text) {
+  private void showToast(String txt) {
+    Spannable text = new SpannableString(txt);
+    text.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.primary_blue)), 0, txt.length(),  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
     Toast.makeText(mContext, text, Toast.LENGTH_SHORT).show();
   }
 

@@ -31,6 +31,11 @@ public class C {
   public static final String AUDIO_STATE_STOPPING = "stopping";
   public static final String AUDIO_STATE_TOGGLE = "toggle";
 
+  public static final String AUDIO_OUTPUT = "audio_output";
+  public static final String AUDIO_OUTPUT_SPEAKER = "speaker";
+  public static final String AUDIO_OUTPUT_HEADSET = "headset";
+  public static final String AUDIO_OUTPUT_TOGGLE = "toggle";
+
   public static final String RECORD_STATE_START = "start";
   public static final String RECORD_STATE_STOP = "stop";
   public static final String RECORD_STATE_TOGGLE = "toggle";
@@ -40,4 +45,6 @@ public class C {
 
   public static final String PRESET_KEY = "preset_frequency";
   public static final String PRESET_KEY_NAME = "preset_title";
+
+  public static final int PRESET_NAME_MAX_LENGTH = 10;
 }

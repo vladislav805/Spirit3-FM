@@ -1020,40 +1020,43 @@ if (intent != null)
   // Called by MainService:onStartCommand() (change from UI/Widget) & MainService:audio_state_set() (at start from prefs)
   public String audio_output_set(String new_audio_output) {
     com_uti.logd("current api audio_state: " + m_com_api.audio_state + "  current api audio_output: " + m_com_api.audio_output + "  new_audio_output: " + new_audio_output);
-    if (new_audio_output.equalsIgnoreCase("toggle")) {
-      new_audio_output = m_com_api.audio_output.equalsIgnoreCase("speaker") ? "headset" : "speaker";
+    if (new_audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_TOGGLE)) {
+      new_audio_output = m_com_api.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER) ? C.AUDIO_OUTPUT_HEADSET : C.AUDIO_OUTPUT_SPEAKER;
     }
 
     boolean need_restart = false;
 
-    if (new_audio_output.equalsIgnoreCase("speaker")) {                                        // If -> Speaker...
-      if (need_restart) {
-        pcm_audio_stop(true);
-      }
+    switch (new_audio_output.toLowerCase()) {
 
-      setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_UNAVAILABLE, "");        // Headset unavailable
-
-      m_AM.setMode(AudioManager.MODE_CURRENT);
-      m_AM.setSpeakerphoneOn(true);
-    } else { // If -> Headset...
-
-      // If headset plugged in and last_out was speaker...
-      if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase("speaker")) {
+      case C.AUDIO_OUTPUT_SPEAKER:
         if (need_restart) {
           pcm_audio_stop(true);
         }
 
-        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, ""); // Headset available
-        m_AM.setMode(AudioManager.MODE_IN_COMMUNICATION);
-        m_AM.setSpeakerphoneOn(false);
-      } else {
-        need_restart = false;
-      }
+        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_UNAVAILABLE, "");        // Headset unavailable
+
+        m_AM.setMode(AudioManager.MODE_CURRENT);
+        m_AM.setSpeakerphoneOn(true);
+        break;
+
+      case C.AUDIO_OUTPUT_HEADSET:
+        if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
+          if (need_restart) {
+            pcm_audio_stop(true);
+          }
+
+          setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, ""); // Headset available
+          m_AM.setMode(AudioManager.MODE_CURRENT);
+          m_AM.setSpeakerphoneOn(false);
+        } else {
+          need_restart = false;
+        }
+        break;
     }
 
     audio_routing_get();
 
-    com_uti.prefs_set(m_context, "audio_output", new_audio_output);
+    com_uti.prefs_set(m_context, C.AUDIO_OUTPUT, new_audio_output);
     m_com_api.audio_output = new_audio_output; // Set new audio output
 
     if (need_restart) {

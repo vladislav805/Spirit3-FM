@@ -160,7 +160,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         audio_state_set(val);
       }
 
-      val = extras.getString("audio_output", "");
+      val = extras.getString(C.AUDIO_OUTPUT, "");
       if (!val.isEmpty()) {
         mAudioAPI.audio_output_set(val);
       }
@@ -251,7 +251,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     intent.putExtra("radio_error", mApi.radio_error);
 
     intent.putExtra(C.AUDIO_STATE, mApi.audio_state);
-    intent.putExtra("audio_output", mApi.audio_output);
+    intent.putExtra(C.AUDIO_OUTPUT, mApi.audio_output);
     intent.putExtra("audio_stereo", mApi.audio_stereo);
     intent.putExtra("audio_record_state", mApi.audio_record_state);
     intent.putExtra("audio_sessid", mApi.audio_sessid);
@@ -353,24 +353,21 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   }
 
 
-    // Callback called by svc_aud: audio_start(), audio_stop(), audio_pause()
-  public void cb_audio_state (String audio_state) {                     // Audio state changed callback from svc_aud
-    com_uti.logd ("audio_state: " + audio_state);
+  // Callback called by svc_aud: audio_start(), audio_stop(), audio_pause()
+  public void cb_audio_state(String audio_state) { // Audio state changed callback from svc_aud
+    com_uti.logd("audio_state: " + audio_state);
 
-    if (audio_state.equalsIgnoreCase ("start")) {                       // If audio state = Start...
+    if (audio_state.equalsIgnoreCase("start")) { // If audio state = Start...
+      String audio_output = com_uti.prefs_get(mContext, C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_HEADSET);
+      mAudioAPI.audio_output_set(audio_output); // Set Audio Output from prefs
 
-      String audio_output = com_uti.prefs_get (mContext, "audio_output", "headset");
-      mAudioAPI.audio_output_set (audio_output);                      // Set Audio Output from prefs
-
-      remote_state_set (true);                                          // Remote State = Playing
-    }
-    else if (audio_state.equalsIgnoreCase ("stop")) {                   // If audio state = Stop...
-      remote_state_set (false);                                         // Remote State = Stopped = Media buttons not needed ?
-    }
-    else if (audio_state.equalsIgnoreCase ("pause")) {                  // If audio state = Pause...
+      remote_state_set(true); // Remote State = Playing
+    } else if (audio_state.equalsIgnoreCase("stop")) { // If audio state = Stop...
+      remote_state_set(false); // Remote State = Stopped = Media buttons not needed ?
+    } else if (audio_state.equalsIgnoreCase ("pause")) { // If audio state = Pause...
       // Remote State = Still Playing
     }
-    displays_update ();                                 // Update all displays/data sinks
+    displays_update(); // Update all displays/data sinks
   }
 
 

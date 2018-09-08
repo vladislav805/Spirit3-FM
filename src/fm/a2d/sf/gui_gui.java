@@ -522,22 +522,17 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     setPlayToggleButtonState(mApi.audio_state);
     setRecordAudioState(mApi.audio_record_state);
 
-    // Speaker/Headset:     NOT USED NOW
-    if (mApi.audio_output.equalsIgnoreCase("speaker")) {                                  // Else if speaker..., Pressing button goes to headset
-      //if (m_iv_out != null)
-      //  m_iv_out.setImageResource (android.R.drawable.stat_sys_headset);//ic_volume_bluetooth_ad2p);
-//com_uti.loge ("Speaker Mode");
-    } else {                                                              // Pressing button goes to speaker
-      //if (m_iv_out != null)
-      //  m_iv_out.setImageResource (android.R.drawable.ic_lock_silent_mode_off);
-//com_uti.loge ("Headset Mode");
+    if (mApi.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
+      mViewAudioOut.setImageResource(R.drawable.ic_speaker);
+    } else {
+      mViewAudioOut.setImageResource(R.drawable.ic_headset);
     }
 
-/* TODO: set duration
+// TODO: set duration
     if (mApi.audio_record_state.equals(C.RECORD_STATE_START)) {
-
+      //showToast("record started");
     }
- */
+
 
     // Power:
     updateUIViewsByPowerState(mApi.isTunerStarted());
@@ -714,7 +709,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         break;
 
       case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
-        mApi.key_set("audio_output", "toggle");
+        mApi.key_set(C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_TOGGLE);
         break;
 
       case R.id.tv_freq:
@@ -775,7 +770,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     }
 
     et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
-    et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(8)});
+    et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(C.PRESET_NAME_MAX_LENGTH)});
     et.setText(title);
     et.setSelection(0, title.length());
 
@@ -808,12 +803,12 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   }
 
   private String audio_output_load_prefs() {
-    return com_uti.prefs_get(mContext, "audio_output", "");
+    return com_uti.prefs_get(mContext, C.AUDIO_OUTPUT, "");
   }
 
   private String audio_output_set_nonvolatile(String value) {  // Called only by speaker/headset checkbox change
     com_uti.logd("value: " + value);
-    mApi.key_set("audio_output", value);
+    mApi.key_set(C.AUDIO_OUTPUT, value);
     return (value); // No error
   }
 

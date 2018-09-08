@@ -1019,53 +1019,55 @@ if (intent != null)
   // CAN_DUCK
   // Called by MainService:onStartCommand() (change from UI/Widget) & MainService:audio_state_set() (at start from prefs)
   public String audio_output_set(String new_audio_output) {
-
     com_uti.logd("current api audio_state: " + m_com_api.audio_state + "  current api audio_output: " + m_com_api.audio_output + "  new_audio_output: " + new_audio_output);
-    if (new_audio_output.equalsIgnoreCase("toggle")) {                 // If toggle...
-      if (m_com_api.audio_output.equalsIgnoreCase("speaker"))          // If Speaker...
-        new_audio_output = "headset";                                   // Switch to Headset...
-      else
-        new_audio_output = "speaker";                                   // Or switch to Speaker...
+    if (new_audio_output.equalsIgnoreCase("toggle")) {
+      new_audio_output = m_com_api.audio_output.equalsIgnoreCase("speaker") ? "headset" : "speaker";
     }
 
     boolean need_restart = false;
 
     if (new_audio_output.equalsIgnoreCase("speaker")) {                                        // If -> Speaker...
-      if (need_restart)
+      if (need_restart) {
         pcm_audio_stop(true);
+      }
+
       setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_UNAVAILABLE, "");        // Headset unavailable
 
-
-      m_AM.setMode(AudioManager.MODE_NORMAL);
+      m_AM.setMode(AudioManager.MODE_CURRENT);
       m_AM.setSpeakerphoneOn(true);
+    } else { // If -> Headset...
 
-    } else {                                                                                      // If -> Headset...
-      if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase("speaker")) {                 // If headset plugged in and last_out was speaker...
-        if (need_restart)
+      // If headset plugged in and last_out was speaker...
+      if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase("speaker")) {
+        if (need_restart) {
           pcm_audio_stop(true);
-        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, "");        // Headset available
+        }
+
+        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, ""); // Headset available
         m_AM.setMode(AudioManager.MODE_IN_COMMUNICATION);
         m_AM.setSpeakerphoneOn(false);
       } else {
         need_restart = false;
       }
     }
+
     audio_routing_get();
 
     com_uti.prefs_set(m_context, "audio_output", new_audio_output);
-    m_com_api.audio_output = new_audio_output;                          // Set new audio output
+    m_com_api.audio_output = new_audio_output; // Set new audio output
 
-    if (need_restart)
-      pcm_audio_start();                                           // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
-    else if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
+    if (need_restart) {
+      pcm_audio_start(); // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
+    } else if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic")) {
       dai_set(true);
+    }
 
     com_uti.logd("Done new audio_output: " + m_com_api.audio_output);
-    return (m_com_api.audio_output);
+    return m_com_api.audio_output;
   }
 
   // http://osxr.org/android/source/hardware/libhardware_legacy/include/hardware_legacy/AudioSystemLegacy.h
-  //enum audio_devices {         // output devices
+  //enum audio_devices { // output devices
   private static final int DEVICE_OUT_EARPIECE = 0x1;
   private static final int DEVICE_OUT_SPEAKER = 0x2;
   private static final int DEVICE_OUT_WIRED_HEADSET = 0x4;

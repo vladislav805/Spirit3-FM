@@ -73,7 +73,7 @@
       <ImageView
           android:id="@+id/iv_audio_out"
           android:contentDescription="@string/header_volume"
-          android:visibility="gone"
+          android:visibility="visible"
           android:src="@drawable/ic_volume_up"
           android:focusable="true"
           android:clickable="true"

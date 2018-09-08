@@ -480,9 +480,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Показ сообщения пользователю
    */
   private void showToast(String txt) {
-    Spannable text = new SpannableString(txt);
-    text.setSpan(new ForegroundColorSpan(mContext.getResources().getColor(R.color.primary_blue)), 0, txt.length(),  Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-    Toast.makeText(mContext.getApplicationContext(), text, Toast.LENGTH_SHORT).show();
+    Toast.makeText(mContext.getApplicationContext(), txt, Toast.LENGTH_SHORT).show();
   }
 
 

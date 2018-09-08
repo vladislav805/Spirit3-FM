@@ -67,7 +67,7 @@ public class PresetView extends Button {
       if (mTitle == null) {
         span.setSpan(new ForegroundColorSpan(0x88ffffff), n + 1, n + m + 1,  Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
       } else {
-        span.setSpan(new RelativeSizeSpan(.64f), n + 1, n + m + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
+        span.setSpan(new RelativeSizeSpan(.5f), n + 1, n + m + 1, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
       }
 
       setText(span);

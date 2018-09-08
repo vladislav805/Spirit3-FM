@@ -25,10 +25,10 @@
     <LinearLayout
         android:id="@+id/preset_list"
         android:orientation="horizontal"
-        android:layoutAnimation="@anim/ani_preset_layout"
+
         android:layout_width="wrap_content"
         android:layout_height="match_parent">
-    </LinearLayout>
+    </LinearLayout><!--android:layoutAnimation="@anim/ani_preset_layout"-->
   </HorizontalScrollView>
 </LinearLayout>
 

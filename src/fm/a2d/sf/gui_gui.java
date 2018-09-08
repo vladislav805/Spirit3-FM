@@ -178,7 +178,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
     mViewFrequency.setTypeface(mDigitalFont);
     mViewRSSI.setTypeface(mDigitalFont);
-    ((TextView) mActivity.findViewById(R.id.tv_freq_fake)).setTypeface(mDigitalFont);
+    //((TextView) mActivity.findViewById(R.id.tv_freq_fake)).setTypeface(mDigitalFont);
 
     mViewName = (TextView) mActivity.findViewById(R.id.curr_name_station);
 

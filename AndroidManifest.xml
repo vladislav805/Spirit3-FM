@@ -2,8 +2,8 @@
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="fm.a2d.sf"
-    android:versionCode="101"
-    android:versionName="3.0.2" >
+    android:versionCode="303"
+    android:versionName="3.0.3" >
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" />
 
@@ -29,9 +29,9 @@
       android:icon="@drawable/ic_launcher"
       android:label="@string/application_name"
       android:launchMode="singleInstance"
-      android:theme="@android:style/Theme.DeviceDefault" >
+      android:theme="@style/AppTheme">
     <activity
-        android:name="fm.a2d.sf.MainActivity"
+        android:name=".MainActivity"
         android:launchMode="singleInstance"
         android:screenOrientation="portrait" >
       <intent-filter>
@@ -42,7 +42,7 @@
 
     <!-- ! Need separate process or get fg/bg problems !!! -->
     <service
-        android:name="fm.a2d.sf.MainService"
+        android:name=".MainService"
         android:process=":s"
         android:label="Spirit3 FM Service"
         android:enabled="true"
@@ -52,7 +52,7 @@
       </intent-filter>
     </service>
 
-    <receiver android:name="fm.a2d.sf.ServiceMediaReceiver">
+    <receiver android:name=".ServiceMediaReceiver">
       <intent-filter>
         <action android:name="android.intent.action.PHONE_STATE"/>
         <action android:name="android.intent.action.MEDIA_BUTTON" />

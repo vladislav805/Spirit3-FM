@@ -61,125 +61,158 @@
         android:shadowDy="1.0"
         android:layout_weight="8" />
 
-<!-- Volume & Mute/unmute display -->
-    <ImageView
-        android:id="@+id/iv_audio_out"
-        android:contentDescription="@string/header_volume"
-        android:visibility="gone"
-        android:src="@drawable/ic_volume_up"
-        android:focusable="true"
-        android:clickable="true"
-        android:layout_weight="2"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:scaleType="center" />
-
-<!-- Stereo -->
-    <TextView
-        android:id="@+id/tv_most"
-        android:visibility="gone"
-        android:contentDescription="@string/header_stereo"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:textSize="12sp"
-        android:textStyle="normal"
-        android:textColor="#ffa3a3a3"
-        android:gravity="center_vertical|center_horizontal"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:maxLines="1" />
-
-<!-- Record -->
     <LinearLayout
+        android:layout_marginStart="@dimen/header_horizontal_margin"
+        android:layout_marginEnd="@dimen/header_horizontal_margin"
         android:orientation="horizontal"
-        android:layout_weight="3"
         android:gravity="center_vertical|end"
+        android:layout_weight="3"
         android:layout_width="0dp"
         android:layout_height="match_parent">
-<!-- Record time -->
-      <TextView
-          android:visibility="gone"
-          android:id="@+id/tv_record_duration"
-          android:textColor="#DA3B3B"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent" />
-<!-- Record -->
+<!-- Volume & Mute/unmute display -->
       <ImageView
-          android:id="@+id/iv_record"
-          android:contentDescription="@string/header_record"
+          android:id="@+id/iv_audio_out"
+          android:contentDescription="@string/header_volume"
+          android:visibility="gone"
+          android:src="@drawable/ic_volume_up"
           android:focusable="true"
           android:clickable="true"
-          android:layout_width="@dimen/header_height"
-          android:layout_height="@dimen/header_height"
-          android:src="@drawable/sel_record" />
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:scaleType="center" />
+
+<!-- Stereo -->
+      <TextView
+          android:id="@+id/tv_most"
+          android:visibility="gone"
+          android:contentDescription="@string/header_stereo"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:textSize="12sp"
+          android:textStyle="normal"
+          android:textColor="#ffa3a3a3"
+          android:gravity="center_vertical|center_horizontal"
+          android:layout_gravity="center_vertical|center_horizontal"
+          android:maxLines="1" />
+
+<!-- Record -->
+      <LinearLayout
+          android:orientation="horizontal"
+          android:gravity="center_vertical|end"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          tools:ignore="UseCompoundDrawables">
+<!-- Record time -->
+        <TextView
+            android:visibility="gone"
+            android:id="@+id/tv_record_duration"
+            android:textColor="#DA3B3B"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent" />
+<!-- Record -->
+        <ImageView
+            android:id="@+id/iv_record"
+            android:contentDescription="@string/header_record"
+            android:focusable="true"
+            android:clickable="true"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:src="@drawable/sel_record" />
+      </LinearLayout>
     </LinearLayout>
   </LinearLayout>
 
-<!-- Frequency -->
-  <FrameLayout
+<!-- Middle display area: text frequency -->
+  <LinearLayout
       android:layout_marginTop="@dimen/seek_frequency_margin_vertical"
       android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
       android:layout_marginLeft="@dimen/seek_frequency_margin_horizontal"
       android:layout_marginRight="@dimen/seek_frequency_margin_horizontal"
+      android:gravity="center_vertical"
       android:layout_width="match_parent"
-      android:layout_height="@dimen/frequency_mhz_height"
-      android:orientation="vertical"
-      android:baselineAligned="false">
+      android:layout_height="@dimen/frequency_height"
+      android:orientation="horizontal">
+
+<!-- Previous .1 -->
+    <ImageView
+        android:id="@+id/iv_prev"
+        android:contentDescription="@string/button_previous"
+        android:layout_width="@dimen/button_control_size"
+        android:layout_height="@dimen/button_control_size"
+        android:src="@drawable/ic_frequency_previous" />
+
+<!-- Frequency -->
+    <FrameLayout
+        android:layout_weight="1"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:baselineAligned="false">
+
 <!-- Fake frequency -->
-    <TextView
-        android:id="@+id/tv_freq_fake"
-        android:contentDescription="@string/frequency"
-        android:text="@string/test_mhz"
-        android:textSize="@dimen/frequency_mhz_font_size"
-        android:textColor="@color/frequency_digit_background"
-        android:textAlignment="center"
-        android:gravity="center_vertical|center_vertical"
-        android:layout_gravity="center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"/>
+      <!--TextView
+          android:id="@+id/tv_freq_fake"
+          android:contentDescription="@string/frequency"
+          android:text="@string/test_mhz"
+          android:textSize="@dimen/frequency_mhz_font_size"
+          android:textColor="@color/frequency_digit_background"
+          android:textAlignment="center"
+          android:gravity="center_vertical|center_vertical"
+          android:layout_gravity="center_horizontal"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent" /-->
+
 <!-- Real frequency -->
-    <TextView
-        android:id="@+id/tv_freq"
-        android:contentDescription="@string/frequency"
-        android:textSize="@dimen/frequency_mhz_font_size"
-        android:textColor="@color/primary_blue"
-        android:textAlignment="center"
-        android:shadowColor="@color/primary_blue_shadow"
-        android:shadowRadius="20"
-        android:shadowDx="0"
-        android:shadowDy="0"
-        android:gravity="center_vertical|center_vertical"
-        android:layout_gravity="center_horizontal"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"/>
-  </FrameLayout>
+      <TextView
+          android:id="@+id/tv_freq"
+          android:contentDescription="@string/frequency"
+          android:textSize="@dimen/frequency_mhz_font_size"
+          android:textColor="@color/primary_blue"
+          android:textAlignment="center"
+          android:shadowColor="@color/primary_blue_shadow"
+          android:shadowRadius="20"
+          android:shadowDx="0"
+          android:shadowDy="0"
+          android:gravity="center_vertical|center_vertical"
+          android:layout_gravity="center_horizontal"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent" />
+    </FrameLayout>
+
+<!-- Next .1 -->
+    <ImageView
+        android:id="@+id/iv_next"
+        android:contentDescription="@string/button_next"
+        android:layout_width="@dimen/button_control_size"
+        android:layout_height="@dimen/button_control_size"
+        android:src="@drawable/ic_frequency_next" />
+  </LinearLayout>
 
 <!-- Current station name -->
   <TextView
       android:id="@+id/curr_name_station"
-      android:visibility="gone"
+      android:visibility="visible"
       android:textAlignment="center"
-      android:textSize="27sp"
+      android:textSize="@dimen/station_name_text_size"
+      android:layout_gravity="center_vertical"
       android:layout_width="match_parent"
-      android:layout_height="30dp" />
+      android:layout_height="@dimen/station_name_height" />
 
 <!-- Seek frequency -->
   <HorizontalScrollView
       android:id="@+id/seek_scroll_frequency"
-      android:layout_marginBottom="8dp"
       android:layout_width="match_parent"
-      android:layout_height="100dp">
+      android:layout_height="@dimen/seek_frequency_height">
     <LinearLayout
         android:gravity="center_vertical"
         android:orientation="vertical"
-        android:layout_width="400dp"
+        android:layout_width="@dimen/seek_frequency_ruler_width"
         android:layout_height="match_parent">
 <!-- Scale ruler -->
       <ImageView
           android:src="@drawable/frequency_scale"
           android:layout_width="match_parent"
           android:layout_height="67dp"
-          android:layout_marginStart="2dp"
-          android:layout_marginEnd="2dp"
           android:contentDescription="@string/nill"/>
 <!-- Seek -->
       <SeekBar
@@ -188,7 +221,8 @@
           android:splitTrack="false"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginEnd="5dp"
+          android:layout_marginStart="@dimen/seek_frequency_offset"
+          android:layout_marginEnd="@dimen/seek_frequency_offset"
           android:id="@+id/sb_freq_seek" />
     </LinearLayout>
   </HorizontalScrollView>
@@ -196,6 +230,7 @@
 <!-- Controls -->
   <LinearLayout
       android:gravity="center_vertical|center_horizontal"
+      android:layout_marginTop="@dimen/control_padding_top"
       android:orientation="horizontal"
       android:layout_width="match_parent"
       android:layout_height="@dimen/button_control_size">
@@ -207,12 +242,7 @@
         android:layout_gravity="center_vertical"
         android:layout_width="@dimen/button_seek_size"
         android:layout_height="@dimen/button_seek_size" />
-    <ImageView
-        android:id="@+id/iv_prev"
-        android:contentDescription="@string/button_previous"
-        android:layout_width="@dimen/button_control_size"
-        android:layout_height="@dimen/button_control_size"
-        android:src="@drawable/ic_frequency_previous" />
+
     <ImageView
         android:id="@+id/iv_play_toggle"
         android:contentDescription="@string/button_play_toggle"
@@ -221,12 +251,7 @@
         android:layout_marginLeft="6dp"
         android:layout_marginRight="6dp"
         android:src="@drawable/ic_play" />
-    <ImageView
-        android:id="@+id/iv_next"
-        android:contentDescription="@string/button_next"
-        android:layout_width="@dimen/button_control_size"
-        android:layout_height="@dimen/button_control_size"
-        android:src="@drawable/ic_frequency_next" />
+
     <ImageView
         android:id="@+id/iv_seekup"
         android:contentDescription="@string/seek_up"
@@ -240,7 +265,7 @@
 <!-- Visualizer -->
   <LinearLayout
       android:id="@+id/vis"
-      android:visibility="invisible"
+      android:visibility="gone"
       android:layout_width="match_parent"
       android:layout_height="@dimen/visualizer_height"
       android:layout_marginTop="@dimen/visualizer_vertical_margin"
@@ -253,6 +278,7 @@
 
 <!-- Settings -->
   <LinearLayout
+      android:visibility="gone"
       android:layout_gravity="center_vertical"
       android:orientation="horizontal"
       android:layout_width="match_parent"

@@ -1,6 +1,6 @@
 <resources>
   <style name="AppTheme" parent="android:Theme.Material.NoActionBar">
-    <item name="android:background">@color/main_background</item>
+    <item name="android:windowBackground">@color/main_background</item>
     <item name="android:colorBackground">@color/main_background</item>
     <item name="android:statusBarColor">@color/main_background</item>
     <item name="android:navigationBarColor">@color/main_background</item>

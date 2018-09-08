@@ -211,8 +211,9 @@
 <!-- Scale ruler -->
       <ImageView
           android:src="@drawable/frequency_scale"
-          android:layout_width="match_parent"
-          android:layout_height="67dp"
+          android:layout_width="1920sp"
+          android:scaleType="centerCrop"
+          android:layout_height="wrap_content"
           android:contentDescription="@string/nill"/>
 <!-- Seek -->
       <SeekBar
@@ -221,8 +222,8 @@
           android:splitTrack="false"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:layout_marginStart="@dimen/seek_frequency_offset"
-          android:layout_marginEnd="@dimen/seek_frequency_offset"
+          android:paddingStart="@dimen/seek_frequency_offset"
+          android:paddingEnd="@dimen/seek_frequency_offset"
           android:id="@+id/sb_freq_seek" />
     </LinearLayout>
   </HorizontalScrollView>

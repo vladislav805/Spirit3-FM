@@ -24,7 +24,7 @@
   <dimen name="seek_frequency_margin_horizontal">8dp</dimen>
   <dimen name="seek_frequency_height">100dp</dimen>
   <dimen name="seek_frequency_ruler_width">400dp</dimen>
-  <dimen name="seek_frequency_offset">15dp</dimen>
+  <dimen name="seek_frequency_offset">32sp</dimen>
 
   <dimen name="control_padding_top">10dp</dimen>
   <dimen name="button_seek_size">58dp</dimen>

@@ -478,7 +478,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         break;
       }
     }
-    
+
     mViewName.setText(currentPreset != null ? currentPreset.getTitle() : "");
   }
 
@@ -504,6 +504,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   }
 
   private String mLastFrequency;
+  private String mLastRecord;
+  private long mLastRecordStart;
 
   // Radio API Callback:
   public void onReceivedUpdates(Intent intent) {
@@ -545,10 +547,22 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       mViewAudioOut.setImageResource(R.drawable.ic_headset);
     }
 
-// TODO: set duration
-    if (mApi.audio_record_state.equals(C.RECORD_STATE_START)) {
-      //showToast("record started");
-    }
+    /*if (!mApi.audio_record_state.equals(mLastRecord)) {
+
+      switch (mApi.audio_record_state.toLowerCase()) {
+        case C.RECORD_STATE_START:
+          mLastRecordStart = com_uti.ms_get();
+          mViewRecordDuration.setVisibility(View.VISIBLE);
+          updateTimeStringRecording();
+          break;
+
+        case C.RECORD_STATE_STOP:
+          mViewRecordDuration.setVisibility(View.GONE);
+          break;
+      }
+    } else if (mApi.audio_record_state.equals(C.RECORD_STATE_START)) {
+      updateTimeStringRecording();
+    }*/
 
 
 
@@ -575,6 +589,11 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       m_tv_rt.setSelected(true);
     }
 */
+  }
+
+  private void updateTimeStringRecording() {
+    Long s = com_uti.ms_get() - mLastRecordStart;
+    mViewRecordDuration.setText(com_uti.getTimeStringBySeconds(s.intValue()));
   }
 
   private void setPlayToggleButtonState(String state) {

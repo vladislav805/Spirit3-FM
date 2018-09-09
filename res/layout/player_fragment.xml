@@ -216,14 +216,14 @@
           android:src="@drawable/frequency_scale"
           android:layout_width="1920sp"
           android:scaleType="centerCrop"
-          android:layout_height="wrap_content"
+          android:layout_height="64sp"
           android:contentDescription="@string/nill"/>
 <!-- Seek -->
       <SeekBar
           android:progressDrawable="@drawable/frequency_seek_style"
           android:thumb="@drawable/frequency_seek_thumb"
           android:splitTrack="false"
-          android:layout_width="match_parent"
+          android:layout_width="1984sp"
           android:layout_height="wrap_content"
           android:paddingStart="@dimen/seek_frequency_offset"
           android:paddingEnd="@dimen/seek_frequency_offset"

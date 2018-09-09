@@ -1,0 +1,19 @@
+package fm.a2d.sf.helper;
+
+@SuppressWarnings("WeakerAccess")
+public class Phone {
+  public static final String DEVICE_IN_BLUETOOTH_SCO_HEADSET = "DEVICE_IN_BLUETOOTH_SCO_HEADSET";
+  public static final String DEVICE_IN_WIRED_HEADSET = "DEVICE_IN_WIRED_HEADSET";
+  public static final String DEVICE_OUT_ANLG_DOCK_HEADSET = "DEVICE_OUT_ANLG_DOCK_HEADSET";
+  public static final String DEVICE_OUT_BLUETOOTH_A2DP = "DEVICE_OUT_BLUETOOTH_A2DP";
+  public static final String DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES = "DEVICE_OUT_BLUETOOTH_A2DP_HEADPHONES";
+  public static final String DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER = "DEVICE_OUT_BLUETOOTH_A2DP_SPEAKER";
+  public static final String DEVICE_OUT_BLUETOOTH_SCO = "DEVICE_OUT_BLUETOOTH_SCO";
+  public static final String DEVICE_OUT_BLUETOOTH_SCO_CARKIT = "DEVICE_OUT_BLUETOOTH_SCO_CARKIT";
+  public static final String DEVICE_OUT_BLUETOOTH_SCO_HEADSET = "DEVICE_OUT_BLUETOOTH_SCO_HEADSET";
+  public static final String DEVICE_OUT_DGTL_DOCK_HEADSET = "DEVICE_OUT_DGTL_DOCK_HEADSET";
+  public static final String DEVICE_OUT_EARPIECE = "DEVICE_OUT_EARPIECE";
+  public static final String DEVICE_OUT_SPEAKER = "DEVICE_OUT_SPEAKER";
+  public static final String DEVICE_OUT_WIRED_HEADPHONE = "DEVICE_OUT_WIRED_HEADPHONE";
+  public static final String DEVICE_OUT_WIRED_HEADSET = "DEVICE_OUT_WIRED_HEADSET";
+}

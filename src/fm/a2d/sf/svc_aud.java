@@ -13,6 +13,7 @@ import android.content.Context;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.media.AudioTrack;
+import fm.a2d.sf.helper.AudioHelper;
 
 import java.lang.reflect.Method;
 import java.io.RandomAccessFile;
@@ -134,6 +135,8 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
   private boolean aud_mic = true;
   private int m_rec_src = 0;
 
+  private AudioHelper mAudioHelper;
+
 
   // Code:
 
@@ -145,6 +148,8 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
     m_context = c;
     m_com_api = svc_com_api;
     com_uti.logd("");
+
+    mAudioHelper = new AudioHelper(c);
 
     old_htc = false;
     if (com_uti.m_device.startsWith("EVITA") || com_uti.m_device.startsWith("VILLE") || com_uti.m_device.startsWith("JEWEL")) {// || com_uti.m_device.startsWith ("M7C")) {
@@ -401,6 +406,7 @@ API level 17 / 4.2+
     if (m_svc_acb != null)
       m_svc_acb.cb_audio_state(m_com_api.audio_state);
     focus_set(false);
+    mAudioHelper.makeWiredHeadPhones();
     //audio_sessid_get ();                                                // Update audio_sessid
     //stopSelf ();                                                    // service is no longer necessary. Will be started again if needed.
   }
@@ -567,7 +573,7 @@ if (intent != null)
     com_uti.logd("focus_request: " + focus_request);
 
     if (focus_request) { // If focus desired...
-      m_AM.requestAudioFocus(this, audio_stream, AudioManager.AUDIOFOCUS_GAIN);
+      m_AM.requestAudioFocus(this, audio_stream, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK); //AudioManager.AUDIOFOCUS_GAIN);
     } else {// If focus return...
       m_AM.abandonAudioFocus(this);
     }
@@ -590,7 +596,7 @@ if (intent != null)
         audio_pause();                                                 // Pause audio
         com_uti.logd("DONE focusChange: ...LOSS_TRANSIENT");
         break;
-      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK:             // Transient loss we can ignore if we want
+      case AudioManager.AUDIOFOCUS_LOSS_TRANSIENT_CAN_DUCK: // Transient loss we can ignore if we want
         //com_uti.logd ("focusChange: LOSS_TRANSIENT_CAN_DUCK");
         audio_pause();                                                 // Pause audio
         com_uti.logd("DONE focusChange: LOSS_TRANSIENT_CAN_DUCK");
@@ -1008,12 +1014,12 @@ if (intent != null)
     m_audiotrack = null;
   }
 
-  private void audio_output_off() { // Called only from audio_pause, after pcm read and write stopped
-    com_uti.logd("current api audio_state: " + m_com_api.audio_state + "  current api audio_output: " + m_com_api.audio_output);
-    if (m_com_api.audio_output.equalsIgnoreCase("speaker") && m_hdst_plgd) // If Speaker switch off and headset plugged in...
-      setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, "");  // Headset available
-    else
+  // Called only from audio_pause, after pcm read and write stopped
+  private void audio_output_off() {
+    // If Speaker switch off and headset plugged in...
+    if (!m_com_api.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER) || !m_hdst_plgd) {
       audio_routing_get();
+    }
   }
 
   // CAN_DUCK
@@ -1029,32 +1035,27 @@ if (intent != null)
     switch (new_audio_output.toLowerCase()) {
 
       case C.AUDIO_OUTPUT_SPEAKER:
-        if (need_restart) {
+        /*if (need_restart) {
           pcm_audio_stop(true);
-        }
+        }*/
 
-        setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_UNAVAILABLE, "");        // Headset unavailable
-
-        m_AM.setMode(AudioManager.MODE_CURRENT);
-        m_AM.setSpeakerphoneOn(true);
+        mAudioHelper.makeSpeaker();
         break;
 
       case C.AUDIO_OUTPUT_HEADSET:
         if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
-          if (need_restart) {
+          /*if (need_restart) {
             pcm_audio_stop(true);
-          }
+          }*/
 
-          setDeviceConnectionState(DEVICE_OUT_WIRED_HEADSET, DEVICE_STATE_AVAILABLE, ""); // Headset available
-          m_AM.setMode(AudioManager.MODE_CURRENT);
-          m_AM.setSpeakerphoneOn(false);
+          mAudioHelper.makeWiredHeadPhones();
         } else {
           need_restart = false;
         }
         break;
     }
 
-    audio_routing_get();
+    //audio_routing_get();
 
     com_uti.prefs_set(m_context, C.AUDIO_OUTPUT, new_audio_output);
     m_com_api.audio_output = new_audio_output; // Set new audio output
@@ -1062,7 +1063,7 @@ if (intent != null)
     if (need_restart) {
       pcm_audio_start(); // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
     } else if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic")) {
-      dai_set(true);
+      //dai_set(true);
     }
 
     com_uti.logd("Done new audio_output: " + m_com_api.audio_output);

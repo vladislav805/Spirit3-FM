@@ -34,6 +34,7 @@ public class C {
   public static final String AUDIO_OUTPUT = "audio_output";
   public static final String AUDIO_OUTPUT_SPEAKER = "speaker";
   public static final String AUDIO_OUTPUT_HEADSET = "headset";
+  public static final String AUDIO_OUTPUT_EARPIECE = "earpiece";
   public static final String AUDIO_OUTPUT_TOGGLE = "toggle";
 
   public static final String RECORD_STATE_START = "start";

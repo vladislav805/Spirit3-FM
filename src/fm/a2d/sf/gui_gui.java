@@ -275,6 +275,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewSeekDown.setAlpha(alpha);
     mViewSeekUp.setAlpha(alpha);
     mViewRecord.setAlpha(alpha);
+    mViewSignal.setAlpha(alpha);
+    mViewAudioOut.setAlpha(alpha);
 
     mViewRSSI.setTextColor(grayColor);
 //    m_tv_rt.setEnabled(power);

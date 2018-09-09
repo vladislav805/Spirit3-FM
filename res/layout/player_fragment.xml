@@ -194,6 +194,7 @@
       android:visibility="visible"
       android:textAlignment="center"
       android:textSize="@dimen/station_name_text_size"
+      android:textColor="@color/primary_blue_shadow"
       android:layout_gravity="center_vertical"
       android:layout_width="match_parent"
       android:layout_height="@dimen/station_name_height" />
@@ -206,7 +207,7 @@
     <LinearLayout
         android:gravity="center_vertical"
         android:orientation="vertical"
-        android:layout_width="@dimen/seek_frequency_ruler_width"
+        android:layout_width="wrap_content"
         android:layout_height="match_parent">
 <!-- Scale ruler -->
       <ImageView

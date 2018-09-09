@@ -1,13 +1,8 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.text.InputFilter;
-import android.text.Spannable;
-import android.text.SpannableString;
-import android.text.Spanned;
-import android.text.style.ForegroundColorSpan;
 import android.util.DisplayMetrics;
 import android.view.*;
 import android.view.animation.Animation;
@@ -20,7 +15,6 @@ import android.content.Context;
 import android.content.Intent;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
-import org.w3c.dom.Text;
 
 import java.util.Locale;
 
@@ -449,7 +443,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       mApi.key_set(C.TUNER_FREQUENCY, String.valueOf(freq));
       float f = freq / 1000.0f;
       showToast(String.format(Locale.ENGLISH, "Frequency changed to: %.1f MHz", f));
-      onFrequencyChanged(f);
+      //onFrequencyChanged(f);
     } else {
       com_uti.loge("Frequency invalid: " + freq);
       showToast("Invalid frequency");
@@ -467,15 +461,25 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Событие изменения частоты
    */
   private void onFrequencyChanged(float frequency) {
-    setFrequencyText(String.valueOf(frequency));
+    String str = String.valueOf(frequency);
+    setFrequencyText(str);
 
     int val = (int) (frequency * 10 - 875);
     mViewSeekFrequency.setProgress(val);
 
-
-    int x = (mViewLineFrequency.getChildAt(0).getWidth() * val  / 205) - (mDisplayMetrics.widthPixels / 2);
+    int x = (mViewLineFrequency.getChildAt(0).getWidth() * val / 205) - (mDisplayMetrics.widthPixels / 2);
 
     mViewLineFrequency.smoothScrollTo(x, 0);
+
+    PresetView currentPreset = null;
+    for (PresetView pv : mPresetViews) {
+      if (!pv.isEmpty() && pv.getFrequency().equals(str)) {
+        currentPreset = pv;
+        break;
+      }
+    }
+    
+    mViewName.setText(currentPreset != null ? currentPreset.getTitle() : "");
   }
 
   /**
@@ -499,6 +503,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     }
   }
 
+  private String mLastFrequency;
+
   // Radio API Callback:
   public void onReceivedUpdates(Intent intent) {
     // Audio Session ID:
@@ -519,10 +525,19 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       }
     }
 
-    // Buttons:
+    if (!mApi.tuner_freq.equals(mLastFrequency)) {
+      mLastFrequency = mApi.getStringFrequencyMHz();
+      try {
+        float freq = Float.valueOf(mApi.tuner_freq);
+        onFrequencyChanged(freq);
+      } catch (NumberFormatException ignore) {}
+    }
 
+
+    updateUIViewsByPowerState(mApi.isTunerStarted());
     setPlayToggleButtonState(mApi.audio_state);
     setRecordAudioState(mApi.audio_record_state);
+    updateSignalStretch();
 
     if (mApi.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
       mViewAudioOut.setImageResource(R.drawable.ic_speaker);
@@ -536,23 +551,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     }
 
 
-    // Power:
-    updateUIViewsByPowerState(mApi.isTunerStarted());
-
-    int ifreq = (int) (com_uti.double_get(mApi.tuner_freq) * 1000);
-    ifreq = com_uti.tnru_freq_fix(ifreq + 25); // Must fix due to floating point rounding need, else 106.1 = 106.099
-
-    String freq = null;
-    if (ifreq >= 50000 && ifreq < 500000) {
-      freq = String.valueOf((double) ifreq / 1000);
-    }
-    if (freq != null) {
-      setFrequencyText(freq);
-      // TODO: it here
-      //onFrequencyChanged(mApi.getFloatFrequencyMHz());
-    }
-
-    updateSignalStretch();
 
     /*if (mApi.tuner_most.equalsIgnoreCase("Mono"))
       mViewStereo.setText("");

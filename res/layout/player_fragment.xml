@@ -195,6 +195,8 @@
       android:textAlignment="center"
       android:textSize="@dimen/station_name_text_size"
       android:textColor="@color/primary_blue_shadow"
+      android:gravity="center"
+      android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
       android:layout_gravity="center_vertical"
       android:layout_width="match_parent"
       android:layout_height="@dimen/station_name_height" />

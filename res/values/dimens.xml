@@ -17,7 +17,7 @@
   <dimen name="frequency_mhz_font_size">85sp</dimen>
   <dimen name="frequency_mhz_height">60dp</dimen>
 
-  <dimen name="station_name_height">22dp</dimen>
+  <dimen name="station_name_height">26dp</dimen>
   <dimen name="station_name_text_size">20sp</dimen>
 
   <dimen name="seek_frequency_margin_vertical">10dp</dimen>

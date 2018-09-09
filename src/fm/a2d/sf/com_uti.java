@@ -2,27 +2,20 @@
 
 package fm.a2d.sf;
 
+import android.content.Context;
+import android.content.SharedPreferences;
+import android.content.pm.PackageInfo;
 import android.os.StrictMode;
 import android.util.Log;
-import android.content.SharedPreferences;
-import android.content.Context;
-import android.content.pm.PackageInfo;
-import java.net.SocketTimeoutException;
-import java.util.Date;
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Locale;
-import java.util.TimeZone;
-import java.io.DataOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.InputStream;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.io.FileInputStream;
+
+import java.io.*;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.SocketTimeoutException;
+import java.nio.ByteBuffer;
+import java.nio.ByteOrder;
+import java.util.Locale;
 
 
 @SuppressWarnings("WeakerAccess")
@@ -1742,8 +1735,8 @@ It should be noted that operation in this region is the same as it is for all RD
 
   public static String getTimeStringBySeconds(int number) {
     double second = Math.floor(number % 60);
-    double minute = Math.floor(number / 60 % 60);
-    double hour = Math.floor(number / 60 / 60 % 60);
+    double minute = Math.floor(number / 60f % 60f);
+    double hour = Math.floor(number / 60f / 60f % 60f);
 
     return (hour > 0 ? hour + ":" : "") + String.format(Locale.ENGLISH, "%02.0f:%02.0f", minute, second);
   }

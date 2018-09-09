@@ -32,4 +32,6 @@
   <string name="popup_preset_rename">Переименовать</string>
   <string name="popup_preset_remove">Удалить</string>
   <string name="preset_rename_title">Переименовать</string>
+  <string name="toast_frequency_changed">Переключено на частоту %.1f МГц</string>
+  <string name="toast_frequency_invalid">Некорректная частота</string>
 </resources>

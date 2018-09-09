@@ -36,5 +36,7 @@
   <string name="popup_preset_rename">Rename</string>
   <string name="popup_preset_remove">Delete</string>
   <string name="preset_rename_title">Rename preset</string>
+  <string name="toast_frequency_changed">Frequency changed to %.1f MHz</string>
+  <string name="toast_frequency_invalid">Invalid frequency</string>
 
 </resources>

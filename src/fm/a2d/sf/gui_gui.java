@@ -443,11 +443,11 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     if (freq >= mFrequencyLow && freq <= mFrequencyHigh) {
       mApi.key_set(C.TUNER_FREQUENCY, String.valueOf(freq));
       float f = freq / 1000.0f;
-      showToast(String.format(Locale.ENGLISH, "Frequency changed to: %.1f MHz", f));
+      showToast(mContext.getString(R.string.toast_frequency_changed, f));
       //onFrequencyChanged(f);
     } else {
       com_uti.loge("Frequency invalid: " + freq);
-      showToast("Invalid frequency");
+      showToast(mContext.getString(R.string.toast_frequency_invalid));
     }
   }
 

@@ -725,7 +725,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         break;
 
       case R.id.iv_record:
-        mApi.key_set("audio_record_state", C.RECORD_STATE_TOGGLE);
+        mApi.key_set(C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
         break;
 
       case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW

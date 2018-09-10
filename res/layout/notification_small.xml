@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="horizontal"
+    android:background="@color/main_background"
+    android:layout_width="match_parent"
+    android:layout_height="64dp">
+  <ImageView
+      android:id="@+id/notification_icon"
+      android:tint="@color/primary_blue"
+      android:layout_width="60dp"
+      android:layout_height="match_parent"
+      android:paddingStart="16dp"
+      android:src="@drawable/ic_radio" />
+  <TextView
+      android:id="@+id/notification_frequency"
+      android:textSize="18sp"
+      android:gravity="center"
+      android:maxLines="1"
+      android:textColor="@color/primary_blue"
+      android:layout_width="70dp"
+      android:layout_height="match_parent"
+      android:text="&lt; ? &gt;" />
+  <LinearLayout
+      android:orientation="horizontal"
+      android:layout_width="0dp"
+      android:layout_height="match_parent"
+      android:layout_weight="1">
+    <ImageButton
+        android:id="@+id/notification_prev"
+        style="@android:style/MediaButton"
+        android:src="@drawable/ic_frequency_previous"
+        android:layout_width="54dp"
+        android:layout_height="match_parent" />
+    <ImageButton
+        android:id="@+id/notification_pause"
+        style="@android:style/MediaButton"
+        android:src="@drawable/ic_pause"
+        android:layout_width="54dp"
+        android:layout_height="match_parent" />
+    <ImageButton
+        android:id="@+id/notification_next"
+        style="@android:style/MediaButton"
+        android:src="@drawable/ic_frequency_next"
+        android:layout_width="54dp"
+        android:layout_height="match_parent" />
+  </LinearLayout>
+
+  <ImageView
+      android:id="@+id/notification_record"
+      android:layout_width="40dp"
+      android:layout_height="match_parent"
+      android:src="@drawable/btn_record" />
+</LinearLayout>

@@ -12,6 +12,7 @@ import android.graphics.Paint;
 import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.widget.RemoteViews;
 import android.widget.Toast;
 
 import java.util.Timer;
@@ -165,7 +166,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         mAudioAPI.audio_output_set(val);
       }
 
-      val = extras.getString("audio_record_state", "");
+      val = extras.getString(C.RECORD_STATE, "");
       if (!val.isEmpty()) {
         mAudioAPI.audio_record_state_set(val);
         if (val.equals(C.RECORD_STATE_STOP)) {
@@ -253,7 +254,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     intent.putExtra(C.AUDIO_STATE, mApi.audio_state);
     intent.putExtra(C.AUDIO_OUTPUT, mApi.audio_output);
     intent.putExtra("audio_stereo", mApi.audio_stereo);
-    intent.putExtra("audio_record_state", mApi.audio_record_state);
+    intent.putExtra(C.RECORD_STATE, mApi.audio_record_state);
     intent.putExtra("audio_sessid", mApi.audio_sessid);
 
     if (mTunerAPI == null) {
@@ -655,31 +656,33 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   private void showNotificationAndStartForeground(boolean needStartForeground) {
     Intent mainInt = new Intent(mContext, MainActivity.class);
     mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
+
     PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, PendingIntent.FLAG_UPDATE_CURRENT);
-
-    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
     PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
-    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, "audio_record_state", C.RECORD_STATE_TOGGLE);
+    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
+    PendingIntent pendingPrev = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
+    PendingIntent pendingNext = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
 
-    /*
-    Bitmap b = Bitmap.createBitmap(64,64, Bitmap.Config.ARGB_8888);
-    Paint p = new Paint();
-    p.setColor(0xffffffff);
-    p.setTextSize(20);
-    Canvas c = new Canvas(b);
-    c.drawText(mApi.tuner_freq, 0, 0, p);
-    BitmapDrawable bd = new BitmapDrawable(getResources(), b);*/
+    RemoteViews layout = new RemoteViews(getPackageName(), R.layout.notification_small);
 
     Notification.Builder notify = new Notification.Builder(this)
-        .setContentTitle(mContext.getString(R.string.application_name))
-        .setContentText(getString(R.string.notification_starting))
+        //.setContentTitle(mContext.getString(R.string.application_name))
+        //.setContentText(getString(R.string.notification_starting))
         .setColor(getResources().getColor(R.color.primary_blue))
         .setSmallIcon(R.drawable.ic_radio)
         .setContentIntent(pendingMain)
+        .setContent(layout)
         .setOngoing(true);
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
-      String labelToggle = getString(mApi.isTunerStarted()
+
+      if (isRecord) {
+        layout.setImageViewResource(R.id.notification_record, R.drawable.btn_record_press);
+      }
+
+      layout.setTextViewText(R.id.notification_frequency, mApi.getStringFrequencyMHz());
+
+      /*String labelToggle = getString(mApi.isTunerStarted()
               ? R.string.notification_button_pause
               : R.string.notification_button_play
       );
@@ -698,8 +701,15 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
           .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
           .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
           .addAction(R.drawable.btn_record, labelRecord, pendingRecord)
-          .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));
+          .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));*/
     }
+
+    layout.setOnClickPendingIntent(R.id.notification_icon, pendingMain);
+    layout.setOnClickPendingIntent(R.id.notification_frequency, pendingMain);
+    layout.setOnClickPendingIntent(R.id.notification_pause, pendingKill);
+    layout.setOnClickPendingIntent(R.id.notification_record, pendingRecord);
+    layout.setOnClickPendingIntent(R.id.notification_prev, pendingPrev);
+    layout.setOnClickPendingIntent(R.id.notification_next, pendingNext);
 
     mynot = notify.build();
 

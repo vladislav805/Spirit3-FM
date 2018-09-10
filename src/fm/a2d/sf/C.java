@@ -37,6 +37,7 @@ public class C {
   public static final String AUDIO_OUTPUT_EARPIECE = "earpiece";
   public static final String AUDIO_OUTPUT_TOGGLE = "toggle";
 
+  public static final String RECORD_STATE = "audio_record_state";
   public static final String RECORD_STATE_START = "start";
   public static final String RECORD_STATE_STOP = "stop";
   public static final String RECORD_STATE_TOGGLE = "toggle";

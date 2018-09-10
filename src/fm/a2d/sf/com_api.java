@@ -108,7 +108,7 @@ public class com_api {
     String new_audio_state = extras.getString(C.AUDIO_STATE, DEFAULT_DETECT);//stop");
     String new_audio_output = extras.getString(C.AUDIO_OUTPUT, DEFAULT_DETECT);//headset");
     String new_audio_stereo = extras.getString("audio_stereo", DEFAULT_DETECT);//Stereo");
-    String new_audio_record_state = extras.getString("audio_record_state", DEFAULT_DETECT);//stop");
+    String new_audio_record_state = extras.getString(C.RECORD_STATE, DEFAULT_DETECT);//stop");
     String new_audio_sessid = extras.getString("audio_sessid", DEFAULT_DETECT);
     if (!new_audio_state.equalsIgnoreCase(DEFAULT_DETECT))
       audio_state = new_audio_state;

@@ -675,10 +675,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         .setOngoing(true);
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
-
-      if (isRecord) {
-        layout.setImageViewResource(R.id.notification_record, R.drawable.btn_record_press);
-      }
+      layout.setImageViewResource(R.id.notification_record, !isRecord ? R.drawable.btn_record : R.drawable.btn_record_press);
 
       layout.setTextViewText(R.id.notification_frequency, mApi.getStringFrequencyMHz());
 

@@ -151,6 +151,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
     mViewFrequency = (TextView) mActivity.findViewById(R.id.tv_freq);
     mViewFrequency.setOnClickListener(this);
+    mViewFrequency.setOnLongClickListener(this);
 
     mViewPlayToggle = (ImageView) mActivity.findViewById(R.id.iv_play_toggle);
     mViewPlayToggle.setOnClickListener(this);
@@ -626,10 +627,10 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private void setRecordAudioState(String state) {
     if (state.equals(C.RECORD_STATE_START)) {
       Animation animation = AnimationUtils.loadAnimation(mActivity, R.anim.anim_recording);
-      mViewRecord.setImageResource(R.drawable.btn_record_press);
+      mViewRecord.setImageResource(R.drawable.ic_record_press);
       mViewRecord.startAnimation(animation);
     } else {
-      mViewRecord.setImageResource(R.drawable.btn_record);
+      mViewRecord.setImageResource(R.drawable.ic_record);
       mViewRecord.clearAnimation();
     }
   }
@@ -774,6 +775,10 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
       case R.id.iv_play_toggle:
         mApi.key_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
+        return true;
+
+      case R.id.tv_freq:
+        mActivity.startActivity(new Intent(mContext, SettingsActivity.class));
         return true;
 
     }

@@ -6,10 +6,6 @@ import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.Canvas;
-import android.graphics.Paint;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.RemoteViews;
@@ -120,6 +116,12 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
       }
 
       String val;
+
+      val = extras.getString(C.NOTIFICATION_TYPE, "");
+      if (!val.isEmpty()) {
+        showNotificationAndStartForeground(false);
+        return START_STICKY;
+      }
 
       // Tuner:
       val = extras.getString(C.TUNER_STATE, "");
@@ -640,12 +642,14 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     }
   }
  
-   // Start/stop service = foreground, FM Notification in status bar, Expanded message in "Notifications" window.
+  // Start/stop service = foreground, FM Notification in status bar, Expanded message in "Notifications" window.
+  // Called only by onCreate w/ state = true and onDestroy w/ state = false
+  private void notif_state_set (boolean state) {
+    com_uti.logd("state: " + state);
 
-  private void notif_state_set (boolean state) {                        // Called only by onCreate w/ state = true and onDestroy w/ state = false
-    com_uti.logd ("state: " + state);
-    if (!state) { // Notifications off, go to idle non-foreground state
-      stopForeground (true); // MainService not in foreground state and remove notification (true)
+    // Notifications off, go to idle non-foreground state
+    if (!state) {
+      stopForeground(true); // MainService not in foreground state and remove notification (true)
       return;
     }
 
@@ -655,37 +659,51 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
   private void showNotificationAndStartForeground(boolean needStartForeground) {
     Intent mainInt = new Intent(mContext, MainActivity.class);
-    mainInt.setAction("android.intent.action.MAIN").addCategory("android.intent.category.LAUNCHER");
-
+    mainInt.setAction(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER);
     PendingIntent pendingMain = PendingIntent.getActivity(mContext, 0, mainInt, PendingIntent.FLAG_UPDATE_CURRENT);
-    PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
-    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
-    PendingIntent pendingPrev = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
-    PendingIntent pendingNext = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
-
-    RemoteViews layout = new RemoteViews(getPackageName(), R.layout.notification_small);
 
     Notification.Builder notify = new Notification.Builder(this)
-        //.setContentTitle(mContext.getString(R.string.application_name))
-        //.setContentText(getString(R.string.notification_starting))
         .setColor(getResources().getColor(R.color.primary_blue))
         .setSmallIcon(R.drawable.ic_radio)
         .setContentIntent(pendingMain)
-        .setContent(layout)
         .setOngoing(true);
+
+    switch (com_uti.prefs_get(this, C.NOTIFICATION_TYPE, 0)) {
+
+      case C.NOTIFICATION_TYPE_CUSTOM:
+        createCustomNotification(notify, pendingMain);
+        break;
+
+      case C.NOTIFICATION_TYPE_CLASSIC:
+      default:
+        createClassicNotification(notify);
+        break;
+    }
+
+
+    mynot = notify.build();
+
+    if (needStartForeground) {
+      startForeground(NOTIFICATION_ID, mynot); // Now in audio foreground
+    }
+
+    mNotificationManager.notify(NOTIFICATION_ID, mynot);
+  }
+
+  private void createClassicNotification(Notification.Builder notify) {
+    PendingIntent pendingToggle = com_api.createPendingIntent(mContext, C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
+    PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
+    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
+
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
-      layout.setImageViewResource(R.id.notification_record, !isRecord ? R.drawable.btn_record : R.drawable.btn_record_press);
-
-      layout.setTextViewText(R.id.notification_frequency, mApi.getStringFrequencyMHz());
-
-      /*String labelToggle = getString(mApi.isTunerStarted()
-              ? R.string.notification_button_pause
-              : R.string.notification_button_play
+      String labelToggle = getString(mApi.isTunerStarted()
+          ? R.string.notification_button_pause
+          : R.string.notification_button_play
       );
       String labelRecord = getString(isRecord
-              ? R.string.notification_button_record_stop
-              : R.string.notification_button_record_start
+          ? R.string.notification_button_record_stop
+          : R.string.notification_button_record_start
       );
 
       String recordText = isRecord ? "; recording" : "";
@@ -697,8 +715,24 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
       notify
           .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
           .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
-          .addAction(R.drawable.btn_record, labelRecord, pendingRecord)
-          .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));*/
+          .addAction(R.drawable.ic_record, labelRecord, pendingRecord)
+          .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));
+    }
+  }
+
+  private void createCustomNotification(Notification.Builder notify, PendingIntent pendingMain) {
+    PendingIntent pendingKill = com_api.createPendingIntent(mContext, C.TUNER_STATE, C.TUNER_STATE_STOP);
+    PendingIntent pendingRecord = com_api.createPendingIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
+    PendingIntent pendingPrev = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
+    PendingIntent pendingNext = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
+
+    RemoteViews layout = new RemoteViews(getPackageName(), R.layout.notification_small);
+
+    if (mApi != null) {
+      boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
+      layout.setImageViewResource(R.id.notification_record, !isRecord ? R.drawable.ic_record : R.drawable.ic_record_press);
+
+      layout.setTextViewText(R.id.notification_frequency, mApi.getStringFrequencyMHz());
     }
 
     layout.setOnClickPendingIntent(R.id.notification_icon, pendingMain);
@@ -707,13 +741,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     layout.setOnClickPendingIntent(R.id.notification_record, pendingRecord);
     layout.setOnClickPendingIntent(R.id.notification_prev, pendingPrev);
     layout.setOnClickPendingIntent(R.id.notification_next, pendingNext);
-
-    mynot = notify.build();
-
-    if (needStartForeground) {
-      startForeground(NOTIFICATION_ID, mynot); // Now in audio foreground
-    }
-
-    mNotificationManager.notify(NOTIFICATION_ID, mynot);
+    notify.setContent(layout);
   }
 }

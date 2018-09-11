@@ -50,5 +50,5 @@
       android:id="@+id/notification_record"
       android:layout_width="40dp"
       android:layout_height="match_parent"
-      android:src="@drawable/btn_record" />
+      android:src="@drawable/ic_record" />
 </LinearLayout>

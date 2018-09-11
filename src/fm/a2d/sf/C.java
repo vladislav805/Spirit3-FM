@@ -49,4 +49,8 @@ public class C {
   public static final String PRESET_KEY_NAME = "preset_title";
 
   public static final int PRESET_NAME_MAX_LENGTH = 10;
+
+  public static final String NOTIFICATION_TYPE = "notification_type";
+  public static final int NOTIFICATION_TYPE_CLASSIC = 0;
+  public static final int NOTIFICATION_TYPE_CUSTOM = 1;
 }

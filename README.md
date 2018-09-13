@@ -5,6 +5,10 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
+#### build 20180913 (3.0.4)
+* Переделана коряво сделанная линейка с частотой
+* Добавлена страница с настройками и отладочной информацией (открывается долгим зажатием по частоте)
+
 #### build 20180907 (3.0.3)
 * Появился и начал работать переключатель наушники/динамики (ура); 
 * Главный экран претерпел небольшие изменения:
@@ -77,6 +81,8 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 
 > Таблица составлена по данным от добровольцев форума 4pda, кроме Mi A1 и Xperia L (они есть у меня).
 
+## 4PDA
+Все релизы и установочные файлы публикуются на 4pda: [пост в теме форума](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=76841416). Для скачивания apk требуется авторизация (иначе 404).
       
 ## Известные проблемы
 * На YotaPhone 2 есть проблемы с отображением SeekBar (ползунка для выбора частоты)

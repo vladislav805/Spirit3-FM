@@ -6,6 +6,8 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.text.InputFilter;
 import android.util.DisplayMetrics;
@@ -16,6 +18,7 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
+import fm.a2d.sf.view.FrequencySeekView;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
 
@@ -73,7 +76,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
   // Seek frequency line
   private HorizontalScrollView mViewLineFrequency = null;
-  private SeekBar mViewSeekFrequency = null;
+  private FrequencySeekView mViewSeekFrequency = null;
 
   // Presets
   private PresetView[] mPresetViews;
@@ -165,16 +168,15 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewListPresets = (LinearLayout) mActivity.findViewById(R.id.preset_list);
     mViewLineFrequency = (HorizontalScrollView) mActivity.findViewById(R.id.seek_scroll_frequency);
 
-    mViewSeekFrequency = (SeekBar) mActivity.findViewById(R.id.sb_freq_seek);
-    mViewSeekFrequency.setMax(205);
-    mViewSeekFrequency.setOnSeekBarChangeListener(mOnSeekFrequencyChanged);
+    mViewSeekFrequency = (FrequencySeekView) mActivity.findViewById(R.id.sb_freq_seek);
+    mViewSeekFrequency.setMinMaxValue(875, 1080)
+                      .setOnSeekBarChangeListener(mOnSeekFrequencyChanged);
 
     mViewAudioOut = (ImageView) mActivity.findViewById(R.id.iv_audio_out);
     mViewAudioOut.setOnClickListener(this);
 
     mViewFrequency.setTypeface(mDigitalFont);
     mViewRSSI.setTypeface(mDigitalFont);
-    //((TextView) mActivity.findViewById(R.id.tv_freq_fake)).setTypeface(mDigitalFont);
 
     mViewName = (TextView) mActivity.findViewById(R.id.curr_name_station);
 
@@ -198,16 +200,16 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     updateUIViewsByPowerState(true); // !!!! Move later to Radio API callback
 
     loadPreferenceVisualState();
-    audio_output_load_prefs();
+    /*audio_output_load_prefs();
     audio_stereo_load_prefs();
-    tuner_stereo_load_prefs();
+    tuner_stereo_load_prefs();*/
 
     return true;
   }
 
   private SeekBar.OnSeekBarChangeListener mOnSeekFrequencyChanged = new SeekBar.OnSeekBarChangeListener() {
 
-    private int current;
+    private double current;
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -215,9 +217,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         return;
       }
 
-      current = progress + 875;
+      current = mViewSeekFrequency.getValue() / 10;
 
-      setFrequencyText(String.valueOf((float) current / 10));
+      setFrequencyText(String.valueOf(current));
     }
 
     @Override
@@ -229,7 +231,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
         return; // Not Consumed
       }
 
-      setFrequency(String.valueOf(current / 10.0f));
+      setFrequency(String.valueOf(current));
     }
   };
 

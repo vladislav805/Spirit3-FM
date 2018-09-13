@@ -6,7 +6,7 @@
 
   <color name="header_grey">#ffcbcbcb</color>
 
-  <color name="primary_blue">#32b5e5</color>
+  <color name="primary_blue">#ff32b5e5</color>
   <color name="primary_blue_shadow">#00ccff</color>
   <color name="frequency_seek_background">#4f4f4f</color>
   <color name="main_background">#202020</color>

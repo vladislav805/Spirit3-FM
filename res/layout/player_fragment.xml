@@ -148,20 +148,6 @@
         android:layout_height="match_parent"
         android:orientation="vertical"
         android:baselineAligned="false">
-
-<!-- Fake frequency -->
-      <!--TextView
-          android:id="@+id/tv_freq_fake"
-          android:contentDescription="@string/frequency"
-          android:text="@string/test_mhz"
-          android:textSize="@dimen/frequency_mhz_font_size"
-          android:textColor="@color/frequency_digit_background"
-          android:textAlignment="center"
-          android:gravity="center_vertical|center_vertical"
-          android:layout_gravity="center_horizontal"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent" /-->
-
 <!-- Real frequency -->
       <TextView
           android:id="@+id/tv_freq"
@@ -173,7 +159,8 @@
           android:shadowRadius="20"
           android:shadowDx="0"
           android:shadowDy="0"
-          android:gravity="center_vertical|center_vertical"
+          android:maxLines="1"
+          android:gravity="center"
           android:layout_gravity="center_horizontal"
           android:layout_width="wrap_content"
           android:layout_height="match_parent" />
@@ -211,23 +198,15 @@
         android:orientation="vertical"
         android:layout_width="wrap_content"
         android:layout_height="match_parent">
-<!-- Scale ruler -->
-      <ImageView
-          android:src="@drawable/frequency_scale"
+      <fm.a2d.sf.view.FrequencySeekView
+          style="@style/FrequencySeekBar"
+          android:thumbTint="@android:color/transparent"
+          android:id="@+id/sb_freq_seek"
+          android:paddingLeft="10dp"
+          android:paddingRight="10dp"
+          android:layout_marginTop="10dp"
           android:layout_width="1920sp"
-          android:scaleType="centerCrop"
-          android:layout_height="64sp"
-          android:contentDescription="@string/nill"/>
-<!-- Seek -->
-      <SeekBar
-          android:progressDrawable="@drawable/frequency_seek_style"
-          android:thumb="@drawable/frequency_seek_thumb"
-          android:splitTrack="false"
-          android:layout_width="1984sp"
-          android:layout_height="wrap_content"
-          android:paddingStart="@dimen/seek_frequency_offset"
-          android:paddingEnd="@dimen/seek_frequency_offset"
-          android:id="@+id/sb_freq_seek" />
+          android:layout_height="match_parent" />
     </LinearLayout>
   </HorizontalScrollView>
 
@@ -294,7 +273,7 @@
         android:layout_height="match_parent"
         android:checked="false"
         android:text="@string/button_visualizer"
-        android:button="@drawable/checkbox_selector"
+        android:button="@drawable/cb_visualizer"
         android:onClick="gap_gui_clicked"
         android:contentDescription="@string/button_visualizer" />
   </LinearLayout>

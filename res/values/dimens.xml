@@ -4,18 +4,13 @@
   <dimen name="preset_item_width">100dp</dimen>
   <dimen name="preset_item_text_size">8.5sp</dimen>
 
-  <dimen name="header_height">35dp</dimen>
+  <dimen name="header_height">40dp</dimen>
   <dimen name="header_rssi_text_size">16sp</dimen>
   <dimen name="header_horizontal_margin">4dp</dimen>
   <dimen name="header_icons_size">25dp</dimen>
 
   <dimen name="frequency_height">100dp</dimen>
-  <dimen name="frequency_seek_height">4dp</dimen>
-  <dimen name="frequency_seek_radius">0dp</dimen>
-  <dimen name="frequency_qualifier_width">8dp</dimen>
-  <dimen name="frequency_qualifier_height">20dp</dimen>
-  <dimen name="frequency_mhz_font_size">85sp</dimen>
-  <dimen name="frequency_mhz_height">60dp</dimen>
+  <dimen name="frequency_mhz_font_size">80sp</dimen>
 
   <dimen name="station_name_height">26dp</dimen>
   <dimen name="station_name_text_size">20sp</dimen>
@@ -23,8 +18,6 @@
   <dimen name="seek_frequency_margin_vertical">10dp</dimen>
   <dimen name="seek_frequency_margin_horizontal">8dp</dimen>
   <dimen name="seek_frequency_height">100dp</dimen>
-  <dimen name="seek_frequency_ruler_width">400dp</dimen>
-  <dimen name="seek_frequency_offset">32sp</dimen>
 
   <dimen name="control_padding_top">10dp</dimen>
   <dimen name="button_seek_size">58dp</dimen>

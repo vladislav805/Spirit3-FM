@@ -25,7 +25,7 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
 
   private void init() {
     mRoot.addView(new PreferenceView(this)
-        .setInfo(PREF_NOTIFICATION_TYPE, "notification", com_uti.prefs_get(this, C.NOTIFICATION_TYPE, C.NOTIFICATION_TYPE_CLASSIC) != 0, this)
+        .setInfo(PREF_NOTIFICATION_TYPE, "New custom notification", com_uti.prefs_get(this, C.NOTIFICATION_TYPE, C.NOTIFICATION_TYPE_CLASSIC) != 0, this)
     );
   }
 

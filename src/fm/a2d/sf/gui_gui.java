@@ -1,22 +1,23 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Typeface;
 import android.text.InputFilter;
 import android.util.DisplayMetrics;
-import android.view.*;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
-import android.app.AlertDialog;
-import android.app.Dialog;
-import android.content.DialogInterface;
-import android.content.Context;
-import android.content.Intent;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
-
-import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 

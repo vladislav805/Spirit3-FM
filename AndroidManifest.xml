@@ -39,7 +39,9 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name=".SettingsActivity"
+    <activity
+        android:name=".SettingsActivity"
+        android:theme="@android:style/Theme.Material.Dialog"
         android:label="Settings"/>
 
     <!-- ! Need separate process or get fg/bg problems !!! -->

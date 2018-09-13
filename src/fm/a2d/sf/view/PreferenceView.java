@@ -25,6 +25,10 @@ public class PreferenceView extends FrameLayout {
 
     View view = inflate(context, R.layout.item_preference, null);
 
+    setClickable(true);
+    setFocusable(true);
+    setBackgroundColor(android.R.attr.selectableItemBackground);
+
     addView(view);
 
     mLabel = (TextView) view.findViewById(R.id.pref_text);

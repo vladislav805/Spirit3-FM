@@ -706,7 +706,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
           : R.string.notification_button_record_start
       );
 
-      String recordText = isRecord ? "; recording" : "";
+      String recordText = isRecord ? getString(R.string.notification_text_recording) : "";
 
       if (isRecord && mAudioAPI.getRecorder() != null) {
         recordText += " " + com_uti.getTimeStringBySeconds(mAudioAPI.getRecorder().getCurrentDuration());
@@ -716,6 +716,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
           .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
           .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
           .addAction(R.drawable.ic_record, labelRecord, pendingRecord)
+          .setContentTitle(getString(R.string.application_name))
           .setContentText(String.format("%sMHz%s", mApi.getStringFrequencyMHz(), recordText));
     }
   }

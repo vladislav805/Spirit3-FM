@@ -87,7 +87,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
       
 ## Известные проблемы
 * Snapdragon 636, кажется, не поддерживается полностью.
-* Хрипит; при выключении стоковое радио работает через динамик. 
+* На ZTE Nubia Z11 Mini S хрипит, при выключении стоковое радио работает через динамик. 
 
 
 ## Feedback

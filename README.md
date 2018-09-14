@@ -68,8 +68,9 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? | 625 | 8953 |
 | ☑ | Xiaomi Mi A2 Lite \[magisk\] | AOSP | 8.1 | 625 | 8953 |
 | ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 | S4 Plus | 8230 |
-| □ | YotaPhone 2* | AOSP | 6.0.1| 801 | 8974 |
-| ? | ZTE Nubia Z7 mini | ? | ? | 801 | 8974AA |
+| □ | YotaPhone 2 | AOSP | 6.0.1| 801 | 8974 |
+| ? | ZTE Nubia Z7 Mini | ? | ? | 801 | 8974AA |
+| □ | ZTE Nubia Z11 Mini S | ? | ? | 617 | 8952 |
 | ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | AGM A8 | AOSP | ? | 410 | 8916 |
 
@@ -85,8 +86,8 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 Все релизы и установочные файлы публикуются на 4pda: [пост в теме форума](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=76841416). Для скачивания apk требуется авторизация (иначе 404).
       
 ## Известные проблемы
-* На YotaPhone 2 есть проблемы с отображением SeekBar (ползунка для выбора частоты)
-* Snapdragon 636, кажется, не поддерживается полностью 
+* Snapdragon 636, кажется, не поддерживается полностью.
+* Хрипит; при выключении стоковое радио работает через динамик. 
 
 
 ## Feedback

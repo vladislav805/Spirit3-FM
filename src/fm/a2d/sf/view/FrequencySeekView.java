@@ -137,14 +137,6 @@ public class FrequencySeekView extends SeekBar {
     if (now != -1f) {
       canvas.drawLine(now, 0, now, getHeight(), mCurrentLine);
     }
-
-    // Сдвиг для рендера Android (SeekBar)
-    canvas.save();
-    canvas.translate(0, -(getHeight() >> 1) - paddingTop - 40);
-    super.onDraw(canvas);
-
-    // Восстановление
-    canvas.restore();
   }
 
 }

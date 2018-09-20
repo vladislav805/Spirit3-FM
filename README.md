@@ -73,6 +73,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | □ | ZTE Nubia Z11 Mini S | ? | ? | 617 | 8952 |
 | ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | AGM A8 | AOSP | ? | 410 | 8916 |
+| ☑ | Samsung Galaxy S4 Mini I9195 | ? | 9.0 | 400 | 8230AB |
 
 | Иконка | Описание |
 |:------:| -------- |

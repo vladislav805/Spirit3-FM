@@ -972,7 +972,9 @@ int is_rds_data_supported(void ** session_data) {
   }
   int set_rds_data (void ** session_data, char * key, void * value) {
     return (0);
-  }  
+  }
+
+  int get_test_data(char**);
 
 /*  !!!!
 char rds_char_xfrm (char rds_char) {
@@ -1033,7 +1035,8 @@ struct fmradio_vendor_methods_t vendor_funcs = {
   set_threshold,               // Test:     if (thresh >= 770 && thresh <= 785)     chip_api_vol_set ((thresh - 770) * 4096)
   set_rds_reception,           // pwr_rds = 0 or 1
   block_scan,                  // --
-  set_rds_data                 // --
+  set_rds_data,                // --
+  get_test_data // my test
 };
 
 int register_fmradio_functions(unsigned int * signature_p, struct fmradio_vendor_methods_t * vendor_funcs_p) {

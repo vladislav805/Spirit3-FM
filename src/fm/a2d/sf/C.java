@@ -6,7 +6,8 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20180913;
+  public static final int BUILD = 20180925;
+  public static final boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
   public static final String GUI_START_COUNT = "radio_gui_start_count";
@@ -53,4 +54,7 @@ public class C {
   public static final String NOTIFICATION_TYPE = "notification_type";
   public static final int NOTIFICATION_TYPE_CLASSIC = 0;
   public static final int NOTIFICATION_TYPE_CUSTOM = 1;
+  public static final String WRITE_LOGS = "write_logs";
+  public static final int WRITE_LOGS_YES = 1;
+  public static final int WRITE_LOGS_NO = 0;
 }

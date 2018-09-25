@@ -6,8 +6,6 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.graphics.Typeface;
 import android.text.InputFilter;
 import android.util.DisplayMetrics;
@@ -18,13 +16,14 @@ import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
+import fm.a2d.sf.helper.L;
 import fm.a2d.sf.view.FrequencySeekView;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
-public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnLongClickListener {
+public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private static final String TAG = "GUI_GUI";
 
@@ -86,8 +85,14 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 //  private String last_rt = "";
   private int mLastAudioSessionId = 0;
 
+  private L ml;
+
   // Code:
   public gui_gui(Context c, com_api the_com_api) { // Constructor
+    ml = L.getInstance();
+
+    ml.write("GUI created");
+
     mContext = c;
     mActivity = (Activity) c;
     mApi = the_com_api;
@@ -96,25 +101,27 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   // Lifecycle API
 
   public boolean setState(String state) {
+    ml.write("GUI set state = " + state);
     boolean ret = false;
-    if (state.equalsIgnoreCase("start"))
+    if (state.equals("start"))
       ret = gui_start();
-    else if (state.equalsIgnoreCase("stop"))
+    else if (state.equals("stop"))
       ret = gui_stop();
-    return (ret);
+    return ret;
   }
 
   private boolean gui_stop() {
-    //stopBroadcastListener ();
+    ml.write("GUI stop");
     if (mVisualizerDisabled)
       com_uti.logd("mVisualizerDisabled = true");
     else
       gui_vis_stop();
-    return (true);
+    return true;
   }
 
 
   private boolean gui_start() {
+    ml.write("GUI initialize views...");
 
     // !! Hack for s2d comms to allow network activity on UI thread
     com_uti.strict_mode_set(false);
@@ -204,6 +211,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     audio_stereo_load_prefs();
     tuner_stereo_load_prefs();*/
 
+    ml.write("GUI initialize views successfully");
+
     return true;
   }
 
@@ -251,11 +260,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       //noinspection NumericOverflow
       primaryColor = (primaryColor & 0x00ffffff) | (0x88 << 24);
     }
-    int grayColor = mContext.getResources().getColor(R.color.header_grey);
-    if (!power) {
-      //noinspection NumericOverflow
-      grayColor = (grayColor & 0x00ffffff) | (0x88 << 24);
-    }
 
     float alpha = power ? 1f : .6f;
 
@@ -267,6 +271,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewSeekUp.setEnabled(power);
     mViewSeekDown.setEnabled(power);
     mViewRecord.setEnabled(power);
+    mViewSeekFrequency.setEnabled(power);
 
     mViewPrevious.setAlpha(alpha);
     mViewNext.setAlpha(alpha);
@@ -276,9 +281,9 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     mViewSignal.setAlpha(alpha);
     mViewAudioOut.setAlpha(alpha);
     mViewName.setAlpha(alpha);
+    mViewSeekFrequency.setAlpha(alpha);
+    mViewRSSI.setAlpha(alpha);
 
-    mViewRSSI.setTextColor(grayColor);
-//    m_tv_rt.setEnabled(power);
 
     for (int idx = 0; idx < com_api.PRESET_COUNT; idx++) { // For all presets...
       if (mPresetViews[idx] != null) {
@@ -304,7 +309,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
   private void gui_vis_stop() {
     try {
-      com_uti.logd("m_gui_vis: " + this.mVisualizerView);
+      com_uti.logd("m_gui_vis: " + mVisualizerView);
       if (mVisualizerView != null) {
         mVisualizerView.vis_stop();
         mVisualizerView = null;
@@ -333,6 +338,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
 
 
   private void setupPresets() {
+    ml.write("GUI setup presets");
     mPresetViews = new PresetView[com_api.PRESET_COUNT];
     for (int idx = 0; idx < mPresetViews.length; idx++) { // For all presets...
       String freq = com_uti.prefs_get(mContext, C.PRESET_KEY + idx, "");
@@ -359,6 +365,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Открытие интро
    */
   private void openDialogIntro(@SuppressWarnings("unused") int count) {
+    ml.write("GUI intro dialog");
     View root = mActivity.getLayoutInflater().inflate(R.layout.dialog_startup, null);
     ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
@@ -373,6 +380,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Изменение частотного диапазона
    */
   private void setTunerBand(String band) {
+    ml.write("GUI setTunerBand: " + band);
     com_uti.setTunerBand(band); // To setup band values; different process than service
     mApi.key_set(C.TUNER_BAND, band);
   }
@@ -444,6 +452,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       freq /= 1000;
     }
 
+    ml.write("GUI setFrequency: "  + freq);
+
     if (freq >= mFrequencyLow && freq <= mFrequencyHigh) {
       mApi.key_set(C.TUNER_FREQUENCY, String.valueOf(freq));
       float f = freq / 1000.0f;
@@ -466,6 +476,8 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
    * Событие изменения частоты
    */
   private void onFrequencyChanged(float frequency) {
+    ml.write("GUI onFrequencyChanged = " + frequency);
+
     String str = String.valueOf(frequency);
     setFrequencyText(str);
 
@@ -524,12 +536,10 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
       do_gui_vis_start(audio_sessid);
     }
 
-    if (mApi.audio_state.equalsIgnoreCase("Start")) {
-      if (mIntroDialog != null) {
-        mIntroDialog.dismiss();
-        mIntroDialog = null;
-        setFrequency(mApi.getStringFrequencyMHz());
-      }
+    if (mApi.audio_state.equals(C.AUDIO_STATE_START) && mIntroDialog != null) {
+      mIntroDialog.dismiss();
+      mIntroDialog = null;
+      setFrequency(mApi.getStringFrequencyMHz());
     }
 
     if (!mApi.tuner_freq.equals(mLastFrequency)) {
@@ -546,7 +556,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     setRecordAudioState(mApi.audio_record_state);
     updateSignalStretch();
 
-    if (mApi.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
+    if (mApi.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER)) {
       mViewAudioOut.setImageResource(R.drawable.ic_speaker);
     } else {
       mViewAudioOut.setImageResource(R.drawable.ic_headset);
@@ -604,7 +614,6 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
   private void setPlayToggleButtonState(String state) {
     switch (state.toLowerCase()) {
       case C.AUDIO_STATE_STARTING:
-        com_uti.loge("Audio starting");
         mViewPlayToggle.setEnabled(false);
         mViewPlayToggle.setImageResource(R.drawable.ic_pause);
         break;
@@ -893,7 +902,7 @@ public class gui_gui implements AbstractActivity, View.OnClickListener, View.OnL
     switch (id) {
       case R.id.cb_visu:
         boolean is = ((CheckBox) view).isChecked();
-        visualizer_state_set(is ? "Start" : "Stop");
+        visualizer_state_set(is ? "Start" : "stop");
         break;
     }
   }

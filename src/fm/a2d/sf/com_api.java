@@ -18,13 +18,10 @@ public class com_api {
 
   public static final int PRESET_COUNT = 30;
 
-  public String[] radio_freq_prst = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",};
-  public String[] radio_name_prst = {"", "", "", "", "", "", "", "", "", "", "", "", "", "", "", "",};
-
   // Audio:
-  public String audio_state = "stop";
-  public String audio_output = "headset";
-  public String audio_stereo = "Stereo";
+  public String audio_state = C.AUDIO_STATE_STOP;
+  public String audio_output = C.AUDIO_OUTPUT_HEADSET;
+  public String audio_stereo = "stereo";
   public String audio_record_state = C.RECORD_STATE_STOP;
   public String audio_sessid = "0";
 
@@ -36,12 +33,12 @@ public class com_api {
   //        mul = multiple/both
   //        ... = RO
   // RW CFG api for tuner_freq & tuner_thresh consistency issues: CFG vs chip current values
-  public String tuner_state = "stop";          // RW ... api States:   stop, start, pause, resume
+  public String tuner_state = C.TUNER_STATE_STOP;          // RW ... api States:   stop, start, pause, resume
 
-  public final String tuner_band = "EU";//US";         // RW CFG set Values:   US, EU, JAPAN, CHINA, EU_50K_OFFSET     (Set before Tuner Start)
+  public final String tuner_band = "EU";       // RW CFG set Values:   US, EU, JAPAN, CHINA, EU_50K_OFFSET     (Set before Tuner Start)
   public String tuner_freq = "";//-1";         // RW CFG api Values:   String  form: 50.000 - 499.999  (76-108 MHz)
   public int int_tuner_freq = 0;//-1;          // ""                 Integer form in kilohertz
-  public String tuner_stereo = "";//Stereo";   // RW CFG set Values:   mono, stereo, switch, blend, ... ?
+  public String tuner_stereo = "stereo";       // RW CFG set Values:   mono, stereo, switch, blend, ... ?
   public String tuner_thresh = "";             // RW CFG api Values:   Seek/scan RSSI threshold
   public String tuner_scan_state = "stop";     // RW ... set States:   down, up, scan, stop
 

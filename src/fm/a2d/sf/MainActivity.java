@@ -1,24 +1,26 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
-import android.content.Intent;
-import android.os.Bundle;
-import android.view.View;
-import android.media.AudioManager;
 import android.content.BroadcastReceiver;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
+import android.media.AudioManager;
+import android.os.Bundle;
+import android.view.View;
+import fm.a2d.sf.helper.L;
 
 // GUI Activity:
 
 public class MainActivity extends Activity {
 
   public static com_api m_com_api = null;
-  private static int stat_creates = 1;
   private static BroadcastReceiver mBroadcastListener = null;
 
-  private AbstractActivity m_gui = null;
+  private gui_gui m_gui = null;
   private Context mContext = null;
+
+  private L ml;
 
   // Lifecycle:
 
@@ -26,7 +28,10 @@ public class MainActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    com_uti.logd("stat_creates: " + stat_creates++);
+    ml = L.getInstance();
+
+    ml.write("Activity::onCreate");
+
     mContext = this;
 
     // Must be done from an Activity
@@ -56,6 +61,7 @@ public class MainActivity extends Activity {
     // One of these caused crashes:
     stopBroadcastListener();
     gui_stop();
+    ml.write("Activity::onDestroy");
 
     // super.onDestroy dismisses any dialogs or cursors the activity was managing. If the logic in onDestroy has something to do with these things, then order may matter.
     super.onDestroy();
@@ -63,6 +69,7 @@ public class MainActivity extends Activity {
 
   private void gui_start() {
     try {
+      ml.write("gui_start in");
       m_gui = new gui_gui(mContext, m_com_api); // Instantiate UI
       if (!m_gui.setState("start")) { // Start UI. If error...
         com_uti.loge("gui_start error");
@@ -77,6 +84,7 @@ public class MainActivity extends Activity {
 
   private void gui_stop() {
     try {
+      ml.write("gui_stop in");
       if (m_gui == null)
         com_uti.loge("already stopped");
       else if (!m_gui.setState("stop"))                          // Stop UI. If error...
@@ -92,6 +100,7 @@ public class MainActivity extends Activity {
 
   private void initBroadcastListener() {
     if (mBroadcastListener == null) {
+      ml.write("Initializing broadcast listener...");
       mBroadcastListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -111,24 +120,28 @@ public class MainActivity extends Activity {
       IntentFilter intFilter = new IntentFilter();
       intFilter.addAction("fm.a2d.sf.result.get"); // Can add more actions if needed
       intFilter.addCategory(Intent.CATEGORY_DEFAULT);
-      Intent last_sticky_state_intent = null;
+
+      Intent lastStateIntent = null;
       if (mContext != null) {
         // No permission, no handler scheduler thread.
-        last_sticky_state_intent = mContext.registerReceiver(mBroadcastListener, intFilter, null, null);
+        lastStateIntent = mContext.registerReceiver(mBroadcastListener, intFilter, null, null);
+        ml.write("Broadcast registered");
       }
 
-      if (last_sticky_state_intent != null) {
-        com_uti.logd("bcast intent last_sticky_state_intent: " + last_sticky_state_intent);
-        //mBroadcastListener.onReceive (mContext, last_sticky_state_intent);  // Like a resend of last audio status update
+      if (lastStateIntent != null) {
+        ml.write("Last broadcast: " + lastStateIntent);
       }
     }
   }
 
   private void stopBroadcastListener() {
-    if (mBroadcastListener != null) {                                        // Remove the State listener
-      if (mContext != null)
+    ml.write("Broadcast listener unregister");
+    if (mBroadcastListener != null) { // Remove the State listener
+      if (mContext != null) {
         mContext.unregisterReceiver(mBroadcastListener);
+      }
       mBroadcastListener = null;
+      ml.write("Broadcast listener unregistered successfully");
     }
   }
 

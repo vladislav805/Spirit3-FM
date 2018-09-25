@@ -3,7 +3,7 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     package="fm.a2d.sf"
     android:versionCode="304"
-    android:versionName="3.0.4" >
+    android:versionName="3.0.5" >
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" />
 

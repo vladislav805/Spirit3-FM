@@ -1377,3 +1377,42 @@ void qc_test() {
   //  chip_ctrl_set (V4L2_CID_PRIVATE_IRIS_SRCHMODE, src_mo);
 
 }
+
+int get_test_data(char** s) {
+  char buf[500];
+
+  strcpy(buf, "Native test\n");
+
+  sprintf(buf, "High threshold: %d\nLow threshold: %d\nRDS ON: %d\nRDSD BUF: %d\nRDS STD: %d",
+    chip_ctrl_get(V4L2_CID_PRIVATE_INTF_HIGH_THRESHOLD),
+    chip_ctrl_get(V4L2_CID_PRIVATE_INTF_LOW_THRESHOLD),
+    chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSON),
+    chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSD_BUF),
+    chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDS_STD)
+  );
+  //strncat(buf, tmp, sizeof(tmp));
+
+  /*tmp[0] = '\0';
+
+  sprintf(tmp, "Low threshold: %d\n", );
+  strcat(buf, tmp);
+
+  tmp[0] = '\0';
+
+  sprintf(tmp, "RDS ON: %d\n", );
+  strcat(buf, tmp);
+
+  tmp[0] = '\0';
+
+  sprintf(tmp, "RDSD BUF: %d\n", chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDSD_BUF));
+  strcat(buf, tmp);
+
+  tmp[0] = '\0';
+
+  sprintf(tmp, "RDS STD: %d\n", (int) chip_ctrl_get(V4L2_CID_PRIVATE_IRIS_RDS_STD));
+  strcat(buf, tmp);*/
+
+  strncpy(*s, buf, strlen(buf));
+
+  return 0;
+}

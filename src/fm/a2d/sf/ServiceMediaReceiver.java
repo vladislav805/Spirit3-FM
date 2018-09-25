@@ -5,7 +5,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.media.AudioManager;
 import android.telephony.TelephonyManager;
-import android.view.KeyEvent;
 
 // Media button and other remote controls: Lockscreen, AVRCP & future components
 

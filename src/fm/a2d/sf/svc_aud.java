@@ -1,70 +1,59 @@
-
-    // Audio Sub-service
-
+// Audio Sub-service
 package fm.a2d.sf;
 
 import android.annotation.SuppressLint;
-import android.media.MediaRecorder;
-import android.media.AudioFormat;
-import android.media.AudioRecord;
 import android.content.BroadcastReceiver;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.AudioManager;
-import android.media.AudioTrack;
+import android.media.*;
 import fm.a2d.sf.helper.AudioHelper;
+import fm.a2d.sf.helper.L;
 
-import java.lang.reflect.Method;
 import java.io.RandomAccessFile;
+import java.lang.reflect.Method;
 import java.util.Timer;
-import java.util.Locale;
 
 
 public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 
-  private static int stat_constrs = 1;
-
-  private AudioManager m_AM = null;
+  private AudioManager m_AM;
   private RadioRecorder mRecorder = null;
-  private Context m_context = null;
-  private ServiceAudioCallback m_svc_acb = null;
-  private com_api m_com_api = null;
-
-  private boolean old_htc = false;
+  private Context m_context;
+  private ServiceAudioCallback m_svc_acb;
+  private com_api m_com_api;
 
   private int m_hw_size = 4096;
   private int at_min_size = 32768;//5120 * 16;//65536;
   private int chan_out = AudioFormat.CHANNEL_OUT_STEREO;
 
-  private int int_audio_sessid = 0;
-
   private boolean pcm_write_thread_active = false;
   private boolean pcm_read_thread_active = false;
 
   private AudioTrack m_audiotrack = null;
-  private AudioRecord m_audiorecord = null;
   private Thread pcm_write_thread = null;
   private Thread pcm_read_thread = null;
 
-  private boolean m_hdst_plgd = false;
-  private BroadcastReceiver m_hdst_lstnr = null;
+  private boolean mHeadsetPlugged = false;
+  private BroadcastReceiver mHeadsetListener = new BroadcastReceiver() {
+    @Override
+    public void onReceive(Context context, Intent intent) {
+      String action = intent.getAction();
+      com_uti.logd("onReceive headset action: " + action);
+
+      if (action != null && action.equals(Intent.ACTION_HEADSET_PLUG)) {
+        headsetPluggedHandler(intent);
+      }
+    }
+  };;
 
 
   // Up to 32 buffers:
   private static final int aud_buf_num = 32;   // 4, 8 skips too often
 
-  private
-  byte[] aud_buf_001, aud_buf_002, aud_buf_003, aud_buf_004, aud_buf_005, aud_buf_006, aud_buf_007, aud_buf_008, aud_buf_009, aud_buf_010,
-          aud_buf_011, aud_buf_012, aud_buf_013, aud_buf_014, aud_buf_015, aud_buf_016, aud_buf_017, aud_buf_018, aud_buf_019, aud_buf_020,
-          aud_buf_021, aud_buf_022, aud_buf_023, aud_buf_024, aud_buf_025, aud_buf_026, aud_buf_027, aud_buf_028, aud_buf_029, aud_buf_030,
-          aud_buf_031, aud_buf_032;
-  private
-  byte[][] aud_buf_data = new byte[][]{
-          aud_buf_001, aud_buf_002, aud_buf_003, aud_buf_004, aud_buf_005, aud_buf_006, aud_buf_007, aud_buf_008, aud_buf_009, aud_buf_010,
-          aud_buf_011, aud_buf_012, aud_buf_013, aud_buf_014, aud_buf_015, aud_buf_016, aud_buf_017, aud_buf_018, aud_buf_019, aud_buf_020,
-          aud_buf_021, aud_buf_022, aud_buf_023, aud_buf_024, aud_buf_025, aud_buf_026, aud_buf_027, aud_buf_028, aud_buf_029, aud_buf_030,
-          aud_buf_031, aud_buf_032};
+  private byte[] aud_buf_001, aud_buf_002, aud_buf_003, aud_buf_004, aud_buf_005, aud_buf_006, aud_buf_007, aud_buf_008, aud_buf_009, aud_buf_010, aud_buf_011, aud_buf_012, aud_buf_013, aud_buf_014, aud_buf_015, aud_buf_016, aud_buf_017, aud_buf_018, aud_buf_019, aud_buf_020, aud_buf_021, aud_buf_022, aud_buf_023, aud_buf_024, aud_buf_025, aud_buf_026, aud_buf_027, aud_buf_028, aud_buf_029, aud_buf_030, aud_buf_031, aud_buf_032;
+
+  private byte[][] aud_buf_data = new byte[][]{ aud_buf_001, aud_buf_002, aud_buf_003, aud_buf_004, aud_buf_005, aud_buf_006, aud_buf_007, aud_buf_008, aud_buf_009, aud_buf_010, aud_buf_011, aud_buf_012, aud_buf_013, aud_buf_014, aud_buf_015, aud_buf_016, aud_buf_017, aud_buf_018, aud_buf_019, aud_buf_020, aud_buf_021, aud_buf_022, aud_buf_023, aud_buf_024, aud_buf_025, aud_buf_026, aud_buf_027, aud_buf_028, aud_buf_029, aud_buf_030, aud_buf_031, aud_buf_032 };
 
   private int[] aud_buf_len = new int[]{0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 
@@ -82,9 +71,7 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 //head  3   3   3   3
 
 
-  private int bytes_processed = 0;
   private int writes_processed = 0;
-  private int audiorecorder_data_size = 0x00000000;
   private int min_pcm_write_buffers = 1;//2;                                // Runs if at least 2 buffers are ready...
 
   private int m_channels = 2;
@@ -107,11 +94,8 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
   private int max_bufs = 0;
   private int read_ctr = 0;
 
-  private int max_sample = -1000000;
-  private int min_sample = 1000000;
-
   // used for "new AudioTrack"        in audio_start()
-  // used for requestAudioFocus       in focus_set()  (via audio_start()/audio_stop()
+  // used for requestAudioFocus       in requestForFocus()  (via audio_start()/audio_stop()
   // used for getStream(Max)Volume    in MainService:radio_status_send()  for unused volume reporting
   // used for setVolumeControlStream  in MainActivity:onCreate()
   private int audio_stream = AudioManager.STREAM_MUSIC;
@@ -132,29 +116,24 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
   private AudioRecord m_audiorecorder = null;
   private boolean m_audiorecord_reading = false;
 
-  private boolean aud_mic = true;
-  private int m_rec_src = 0;
+  private int mRecorderSource = 0;
 
   private AudioHelper mAudioHelper;
 
+  private L ml;
 
   // Code:
 
-  public svc_aud(Context c, ServiceAudioCallback cb_aud, com_api svc_com_api) {                              // Constructor
+  public svc_aud(Context c, ServiceAudioCallback cb_aud, com_api svc_com_api) { // Constructor
+    ml = L.getInstance();
 
-    com_uti.logd("stat_constrs: " + stat_constrs++);
-
+    ml.write("svc_aud::constructor");
     m_svc_acb = cb_aud;
     m_context = c;
     m_com_api = svc_com_api;
     com_uti.logd("");
 
     mAudioHelper = new AudioHelper(c);
-
-    old_htc = false;
-    if (com_uti.m_device.startsWith("EVITA") || com_uti.m_device.startsWith("VILLE") || com_uti.m_device.startsWith("JEWEL")) {// || com_uti.m_device.startsWith ("M7C")) {
-      old_htc = true;
-    }
 
     m_AM = (AudioManager) c.getSystemService(Context.AUDIO_SERVICE);
 
@@ -166,64 +145,19 @@ Use the sample rate provided by AudioManager.getProperty (PROPERTY_OUTPUT_SAMPLE
 
 API level 17 / 4.2+
  */
-    String hw_rate_str = "";
+
     String hw_size_str = "";
     try {
-      hw_rate_str = m_AM.getProperty(AudioManager.PROPERTY_OUTPUT_SAMPLE_RATE);
+
       hw_size_str = m_AM.getProperty(AudioManager.PROPERTY_OUTPUT_FRAMES_PER_BUFFER);
     } catch (Throwable e) {
       com_uti.loge("AudioManager.getProperty Throwable e: " + e);
       e.printStackTrace();
     }
 
-    try {
-      m_samplerate = Integer.parseInt(hw_rate_str);
-    } catch (Throwable e) {
-      com_uti.loge("Rate Throwable e: " + e);
-      e.printStackTrace();
-    }
-    com_uti.logd("m_samplerate 1: " + m_samplerate);
-    if (m_samplerate >= 8000 && m_samplerate <= 192000)
-      m_samplerate = m_samplerate;
-    else
-      m_samplerate = 44100;
-    com_uti.logd("m_samplerate 2: " + m_samplerate);
-//at_min_size =
-
-    if (com_uti.device == com_uti.DEV_GEN)
-      m_samplerate = 48000;
-    else if (com_uti.device == com_uti.DEV_SDR)
-      m_samplerate = 48000;
-
-    else if (com_uti.device == com_uti.DEV_QCV && old_htc)                       // Still no good w/ 48K x 3840
-      m_samplerate = 48000;//24000;//48000;//22050;//48000;//24000;//22050;//24000;//48000;//22050;//8000;//22050;
-    else if (com_uti.device == com_uti.DEV_QCV)
-      m_samplerate = 48000;//Feb28 back to 44.1     48000;//22050;//Feb10!!!!  48000;                                         // !!!! Different than prior default of 44100
-    else if (com_uti.device == com_uti.DEV_ONE)
-      m_samplerate = 48000;//24000;//48000;//22050;//48000;//22050;//44100;//8000;
-    else if (com_uti.device == com_uti.DEV_XZ2)
-      m_samplerate = 48000;
-    else if (com_uti.device == com_uti.DEV_LG2) {
-      m_samplerate = 44100;//48000;//22050;//44100;//Mar03  48000;//Mar02  44100;//Feb28 back to 44.1     48000;                                         // !!!! Different than prior default of 44100
-      if (com_uti.lg2_stock_get())
-        m_samplerate = 44100;//22050;//44100;//48000;//22050;//44100;
-    } else if (com_uti.device == com_uti.DEV_GS1)
-      m_samplerate = 44100;
-    else if (com_uti.device == com_uti.DEV_GS2)
-      m_samplerate = 44100;
-    else if (com_uti.device == com_uti.DEV_GS3)
-      m_samplerate = 44100;
-
-
-    if (android.os.Build.MANUFACTURER.toUpperCase(Locale.getDefault()).equals("SONY"))
-      m_samplerate = 44100;
-
-    com_uti.logd("m_samplerate 3: " + m_samplerate);
-
     m_samplerate = 44100;   // !! Fixed now !!
 
-
-    com_uti.logd("m_samplerate 4 forced all to: " + m_samplerate);
+    ml.write("svc_aud: sample rate = " + m_samplerate + " Hz");
 
     m_hw_size = 3840;//320;//3840;//4096;        If wrong, 3840 works better on Qualcomm at least
     try {
@@ -243,9 +177,6 @@ API level 17 / 4.2+
       m_hw_size = 16384;
     else if (com_uti.device == com_uti.DEV_SDR)
       m_hw_size = 65536;//16384;//4096;//65536;//5120;//16384;
-
-    else if (com_uti.device == com_uti.DEV_QCV && old_htc)   // HTC OneXL misreports as 2048, but atminsize shows same as MotoG
-      m_hw_size = 320;//1920;//3840;//320;//3840;//1920;//320; // Still no good w/ 48K x 3840
     else if (com_uti.device == com_uti.DEV_QCV && com_uti.m_manufacturer.equals("SONY"))
       m_hw_size = 5120;//320;
     else if (com_uti.device == com_uti.DEV_QCV)
@@ -269,18 +200,15 @@ API level 17 / 4.2+
 
     com_uti.logd("m_hw_size 3: " + m_hw_size);
 
-    if (com_uti.device == com_uti.DEV_QCV && old_htc)
-      m_hw_size = 5120 * 2;
-    else if (com_uti.device == com_uti.DEV_ONE)
-      m_hw_size = 5120 * 2;
-    else
-      m_hw_size = AudioRecord.getMinBufferSize(44100, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
+    m_hw_size = AudioRecord.getMinBufferSize(m_samplerate, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
     com_uti.logd("m_hw_size 4: " + m_hw_size);
 
     if (m_hw_size > pcm_size_max)
       m_hw_size = pcm_size_max;
     if (m_hw_size < pcm_size_min)
       m_hw_size = pcm_size_min;
+
+    ml.write("svc_aud: hw_size = " + m_hw_size + "; samplerate = " + m_samplerate);
 
     //plg_api_start ();                                                   // Determine and set device specific audio plugin
   }
@@ -296,52 +224,40 @@ API level 17 / 4.2+
 
   public String audio_state_set(String desired_state) {                // Called only by MainService:audio_state_set() & MainService:audio_start()
     com_uti.logd("desired_state: " + desired_state + "  current audio_state: " + m_com_api.audio_state);
-    if (desired_state.equalsIgnoreCase("toggle")) {                    // TOGGLE:
-      if (m_com_api.audio_state.equalsIgnoreCase("start"))
-        desired_state = "pause";
-      else
-        desired_state = "start";
+
+    ml.write("svc_aud::audio_state_set(" + desired_state + ")");
+    if (desired_state.equals(C.AUDIO_STATE_TOGGLE)) {
+      desired_state = m_com_api.audio_state.equals(C.AUDIO_STATE_START) ? C.AUDIO_STATE_PAUSE : C.AUDIO_STATE_START;
     }
-    if (desired_state.equalsIgnoreCase("start")) {                     // START:
-      audio_start();
-    } else if (desired_state.equalsIgnoreCase("stop")) {                 // STOP:
-      audio_stop();
-    } else if (desired_state.equalsIgnoreCase("pause")) {                // PAUSE:
-      audio_pause();
+    ml.write("svc_aud::audio_state_set(" + desired_state + ") <= after replace toggle");
+
+    switch (desired_state) {
+      case C.AUDIO_STATE_START:
+        audio_start();
+        break;
+
+      case C.AUDIO_STATE_STOP:
+        audio_stop();
+        break;
+
+      case C.AUDIO_STATE_PAUSE:
+        audio_pause();
+        break;
     }
-    return (m_com_api.audio_state);
+
+    return m_com_api.audio_state;
   }
 
   private void at_min_size_set() {
-
     at_min_size = AudioTrack.getMinBufferSize(m_samplerate, chan_out, AudioFormat.ENCODING_PCM_16BIT);
     com_uti.logd("at_min_size 1: " + at_min_size);
     //QCV at 44.1: 22576
-    at_min_size = 32768;//5120 * 16;//65536;//                                        // 80 KBytes about 0.5 seconds of stereo audio data at 44K
+    //at_min_size = 32768;//5120 * 16;//65536;//                                        // 80 KBytes about 0.5 seconds of stereo audio data at 44K
     // QCV: 11288, 12288 (12 * 2^10) = 6144 samples = 128 milliseconds, 24576
 
-
-    if (com_uti.device == com_uti.DEV_QCV)
-      at_min_size = 30720;
-    else if (com_uti.device == com_uti.DEV_ONE)       // 22050
-      at_min_size = 30720;//32000;//768;//24576;//30720;//38400; // ??
-    else if (com_uti.device == com_uti.DEV_XZ2)
-      at_min_size = 30720;
-    else if (com_uti.device == com_uti.DEV_LG2) {
-      if (com_uti.lg2_stock_get())
-        at_min_size = 32768;
-      else
-        at_min_size = 30720;
-    } else if (com_uti.device == com_uti.DEV_GS1)
-      at_min_size = 12672;
-    else if (com_uti.device == com_uti.DEV_GS2)
-      at_min_size = 16384;
-    else if (com_uti.device == com_uti.DEV_GS3)
-      at_min_size = 25344;
-
+    at_min_size = 30720;
     com_uti.logd("at_min_size 2: " + at_min_size);
-
-    this.mRecorder = new RadioRecorder(this.m_context, this.m_samplerate, this.m_channels, this.m_com_api);
+    mRecorder = new RadioRecorder(m_context, m_samplerate, m_channels, m_com_api);
   }
 
   public RadioRecorder getRecorder() {
@@ -351,18 +267,20 @@ API level 17 / 4.2+
   private void audio_start() {
     com_uti.logd("audio_state: " + m_com_api.audio_state + "  m_audiotrack: " + m_audiotrack + "  device: " + com_uti.device);
 
-    if (m_com_api.audio_state.equalsIgnoreCase("start"))               // If already playing...
+    if (m_com_api.audio_state.equals(C.AUDIO_STATE_START)) { // If already playing...
       return;
+    }
 
-    headset_plgd_lstnr_start();                                        // Register for headset plugged/unplugged events
+    startHeadsetPluggedListener(); // Register for headset plugged/unplugged events
 
-    focus_set(true);                                                   // Get audio focus
+    requestForFocus(true); // Get audio focus
 
-    pcm_audio_start();                                             // Start input and output
+    pcm_audio_start(); // Start input and output
 
-    m_com_api.audio_state = "start";
-    if (m_svc_acb != null)
+    m_com_api.audio_state = C.AUDIO_STATE_START;
+    if (m_svc_acb != null) {
       m_svc_acb.cb_audio_state(m_com_api.audio_state);
+    }
     //audio_sessid_get ();                                                // Update audio_sessid
   }
 
@@ -372,16 +290,19 @@ API level 17 / 4.2+
 
     com_uti.logd("audio_state: " + m_com_api.audio_state);
 
-    if (!m_com_api.audio_state.equalsIgnoreCase("start") && !m_com_api.audio_state.equalsIgnoreCase("pausing") && !m_com_api.audio_state.equalsIgnoreCase("stopping"))
-      return;   // !! What about Starting ??
+    if (!m_com_api.audio_state.equals(C.AUDIO_STATE_START) && !m_com_api.audio_state.equalsIgnoreCase("pausing") && !m_com_api.audio_state.equals(C.AUDIO_STATE_STOPPING)) {
+      return; // !! What about Starting ??
+    }
 
     pcm_audio_pause(true);
 
-    audio_output_off();    // AFTER
+    audio_output_off(); // AFTER
 
-    m_com_api.audio_state = "pause";
-    if (m_svc_acb != null)
-      m_svc_acb.cb_audio_state(m_com_api.audio_state);                 // CAN_DUCK
+    m_com_api.audio_state = C.AUDIO_STATE_PAUSE;
+
+    if (m_svc_acb != null) {
+      m_svc_acb.cb_audio_state(m_com_api.audio_state); // CAN_DUCK
+    }
     //audio_sessid_get ();                                                // Update audio_sessid
   }
 
@@ -391,24 +312,33 @@ API level 17 / 4.2+
 
     com_uti.logd("audio_state: " + m_com_api.audio_state);
 
-    if (!m_com_api.audio_state.equalsIgnoreCase("start") && !m_com_api.audio_state.equalsIgnoreCase("pause") && !m_com_api.audio_state.equalsIgnoreCase("stopping"))
-      return;   // !! What about Starting ??
+    if (!m_com_api.audio_state.equals(C.AUDIO_STATE_START) && !m_com_api.audio_state.equals(C.AUDIO_STATE_PAUSE) && !m_com_api.audio_state.equals(C.AUDIO_STATE_STOPPING)) {
+      return; // !! What about Starting ??
+    }
 
-    headset_plgd_lstnr_stop();                                         // Unregister for headset plugged/unplugged events
+    stopHeadsetPluggedListener(); // Unregister for headset plugged/unplugged events
 
     audio_pause();
 
-    if (m_audiotrack != null)
+    if (m_audiotrack != null) {
       m_audiotrack.release();
+    }
+
     m_audiotrack = null;
 
-    m_com_api.audio_state = "stop";
+    m_com_api.audio_state = C.AUDIO_STATE_STOP;
     if (m_svc_acb != null)
       m_svc_acb.cb_audio_state(m_com_api.audio_state);
-    focus_set(false);
-    mAudioHelper.makeWiredHeadPhones();
-    //audio_sessid_get ();                                                // Update audio_sessid
-    //stopSelf ();                                                    // service is no longer necessary. Will be started again if needed.
+    requestForFocus(false);
+
+    if (mHeadsetPlugged) {
+      mAudioHelper.makeWiredHeadPhones();
+    } else {
+      mAudioHelper.makeSpeaker();
+    }
+
+    //audio_sessid_get (); // Update audio_sessid
+    //stopSelf ();         // service is no longer necessary. Will be started again if needed.
   }
 
   // Headset listener:
@@ -431,55 +361,33 @@ For the latter, you can use Context.startService() to send a command to the serv
 
   // Listen for ACTION_HEADSET_PLUG notifications. (Plugged in/out)
 
-  private void headset_plgd_lstnr_stop() {
-    com_uti.logd("m_hdst_lstnr: " + m_hdst_lstnr);
-    if (m_hdst_lstnr != null) {
-      m_context.unregisterReceiver(m_hdst_lstnr);
-      m_hdst_lstnr = null;
+  private void stopHeadsetPluggedListener() {
+    com_uti.logd("mHeadsetListener: " + mHeadsetListener);
+
+    if (mHeadsetListener != null) {
+      m_context.unregisterReceiver(mHeadsetListener);
+      mHeadsetListener = null;
     }
   }
 
-  private void headset_plgd_lstnr_start() {                             // Headset plug events
-    if (m_hdst_lstnr == null) {
-      m_hdst_lstnr = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-          String action = intent.getAction();
-          com_uti.logd("headset_plgd_lstnr_start onReceive intent action: " + action);
+  private void startHeadsetPluggedListener() { // Headset plug events
+    IntentFilter iFilter = new IntentFilter();
+    iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
 
-          if (action != null && action.equals(Intent.ACTION_HEADSET_PLUG)) {
-            headset_plgd_handler(intent);
-          }
+    //iFilter.addAction (android.intent.action.MODE_CHANGED);
+    //iFilter.addAction ("HDMI_CONNECTED");
+    //ACTION_MEDIA_BUTTON
+    //iFilter.addAction (android.bluetooth.intent.action.HEADSET_STATE_CHANGED);
+    //iFilter.addAction (android.bluetooth.intent.HEADSET_STATE);
+    //iFilter.addAction (android.bluetooth.intent.HEADSET_STATE_CHANGED);
+    //iFilter.addAction (android.bluetooth.intent.action.MODE_CHANGED);
+    //iFilter.addAction ("android.bluetooth.a2dp.action.SINK_STATE_CHANGED");
 
-          //else if (action.equals ("android.bluetooth.a2dp.action.SINK_STATE_CHANGED"))
-          //  sink_state_handler (intent);
-          //else if (action.equals ("HDMI_CONNECTED"))
-          //  hdmi_handler (intent);
-        }
-      };
+    iFilter.addCategory(Intent.CATEGORY_DEFAULT);
 
-      IntentFilter iFilter = new IntentFilter();
+    Intent intent = m_context.registerReceiver(mHeadsetListener, iFilter);
 
-      iFilter.addAction(Intent.ACTION_HEADSET_PLUG);
-
-      //iFilter.addAction (android.intent.action.MODE_CHANGED);
-      //iFilter.addAction ("HDMI_CONNECTED");
-      //ACTION_MEDIA_BUTTON
-      //iFilter.addAction (android.bluetooth.intent.action.HEADSET_STATE_CHANGED);
-      //iFilter.addAction (android.bluetooth.intent.HEADSET_STATE);
-      //iFilter.addAction (android.bluetooth.intent.HEADSET_STATE_CHANGED);
-      //iFilter.addAction (android.bluetooth.intent.action.MODE_CHANGED);
-      //iFilter.addAction ("android.bluetooth.a2dp.action.SINK_STATE_CHANGED");
-
-      iFilter.addCategory(Intent.CATEGORY_DEFAULT);
-
-      Intent last_broadcast_hdst_plug = m_context.registerReceiver(m_hdst_lstnr, iFilter);
-
-      com_uti.logd("headset_plgd_lstnr_start onReceive intent last_broadcast_hdst_plug: " + last_broadcast_hdst_plug);
-
-      //if (last_broadcast_hdst_plug != null)                           // Don't need extra
-      //  m_hdst_lstnr.onReceive (this, last_broadcast_hdst_plug);
-    }
+    com_uti.logd("Headset plugged listener started (onReceive): " + intent);
   }
 
 /* ACTION_HEADSET_PLUG is a sticky broadcast. Call:
@@ -495,26 +403,27 @@ if (intent != null)
   myHandler.onReceive (this, intent);
 */
 
-  private void headset_plgd_handler(Intent intent) {
-    com_uti.logd("headset_plgd_handler Intent received: " + intent + "  state: " + intent.getIntExtra("state", -555) + "  name: " + intent.getStringExtra("name"));
+  private void headsetPluggedHandler(Intent intent) {
+    com_uti.logd("headsetPluggedHandler Intent received: " + intent + "  state: " + intent.getIntExtra("state", -555) + "  name: " + intent.getStringExtra("name"));
 
-    //headset_plgd_lstnr_start onReceive ACTION_HEADSET_PLUG Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg= 0x40000000 (has extras) }  state: 1  name: h2w
-    //headset_plgd_lstnr_start onReceive ACTION_HEADSET_PLUG Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg= 0x40000000 (has extras) }  state: 0  name: h2w
+    //startHeadsetPluggedListener onReceive ACTION_HEADSET_PLUG Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg= 0x40000000 (has extras) }  state: 1  name: h2w
+    //startHeadsetPluggedListener onReceive ACTION_HEADSET_PLUG Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg= 0x40000000 (has extras) }  state: 0  name: h2w
     // ?? state: 8 means unplugged ?
-    //headset_plgd_handler Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg=0x40000010 (has extras) }  state: 0  name: Headset
+    //headsetPluggedHandler Intent received: Intent { act=android.intent.action.HEADSET_PLUG flg=0x40000010 (has extras) }  state: 0  name: Headset
 
     int state = intent.getIntExtra("state", -555);
+
     if (state == -555) {
-      com_uti.loge("headset_plgd_handler no state");
+      com_uti.loge("headsetPluggedHandler no state");
     }
 
     if (state != 0) {
-      m_hdst_plgd = true;
+      mHeadsetPlugged = true;
       return;
     }
 
-    m_hdst_plgd = false;
-    if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 1 /* !! 8*/ && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
+    mHeadsetPlugged = false;
+    if (m_com_api.audio_state.equals(C.AUDIO_STATE_START) && mRecorderSource <= 1 /* !! 8*/ && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
       dai_set(true);
   }
 
@@ -569,10 +478,10 @@ if (intent != null)
   }
 
   // Focus:
-  private void focus_set(boolean focus_request) {
-    com_uti.logd("focus_request: " + focus_request);
+  private void requestForFocus(boolean needFocus) {
+    com_uti.logd("focus_request: " + needFocus);
 
-    if (focus_request) { // If focus desired...
+    if (needFocus) { // If focus desired...
       m_AM.requestAudioFocus(this, audio_stream, AudioManager.AUDIOFOCUS_GAIN_TRANSIENT_MAY_DUCK); //AudioManager.AUDIOFOCUS_GAIN);
     } else {// If focus return...
       m_AM.abandonAudioFocus(this);
@@ -720,8 +629,6 @@ if (intent != null)
 
             //com_uti.loge ("pcm_write_runnable run() len_written: " + len_written);
 
-            bytes_processed += len; // Stats++
-
             // Largest value 0xFFFFFFFC = 4294967292 max total file size, so max data size = 4294967256 = 1073741814 samples (0x3FFFFFF6)
             //wav_write_bytes (wav_header, 0x04, 4, audiorecorder_data_size + 36);
             // Chunksize = total filesize - 8 = DataSize + 36
@@ -775,9 +682,9 @@ if (intent != null)
     com_uti.logd("enable: " + enable);
     String ret = "";
     if (enable)
-      ret = com_uti.s2d_set("radio_dai_state", "Start");       // m_plg_api.digital_input_on ();
+      ret = com_uti.s2d_set("radio_dai_state", "start");       // m_plg_api.digital_input_on ();
     else
-      ret = com_uti.s2d_set("radio_dai_state", "Stop");        // m_plg_api.digital_input_off ();
+      ret = com_uti.s2d_set("radio_dai_state", "stop");        // m_plg_api.digital_input_off ();
     return (ret);
   }
 
@@ -838,7 +745,7 @@ if (intent != null)
 
     audiorecorder_read_stop();
 
-    if (m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
+    if (mRecorderSource <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
       dai_set(false);
 
     return (0);
@@ -995,7 +902,7 @@ if (intent != null)
   private void pcm_audio_start() { // Start input and output   Called only by audio_output_set() (for restart) or audio_start ()
     pcm_write_start();
     pcm_read_start();
-    if (m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
+    if (mRecorderSource <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic"))
       dai_set(true);
   }
 
@@ -1017,7 +924,7 @@ if (intent != null)
   // Called only from audio_pause, after pcm read and write stopped
   private void audio_output_off() {
     // If Speaker switch off and headset plugged in...
-    if (!m_com_api.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER) || !m_hdst_plgd) {
+    if (!m_com_api.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER) || !mHeadsetPlugged) {
       audio_routing_get();
     }
   }
@@ -1043,7 +950,7 @@ if (intent != null)
         break;
 
       case C.AUDIO_OUTPUT_HEADSET:
-        if (m_hdst_plgd && m_com_api.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
+        if (mHeadsetPlugged && m_com_api.audio_output.equalsIgnoreCase(C.AUDIO_OUTPUT_SPEAKER)) {
           /*if (need_restart) {
             pcm_audio_stop(true);
           }*/
@@ -1062,7 +969,7 @@ if (intent != null)
 
     if (need_restart) {
       pcm_audio_start(); // If audio started and device needs restart... (GS3 only needs for OmniROM, but make universal)
-    } else if (m_com_api.audio_state.equalsIgnoreCase("start") && m_rec_src <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic")) {
+    } else if (m_com_api.audio_state.equalsIgnoreCase("start") && mRecorderSource <= 8 && !com_uti.file_get("/mnt/sdcard/sf/aud_mic")) {
       //dai_set(true);
     }
 
@@ -1203,19 +1110,17 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
       try {
         int bufferSize = AudioRecord.getMinBufferSize(rate, channelConfig, audioFormat);
         com_uti.logd("src: " + src + " rate: " + rate + " audioFormat: " + audioFormat + " channelConfig: " + channelConfig + " bufferSize: " + bufferSize);
-        //if (bufferSize = AudioRecord.ERROR_BAD_VALUE)
-        //continue; / break;
-        AudioRecord recorder = new AudioRecord(src, rate, channelConfig, audioFormat, m_hw_size);//bufferSize);
+        AudioRecord recorder = new AudioRecord(src, rate, channelConfig, audioFormat, m_hw_size);
         if (recorder.getState() == AudioRecord.STATE_INITIALIZED) { // If works, then done
-          m_rec_src = src;
-          return (recorder);
+          mRecorderSource = src;
+          return recorder;
         }
       } catch (Exception e) {
         com_uti.loge("Exception: " + e);
       }
 
     //}
-    return (null);
+    return null;
   }
 
   public String audio_record_state_set(String newState) {

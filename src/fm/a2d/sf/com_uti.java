@@ -4,9 +4,9 @@ package fm.a2d.sf;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.content.pm.PackageInfo;
 import android.os.StrictMode;
 import android.util.Log;
+import fm.a2d.sf.helper.L;
 
 import java.io.*;
 import java.net.DatagramPacket;
@@ -15,6 +15,7 @@ import java.net.InetAddress;
 import java.net.SocketTimeoutException;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
 
@@ -627,19 +628,6 @@ Evo 4G LTE  jewel
   }
 
 
-  public static String app_version_get(Context act) { // Get versionName (from AndroidManifest.xml)
-    String version = "";
-    PackageInfo package_info;
-    try {
-      package_info = act.getPackageManager().getPackageInfo(act.getPackageName(), 0);
-      version = package_info.versionName;
-    } catch (Exception e) {//NameNotFoundException e) {
-      //e.printStackTrace ();
-    }
-    return version;
-  }
-
-
   // Preferences:
   static int int_parse(String str) {
     try {
@@ -681,18 +669,11 @@ Evo 4G LTE  jewel
   public static void prefs_set(Context context, String key, int int_val) {
     String val = String.valueOf(int_val);
     prefs_set(context, key, val);
-    return;
   }
 
   public static void prefs_set(Context context, String prefs_file, String key, String val) {
-    com_uti.logd("String: " + key + " = " + val);
-    try {
-      SharedPreferences sp = context.getSharedPreferences(prefs_file, Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS);
-      SharedPreferences.Editor ed = sp.edit();
-      ed.putString(key, val);
-      ed.commit();
-    } catch (Exception e) {
-    }
+    com_uti.logd("prefs_set: " + key + " = " + val);
+    context.getSharedPreferences(prefs_file, Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS).edit().putString(key, val).apply();
   }
 
   // Hidden Audiosystem stuff:
@@ -810,7 +791,7 @@ Evo 4G LTE  jewel
   public static String byteArrayToString(byte[] b) {
     String s = "";
     try {
-      s = new String(b, "UTF-8");
+      s = new String(b, StandardCharsets.UTF_8);
     } catch (Exception e) {
       //e.printStackTrace ();
     }
@@ -856,7 +837,7 @@ Evo 4G LTE  jewel
   }
 
   public static String hex_get(short s) {
-    byte byte_lo = (byte) (s >> 0 & 0xFF);
+    byte byte_lo = (byte) (s & 0xFF);
     byte byte_hi = (byte) (s >> 8 & 0xFF);
     return (hex_get(byte_hi) + hex_get(byte_lo));
   }
@@ -980,6 +961,8 @@ Evo 4G LTE  jewel
     return res;
   }
 
+  private static long cmdN = 0;
+
   /**
    * Якобы всегда падает первый запрос. Поэтому при старте тюнера
    * вызывается ни на что не влияющий s radio_nop start, который
@@ -991,18 +974,22 @@ Evo 4G LTE  jewel
       com_uti.logd("cmd_len: " + commandLength + "  cmd: \"" + command + "\"");
     }
 
-    byte[] commandBuffer = com_uti.stringToByteArray(command);
+    L l = L.getInstance();
+    long mss = System.currentTimeMillis();
 
+    byte[] commandBuffer = com_uti.stringToByteArray(command);
     commandLength = commandBuffer.length;
+
+    l.write(String.format(Locale.ENGLISH, "cmd%d: --> \"%s\"; length = %d", cmdN, command, commandLength));
 
     int resultLength = DEF_BUF;
     byte[] resultBuffer = new byte[resultLength];
 
     int rx_timeout = 3000;
 
-    if (command.equalsIgnoreCase("s tuner_state Start")) {
+    if (command.equalsIgnoreCase("s tuner_state start")) {
       rx_timeout = 15000;
-    } else if (command.equalsIgnoreCase("s radio_nop Start")) {
+    } else if (command.equalsIgnoreCase("s radio_nop start")) {
       rx_timeout = RADIO_NOP_TIMEOUT; // Always fails so make it short
     }
 
@@ -1012,12 +999,10 @@ Evo 4G LTE  jewel
     String result = "";
 
     if (resultLength > 0 && resultLength <= DEF_BUF) {
-      if (s2d_cmd_log) {
-        com_uti.logd("res_len: " + resultLength + "  res_buf: \"" + resultBuffer + "\"");
-      }
-
       result = com_uti.byteArrayToString(resultBuffer);
       result = result.substring(0, resultLength);     // Remove extra data
+
+      l.write(String.format(Locale.ENGLISH, "cmd%d: <-- \"%s\"; len = %d; dur = %dms", cmdN++, result, resultLength, System.currentTimeMillis() - mss));
       if (s2d_cmd_log)
         com_uti.logd("res: \"" + result + "\"");
     } else if (resultLength == 0) {

@@ -6,6 +6,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.TextView;
+import android.widget.Toast;
 import fm.a2d.sf.view.PreferenceView;
 
 import java.io.File;
@@ -18,6 +19,7 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
   private LinearLayout mRoot;
 
   private static final int PREF_NOTIFICATION_TYPE = 0xfca0;
+  private static final int PREF_WRITE_LOGS = 0x10c;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
@@ -30,7 +32,11 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
 
   private void init() {
     mRoot.addView(new PreferenceView(this)
-        .setInfo(PREF_NOTIFICATION_TYPE, "New custom notification", com_uti.prefs_get(this, C.NOTIFICATION_TYPE, C.NOTIFICATION_TYPE_CLASSIC) != 0, this)
+        .setInfo(PREF_NOTIFICATION_TYPE, getString(R.string.pref_notification_custom), com_uti.prefs_get(this, C.NOTIFICATION_TYPE, C.NOTIFICATION_TYPE_CLASSIC) != 0, this)
+    );
+
+    mRoot.addView(new PreferenceView(this)
+        .setInfo(PREF_WRITE_LOGS, getString(R.string.pref_write_logs), com_uti.prefs_get(this, C.WRITE_LOGS, C.WRITE_LOGS_YES) != 0, this)
     );
 
     mRoot.addView(new TestView(this));
@@ -43,6 +49,13 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
       case PREF_NOTIFICATION_TYPE:
         com_uti.prefs_set(this, C.NOTIFICATION_TYPE, value ? C.NOTIFICATION_TYPE_CUSTOM : C.NOTIFICATION_TYPE_CLASSIC);
         new com_api(this).key_set(C.NOTIFICATION_TYPE, "update");
+        break;
+
+      case PREF_WRITE_LOGS:
+        com_uti.prefs_set(this, C.WRITE_LOGS, value ? C.WRITE_LOGS_YES : C.WRITE_LOGS_NO);
+        if (value) {
+          Toast.makeText(this, R.string.pref_write_logs_toast, Toast.LENGTH_LONG).show();
+        }
         break;
     }
   }
@@ -75,8 +88,9 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
       addRowFile("/dev/radio0");
       addRowFile("/dev/fmradio");
       addRowFile("/dev/ttyHS99");
-      addRowFile("/sys/module/board_m7_audio");
+      addRowFile("/dev/ttyHS0");
       addRowFile("/system/lib/modules/radio-iris-transport.ko");
+      addRow("Native data", com_uti.s2d_get("test_data"));
 
       return sb.toString();
     }

@@ -5,6 +5,7 @@ import java.util.Timer;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import fm.a2d.sf.helper.L;
 
 // Tuner Sub-service
 
@@ -113,7 +114,9 @@ public class ServiceTuner {
       return;
     }
 
-    if (key.equalsIgnoreCase(C.TUNER_STATE)) { // If tuner_state...
+    L.getInstance().write("ST::setTunerValue(" + key + ", " + val + "); isTunerStart = " + mApi.isTunerStarted());
+
+    if (key.equals(C.TUNER_STATE)) { // If tuner_state...
       setTunerState(val);
     } else if (key.equalsIgnoreCase ("radio_nop")) {// If radio_nop...
       com_uti.s2d_set(key, val);
@@ -176,7 +179,9 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
   private String setTunerState(String state) {
     com_uti.logd("state: " + state + "; mApi.tuner_state: " + mApi.tuner_state);
 
-    if (state.equalsIgnoreCase(C.TUNER_STATE_START)) {
+    L.getInstance().write("ST::setTunerState(" + state + ")");
+
+    if (state.equals(C.TUNER_STATE_START)) {
       if (!isTunerStarted() && !isTunerStarting()) { // If not already started or starting
         mApi.tuner_state = C.TUNER_STATE_STARTING; // !! Already set
 
@@ -186,20 +191,20 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
         com_uti.ms_sleep(200); // !!!! MUST have delay here
         com_uti.loge("800 ms delay starting..., fix later");
-        com_uti.ms_sleep(400); // Extra stock HTC One M7 ?
+        //com_uti.ms_sleep(400); // Extra stock HTC One M7 ?
         //                ^ was 600
 
         mApi.tuner_state = com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_START); // State = Start
         com_uti.logd("start tuner_state: " + mApi.tuner_state);
         pollStart(); // Start polling for changes
       }
-    } else if (state.equalsIgnoreCase(C.TUNER_STATE_STOP)) {
+    } else if (state.equals(C.TUNER_STATE_STOP)) {
       if (!isTunerStopped()) {
         pollStop(); // Stop polling for changes
         mApi.tuner_state = C.TUNER_STATE_STOPPING;
 
         com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
-        com_uti.ms_sleep(400); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
+        com_uti.ms_sleep(100); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
         //                ^ was 500
 
         mApi.tuner_state = C.TUNER_STATE_STOP;
@@ -218,7 +223,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
     // Start poll timer so volume will be set before FM chip power up, and applied at chip power up.
     mPollingTimer = new Timer("Poll", true);
-    mPollingTimer.schedule(new PollTunerHandler(), 3000, 1000); // After 3 seconds every 500 ms
+    mPollingTimer.schedule(new PollTunerHandler(), 2000, 1000); // After 3 (was) seconds every 500 ms
     mIsPolling = true;
   }
 

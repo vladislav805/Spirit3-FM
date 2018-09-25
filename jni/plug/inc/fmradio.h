@@ -161,6 +161,7 @@
       int (*block_scan) (void ** session_data, int low_freq, int high_freq,
                         int ** found_freqs, int ** signal_strenghts);
       int (*set_rds_data) (void ** session_data, char * key, void * value);
+      int (*get_test_data) (char ** st);
   };
 
   typedef int (*fmradio_reg_func_t) (unsigned int * signature_p,

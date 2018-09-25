@@ -539,16 +539,16 @@ int curr_tuner_stereo_int       = 0;
 int curr_tuner_rds_pi_int       = -7;
 int curr_tuner_rds_pt_int       = -7; // was -7
 
-char curr_radio_dai_state    [16]= "Stop";
+char curr_radio_dai_state    [16]= "stop";
 char curr_tuner_band         [16]= "EU";
 
-char curr_tuner_state        [16]= "Stop";
-char curr_tuner_scan_state   [16]= "Stop";
-char curr_tuner_rds_state    [16]= "Stop";
-char curr_tuner_rds_af_state [16]= "Stop";
+char curr_tuner_state        [16]= "stop";
+char curr_tuner_scan_state   [16]= "stop";
+char curr_tuner_rds_state    [16]= "stop";
+char curr_tuner_rds_af_state [16]= "stop";
 
 char curr_tuner_freq         [16]= "-7";//"107900";
-char curr_tuner_stereo       [16]= "Mono";
+char curr_tuner_stereo       [16]= "stereo";
 char curr_tuner_thresh       [16]= "-7";
 char curr_tuner_rssi         [16]= "RSSI";
 char curr_tuner_most         [16]= "-7";
@@ -650,7 +650,7 @@ void cb_tnr_rds_af(int freq, enum fmradio_switch_reason_t reason) {
 }
 void cb_tnr_state(enum fmradio_reset_reason_t reason) {
   logd("cb_tnr_state reason: %d", reason);
-  strncpy(curr_tuner_state, "Stop", sizeof(curr_tuner_state));
+  strncpy(curr_tuner_state, "stop", sizeof(curr_tuner_state));
   cb_tuner_change("tuner_state", curr_tuner_state);
 }
 
@@ -845,9 +845,9 @@ int dev_digital_input_off() {
 
 int chmod_need = 1;
 char * set_radio_dai_state(char * dai_state) {
-  if (!strncasecmp(dai_state, "Start", 5)) {
+  if (!strncasecmp(dai_state, "start", 5)) {
     logd("dai Start: %d", dev_digital_input_on());
-  } else if (!strncasecmp(dai_state, "Stop", 4)) {
+  } else if (!strncasecmp(dai_state, "stop", 4)) {
     logd("dai Stop: %d", dev_digital_input_off());
   } else {
     logd("dai Unknown: %s", dai_state);
@@ -940,13 +940,13 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
         }
 
         if (ret != 0) {
-          strncpy(cval, "Stop", sizeof(cval));
+          strncpy(cval, "stop", sizeof(cval));
         }
-      } else if (tuner_initialized && strcpy(cval, "Stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stop
+      } else if (tuner_initialized && strcpy(cval, "stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stop
         terminate = 1;
-      } else if (tuner_initialized && strcpy(cval, "Pause") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Pause
+      } else if (tuner_initialized && strcpy(cval, "pause") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Pause
         logd("pause: %d", tnr_funcs->pause(NULL));
-      } else if (tuner_initialized && strcpy(cval, "Resume") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Resume
+      } else if (tuner_initialized && strcpy(cval, "resume") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Resume
         logd("resume: %d", tnr_funcs->resume(NULL));
       } else {
         cval[0] = 0;
@@ -958,11 +958,11 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     } else if (tuner_initialized == 0) {  // Remaining set commands require tuner_initialized:
     } else if (strcpy(key, "tuner_scan_state") && (klen = strlen (key)) && !strncmp(ckey, key, klen)) { // Tuner Scan State
       val += klen;
-      if (strcpy(cval, "Up") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
+      if (strcpy(cval, "up") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
         logd ("scan: %d", ret = tnr_funcs->scan(NULL, 1));
-      } else if (strcpy(cval, "Down") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
+      } else if (strcpy(cval, "down") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
         logd ("scan: %d", ret = tnr_funcs->scan(NULL, 0));
-      } else if (strcpy(cval, "Stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
+      } else if (strcpy(cval, "stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
         logd ("stop_scan: %d", ret = tnr_funcs->stop_scan(NULL));
       } else {
         cval[0] = 0;
@@ -974,9 +974,9 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     } else if (strcpy(key, "tuner_rds_state") && (klen = strlen (key)) && !strncmp(ckey, key, klen)) { // Tuner RDS State
       val += klen;
       int rds = 0;
-      if (strcpy(cval, "Start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
+      if (strcpy(cval, "start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
         rds = 1;
-      } else if (strcpy(cval, "Stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stop
+      } else if (strcpy(cval, "stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stop
         rds = 0;
       } else {
         cval[0] = 0;
@@ -989,7 +989,7 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     } else if (strcpy(key, "tuner_rds_af_state") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) { // Tuner RDS AF State
       val += klen;
       int af = 0;
-      if (strcpy(cval, "Start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
+      if (strcpy(cval, "start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
         af = 1;
       } else {
         cval[0] = 0;
@@ -1001,9 +1001,9 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
       }
     } else if (strcpy(key, "tuner_stereo") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       val += klen;
-      if (strcpy(cval, "Stereo") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stereo
+      if (strcpy(cval, "stereo") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Stereo
         logd("set_force_mono 0: %d", tnr_funcs->set_force_mono(NULL, 0));
-      } else if (strcpy(cval, "Mono") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Mono
+      } else if (strcpy(cval, "mono") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Mono
         logd("set_force_mono 1: %d", tnr_funcs->set_force_mono(NULL, 1));
       } else {
         cval[0] = 0;
@@ -1031,7 +1031,7 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     cmd_buf[0] = 'g';            // Response is same as get() for specified variable
     if (terminate) {             // If terminating...
       cmd_buf = "g tuner_state"; // Response = get tuner_state   (!! Reassigns char * !!)
-      strncpy(curr_tuner_state, "Stop", sizeof(curr_tuner_state));
+      strncpy(curr_tuner_state, "stop", sizeof(curr_tuner_state));
       exiting = 1;
     }
   }
@@ -1084,6 +1084,11 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_ps);
     } else if (strcpy(key, "tuner_rds_rt") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_rt);
+    } else if (strcpy(key, "test_data") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
+      char* st = (char*) malloc(500);
+      tnr_funcs->get_test_data(&st);
+      snprintf(res_buf, res_max -1, "%s", st);
+      free(st);
     }
 
     if (strlen(res_buf) <- 0) {

@@ -10,6 +10,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.widget.RemoteViews;
 import android.widget.Toast;
+import fm.a2d.sf.helper.L;
 
 import java.util.Timer;
 import java.util.TimerTask;
@@ -54,8 +55,14 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
   private NotificationManager mNotificationManager = null;
 
+  private L ml;
+
   @Override
   public void onCreate() { // When service newly created...
+    ml = L.getInstance();
+
+    ml.write("MainService::onCreate()");
+
     try {
       //com_uti.strict_mode_set(true); // Enable strict mode; disabled for now
       com_uti.strict_mode_set(false);  // !!!! Disable strict mode so we can send network packets from Java
@@ -91,6 +98,8 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   @Override
   public int onStartCommand(Intent intent, int flags, int startId) {
     com_uti.logd ("intent: " + intent + "  flags: " + flags + "  startId: " + startId);
+
+    ml.write("MS::onStartCommand()");
 
     try {
       if (intent == null) {
@@ -202,7 +211,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     intent.putExtra(C.TUNER_STATE, mApi.tuner_state);//mTunerAPI.getTunerValue(C.TUNER_STATE));
     intent.putExtra(C.TUNER_BAND, mApi.tuner_band);
     String freq_khz = mTunerAPI.getTunerValue(C.TUNER_FREQUENCY);
-    int ifreq = com_uti.int_get (freq_khz);
+    int ifreq = com_uti.int_get(freq_khz);
     if (ifreq >= 50000 && ifreq < 500000) {
       mApi.tuner_freq = String.valueOf((double) ifreq / 1000);
       mApi.int_tuner_freq = ifreq;
@@ -223,7 +232,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
     intent.putExtra ("tuner_rssi",         String.valueOf(mApi.getRssi()));      //mTunerAPI.getTunerValue ("tuner_rssi"));
     //intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
-    intent.putExtra ("tuner_most",         mApi.isStereo() ? "stereo" : "mono");      //mTunerAPI.getTunerValue ("tuner_most"));
+    intent.putExtra ("tuner_most",         "stereo");      //mTunerAPI.getTunerValue ("tuner_most"));
 
     intent.putExtra ("tuner_rds_pi",       mApi.tuner_rds_pi);    //mTunerAPI.getTunerValue ("tuner_rds_pi"));
     intent.putExtra ("tuner_rds_picl",     mApi.tuner_rds_picl);  //mTunerAPI.getTunerValue ("tuner_rds_picl"));
@@ -272,41 +281,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     return intent;
   }
 
-
-    // Presets:
-
-  private int station_index_get (String freq) {//int freq) {
-    preset_curr_fix ();
-    if (preset_num > 0) {
-      if (freq.equals (plst_freq [preset_curr])) {
-        return (preset_curr);
-      }
-      for (int ctr = 0; ctr < preset_num; ctr ++) {
-        if (freq.equals (plst_freq [preset_curr])) {
-          return (ctr);
-        }
-      }
-    }
-    return (-1);
-  }
-
-  private int preset_curr_fix () {
-    if (preset_num < 0)
-      preset_num = 0;
-    if (preset_num >= com_api.PRESET_COUNT)
-      preset_num = com_api.PRESET_COUNT;
-
-    if (preset_curr < 0)
-      preset_curr = preset_num - 1;
-    if (preset_curr < 0)
-      preset_curr = 0;
-
-    if (preset_curr >= preset_num)
-      preset_curr = 0;
-    return (preset_curr);
-  }
-
-
     // Phase/Countdown/Error stuff:
 
   private void phase_cdown_set (String phase, int cdown) {
@@ -327,32 +301,38 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
     // AUDIO:
 
-  private String audio_state_set (String state) {                       // Called only by onStartCommand()
+  private String audio_state_set(String state) { // Called only by onStartCommand()
+    ml.write("MS::audio_state_set(" + state + ")");
     com_uti.logd ("state: " + state);
-    if (state.equalsIgnoreCase ("toggle")) {                            // TOGGLE:
-      if (mApi.audio_state.equalsIgnoreCase ("start"))
-        state = "pause";
-      else
-        state = "start";
-    }
-    if (state.equalsIgnoreCase ("start")) {                             // If Audio Start...
-      if (! mApi.audio_state.equalsIgnoreCase ("start")) {         // If audio not started (Could be stopped or paused)
-        String stereo = com_uti.prefs_get (mContext, "audio_stereo", "Stereo");
-        mAudioAPI.audio_stereo_set (stereo);                            // Set audio stereo from prefs, before audio is started
 
-        if (mApi.isTunerStarted()) {         // If tuner started
-          mAudioAPI.audio_state_set ("Start");                          // Set Audio State synchronously
-        }
-        else {                                                          // Else if tuner not started
-          mApi.audio_state = "Starting";                           // Signal tuner state callback that audio needs to be started
-          tuner_state_set ("Start");                                    // Start tuner first, audio will start later via callback
+    if (state.equals(C.AUDIO_STATE_TOGGLE)) {                            // TOGGLE:
+      if (mApi.audio_state.equals(C.AUDIO_STATE_START))
+        state = C.AUDIO_STATE_PAUSE;
+      else
+        state = C.AUDIO_STATE_START;
+      ml.write("MS::audio_state_set(" + state + ") <= after replace toggle");
+    }
+
+
+    if (state.equals(C.AUDIO_STATE_START)) { // If Audio Start...
+      ml.write("AUDIO_STATE = start");
+      if (!mApi.audio_state.equals(C.AUDIO_STATE_START)) { // If audio not started (Could be stopped or paused)
+        String stereo = com_uti.prefs_get(mContext, "audio_stereo", "stereo");
+        mAudioAPI.audio_stereo_set(stereo); // Set audio stereo from prefs, before audio is started
+
+        if (mApi.isTunerStarted()) { // If tuner started
+          mAudioAPI.audio_state_set(C.AUDIO_STATE_START); // Set Audio State synchronously
+        } else { // Else if tuner not started
+          mApi.audio_state = C.AUDIO_STATE_STARTING; // Signal tuner state callback that audio needs to be started
+          tuner_state_set(C.TUNER_STATE_START); // Start tuner first, audio will start later via callback
         }
       }
+    } else { // Else for Audio Stop or Pause...
+      ml.write("AUDIO_STATE = " + state);
+      mAudioAPI.audio_state_set(state); // Set Audio State synchronously
     }
-    else                                                                // Else for Audio Stop or Pause...
-      mAudioAPI.audio_state_set (state);                                // Set Audio State synchronously
 
-    return (mApi.audio_state);                                     // Return current audio state
+    return mApi.audio_state; // Return current audio state
   }
 
 
@@ -360,15 +340,21 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   public void cb_audio_state(String audio_state) { // Audio state changed callback from svc_aud
     com_uti.logd("audio_state: " + audio_state);
 
-    if (audio_state.equalsIgnoreCase("start")) { // If audio state = Start...
-      String audio_output = com_uti.prefs_get(mContext, C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_HEADSET);
-      mAudioAPI.audio_output_set(audio_output); // Set Audio Output from prefs
+    switch (audio_state) {
+      case C.AUDIO_STATE_START:
+        String audio_output = com_uti.prefs_get(mContext, C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_HEADSET);
+        mAudioAPI.audio_output_set(audio_output); // Set Audio Output from prefs
 
-      remote_state_set(true); // Remote State = Playing
-    } else if (audio_state.equalsIgnoreCase("stop")) { // If audio state = Stop...
-      remote_state_set(false); // Remote State = Stopped = Media buttons not needed ?
-    } else if (audio_state.equalsIgnoreCase ("pause")) { // If audio state = Pause...
-      // Remote State = Still Playing
+        remote_state_set(true); // Remote State = Playing
+        break;
+
+      case C.AUDIO_STATE_STOP:  // If audio state = Stop...
+        remote_state_set(false); // Remote State = Stopped = Media buttons not needed ?
+        break;
+
+      case C.AUDIO_STATE_PAUSE:  // If audio state = Pause...
+        // Remote State = Still Playing
+        break;
     }
     displays_update(); // Update all displays/data sinks
   }
@@ -378,9 +364,11 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   private String tuner_state_set(String state) { // Called only by onStartCommand(), (maybe onDestroy in future)
     com_uti.logd ("state: " + state);
 
-    if (state.equalsIgnoreCase(C.TUNER_STATE_TOGGLE)) {
+    if (state.equals(C.TUNER_STATE_TOGGLE)) {
       state = mApi.isTunerStarted() ? C.TUNER_STATE_STOP : C.TUNER_STATE_START;
     }
+
+    ml.write("MS::tuner_state_set(" + state + ")");
 
     switch (state.toLowerCase()) {
       case C.TUNER_STATE_START:
@@ -390,7 +378,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         return mApi.tuner_state;
 
       case C.TUNER_STATE_STOP:
-        mAudioAPI.audio_state_set("Stop"); // Set Audio State  synchronously to Stop
+        mAudioAPI.audio_state_set(C.AUDIO_STATE_STOP); // Set Audio State  synchronously to Stop
         mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_STOP); // Set Tuner State asynchronously to Stop
         return mApi.tuner_state; // Return new tuner state
     }
@@ -403,11 +391,11 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     // Callback: tuner_state_chngd & tuner_state_set in TunerAPIInterface/tnr_afm calls cb_tuner_state indirectly w/ Stop, Starting, Pause
   private void cb_tuner_state (String tuner_state) {
     com_uti.logd ("tuner_state: " + tuner_state);
-    if (tuner_state.equalsIgnoreCase ("starting") || tuner_state.equalsIgnoreCase ("start")) {  // If tuner = Start or Starting...
+    if (tuner_state.equalsIgnoreCase ("starting") || tuner_state.equalsIgnoreCase("start")) {  // If tuner = Start or Starting...
       mApi.tuner_state = "start";                                  // Tuner State = Start
       tuner_prefs_init ();                                              // Load tuner prefs
-      if (mApi.audio_state.equalsIgnoreCase ("starting")) {        // If Audio starting...
-        mAudioAPI.audio_state_set ("Start");                            // Set Audio State synchronously
+      if (mApi.audio_state.equals(C.AUDIO_STATE_STARTING)) { // If Audio starting...
+        mAudioAPI.audio_state_set(C.AUDIO_STATE_START); // Set Audio State synchronously
       }
       return;
     }
@@ -626,10 +614,10 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
   // Notification shade
   private void notif_radio_update () { // Called only by displays_update() which is called only by cb_* callbacks
-    if (mApi.audio_state.equalsIgnoreCase("start")) { // If audio started...
+    if (mApi.audio_state.equalsIgnoreCase(C.AUDIO_STATE_START)) { // If audio started...
       if (need_startfg) {
         need_startfg = false;
-        com_uti.logd ("startForeground");
+        com_uti.logd("startForeground");
         showNotificationAndStartForeground(true);
       } else {
         showNotificationAndStartForeground(false);
@@ -666,6 +654,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         .setColor(getResources().getColor(R.color.primary_blue))
         .setSmallIcon(R.drawable.ic_radio)
         .setContentIntent(pendingMain)
+        .setPriority(Notification.PRIORITY_HIGH)
         .setOngoing(true);
 
     switch (com_uti.prefs_get(this, C.NOTIFICATION_TYPE, 0)) {

@@ -5,9 +5,18 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
+#### build 20180930 (3.0.6)
+* Исправлена проблема с забыванием включения микрофона после завершения радио на некоторых девайсах.
+
+#### build 20180925 (3.0.5)
+* Исправлена проблема с выключением микрофона после завершения радио \[как позднее выяснилось -- не исправлено\];
+* Добавлен пробный тест низкоуровневой части;
+* Улучшения кода внутри приложения;
+* Добавление настроки "писать логи".
+
 #### build 20180913 (3.0.4)
-* Переделана коряво сделанная линейка с частотой
-* Добавлена страница с настройками и отладочной информацией (открывается долгим зажатием по частоте)
+* Переделана коряво сделанная линейка с частотой;
+* Добавлена страница с настройками и отладочной информацией (открывается долгим зажатием по частоте).
 
 #### build 20180907 (3.0.3)
 * Появился и начал работать переключатель наушники/динамики (ура); 
@@ -87,7 +96,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 Все релизы и установочные файлы публикуются на 4pda: [пост в теме форума](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=76841416). Для скачивания apk требуется авторизация (иначе 404).
       
 ## Известные проблемы
-* Snapdragon 636, кажется, не поддерживается полностью.
+* Snapdragon 636 и 801, кажется, не поддерживается полностью (используют не /dev/radio0, а выпиленный способ от BCH; Texas Instruments).
 * На ZTE Nubia Z11 Mini S хрипит, при выключении стоковое радио работает через динамик. 
 
 
@@ -116,5 +125,5 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
     * `s2d......`
     
 ## Contributions
-* Author: [Mike Reid](https://github.com/mikereidis) ![Rest in peace](https://cs5-3.4pda.to/11327050.gif) (c) 2010-2015
+* Author: [Mike Reid](https://github.com/mikereidis) RIP ![Rest in peace](https://cs5-3.4pda.to/11327050.gif) (c) 2010-2015
 * Modification: [Vladislav Veluga](https://github.com/vladislav805) (c) 2018

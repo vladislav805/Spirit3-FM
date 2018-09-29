@@ -799,9 +799,6 @@ int qcv_digital_input_on() {
     //alsa_long_set ("DEC9 Volume", 0);
  // }
 
-
-  alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 1); // Internal FM audio source to MM 1
-  //alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 0);    // Turn off microphone path to MM 1
   // END FROM LATEST VERSION
   ms_sleep(100);
   return 0;
@@ -823,6 +820,7 @@ int qcv_digital_input_off() {
   // END FROM LATEST VERSION
 
   alsa_bool_set("MultiMedia1 Mixer INTERNAL_FM_TX", 0);
+  alsa_bool_set("MultiMedia1 Mixer SLIM_0_TX", 1);                 // Turn on microphone path
   ms_sleep(100);
   return 0;
 }

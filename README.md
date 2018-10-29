@@ -74,15 +74,17 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
 | ☑ | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
 | ☑ | Xiaomi Mi Max | MIUI ? | 7.x | 650 | 8956 |
-| ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? | 625 | 8953 |
 | ☑ | Xiaomi Mi A2 Lite \[magisk\] | AOSP | 8.1 | 625 | 8953 |
+| ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? | 625 | 8953 |
+| ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
+| ? | Xiaomi Redmi 5 Plus | ? | 8.1 | 625 | 8953 |
 | ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 | S4 Plus | 8230 |
-| □ | YotaPhone 2 | AOSP | 6.0.1| 801 | 8974 |
+| □ | YotaPhone 2 | AOSP | 6.0.1 | 801 | 8974 |
 | ? | ZTE Nubia Z7 Mini | ? | ? | 801 | 8974AA |
 | □ | ZTE Nubia Z11 Mini S | ? | ? | 617 | 8952 |
-| ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | AGM A8 | AOSP | ? | 410 | 8916 |
 | ☑ | Samsung Galaxy S4 Mini I9195 | ? | 9.0 | 400 | 8230AB |
+| ☑ | Lenovo Vibe K5 Plus | CyanogenMod 12.1 | 5.1 | 616 | 8939v2 |
 
 | Иконка | Описание |
 |:------:| -------- |

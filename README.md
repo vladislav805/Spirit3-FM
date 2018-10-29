@@ -73,6 +73,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 |:-:| ---------- | -- |:-------------:|:---:|:---:|
 | ☑ | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
 | ☑ | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
+| x | Xiaomi Mi A1 | LineageOS 15.1 | 8.1 | 625 | 8953 |
 | ☑ | Xiaomi Mi Max | MIUI ? | 7.x | 650 | 8956 |
 | ☑ | Xiaomi Mi A2 Lite \[magisk\] | AOSP | 8.1 | 625 | 8953 |
 | ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? | 625 | 8953 |

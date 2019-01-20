@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     package="fm.a2d.sf"
-    android:versionCode="306"
-    android:versionName="3.0.6" >
+    android:versionCode="307"
+    android:versionName="3.0.7" >
 
-  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" />
+  <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" tools:ignore="OldTargetApi"/>
 
   <uses-permission android:name="android.permission.INTERNET"/>
   <uses-permission android:name="android.permission.ACCESS_SUPERUSER"/>
@@ -16,7 +17,7 @@
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
-  <uses-permission android:name="android.permission.WRITE_SETTINGS" />
+  <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
 
@@ -29,7 +30,8 @@
       android:icon="@drawable/ic_launcher"
       android:label="@string/application_name"
       android:launchMode="singleInstance"
-      android:theme="@style/AppTheme">
+      android:theme="@style/AppTheme"
+      tools:ignore="GoogleAppIndexingWarning">
     <activity
         android:name=".MainActivity"
         android:launchMode="singleInstance"
@@ -50,7 +52,8 @@
         android:process=":s"
         android:label="Spirit3 FM Service"
         android:enabled="true"
-        android:exported="true">
+        android:exported="true"
+        tools:ignore="ExportedService">
       <intent-filter>
         <action android:name="fm.a2d.sf.action.set" />
       </intent-filter>

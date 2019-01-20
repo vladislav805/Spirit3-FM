@@ -6,7 +6,7 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20180930;
+  public static final int BUILD = 20190120;
   public static final boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
@@ -49,7 +49,7 @@ public class C {
   public static final String PRESET_KEY = "preset_frequency";
   public static final String PRESET_KEY_NAME = "preset_title";
 
-  public static final int PRESET_NAME_MAX_LENGTH = 10;
+  public static final int PRESET_NAME_MAX_LENGTH = 12;
 
   public static final String NOTIFICATION_TYPE = "notification_type";
   public static final int NOTIFICATION_TYPE_CLASSIC = 0;

@@ -370,6 +370,12 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
             .setView(root)
+            .setNeutralButton("debug", new DialogInterface.OnClickListener() {
+              @Override
+              public void onClick(DialogInterface dialog, int which) {
+                Toast.makeText(mContext, "test", Toast.LENGTH_SHORT).show();
+              }
+            })
             .setCancelable(false);
 
     mIntroDialog = dialog.create();
@@ -647,8 +653,8 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     }
   }
 
-  private int SIGNAL_EDGES[] = new int[] {15, 25, 35, 45};
-  private int SIGNAL_RES[] = new int[] {R.drawable.ic_signal_0, R.drawable.ic_signal_1, R.drawable.ic_signal_2, R.drawable.ic_signal_3, R.drawable.ic_signal_4};
+  private int[] SIGNAL_EDGES = new int[] {15, 25, 35, 45};
+  private int[] SIGNAL_RES = new int[] {R.drawable.ic_signal_0, R.drawable.ic_signal_1, R.drawable.ic_signal_2, R.drawable.ic_signal_3, R.drawable.ic_signal_4};
 
   /**
    * Обновление уровня сигнала
@@ -704,7 +710,11 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     public void onClick(int action, PresetView v) {
       switch (action) {
         case PresetView.MENU_CREATE:
-          setPreset(v, mApi.getStringFrequencyMHz(), v.getTitle());
+          if (v.isEmpty()) {
+            openRenamePresetDialog(v, mApi.getStringFrequencyMHz());
+          } else {
+            setPreset(v, mApi.getStringFrequencyMHz(), v.getTitle());
+          }
           break;
 
         case PresetView.MENU_REPLACE:
@@ -798,6 +808,10 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private void openRenamePresetDialog(final PresetView v) {
+    openRenamePresetDialog(v, v.getFrequency());
+  }
+
+  private void openRenamePresetDialog(final PresetView v, final String frequency) {
     final AlertDialog.Builder ab = new AlertDialog.Builder(mContext);
     final EditText et = new EditText(mContext);
     String title = v.getTitle();
@@ -811,12 +825,11 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     et.setText(title);
     et.setSelection(0, title.length());
 
-
     ab.setTitle(R.string.preset_rename_title)
         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            setPreset(v, v.getFrequency(), et.getText().toString());
+            setPreset(v, frequency, et.getText().toString());
           }
         })
         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
@@ -828,6 +841,13 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
         .setView(et)
         .create()
         .show();
+
+    et.postDelayed(new Runnable() {
+      @Override
+      public void run() {
+        et.requestFocus();
+      }
+    }, 500);
   }
 
 

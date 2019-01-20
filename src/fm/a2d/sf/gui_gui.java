@@ -829,7 +829,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
-            setPreset(v, frequency, et.getText().toString());
+            setPreset(v, frequency, et.getText().toString().trim());
           }
         })
         .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {

@@ -58,7 +58,7 @@ public class PresetView extends Button {
     } else {
 
       int n = mFrequency.length();
-      String name = (mTitle != null ? mTitle : "-");
+      String name = mTitle != null && !mTitle.isEmpty() ? mTitle : "-";
       int m = name.length();
       String full = mFrequency + "\n" + name;
 

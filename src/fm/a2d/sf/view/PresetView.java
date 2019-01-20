@@ -5,6 +5,7 @@ import android.text.Spannable;
 import android.text.SpannableString;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.RelativeSizeSpan;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
@@ -97,12 +98,13 @@ public class PresetView extends Button {
   private void onMenuOpen() {
     Context c = getContext();
     PopupMenu popupMenu = new PopupMenu(c, this);
+    Menu menu = popupMenu.getMenu();
     if (isEmpty()) {
-      popupMenu.getMenu().add(1, MENU_CREATE, 1, c.getString(R.string.popup_preset_create));
+      menu.add(1, MENU_CREATE, 1, c.getString(R.string.popup_preset_create));
     } else {
-      popupMenu.getMenu().add(1, MENU_RENAME, 1, c.getString(R.string.popup_preset_rename));
-      popupMenu.getMenu().add(1, MENU_REPLACE, 2, c.getString(R.string.popup_preset_replace));
-      popupMenu.getMenu().add(1, MENU_REMOVE, 3, c.getString(R.string.popup_preset_remove));
+      menu.add(1, MENU_RENAME, 1, c.getString(R.string.popup_preset_rename));
+      menu.add(1, MENU_REPLACE, 2, c.getString(R.string.popup_preset_replace));
+      menu.add(1, MENU_REMOVE, 3, c.getString(R.string.popup_preset_remove));
     }
 
     popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {

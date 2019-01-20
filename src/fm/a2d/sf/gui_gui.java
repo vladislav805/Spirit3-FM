@@ -722,7 +722,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
           break;
 
         case PresetView.MENU_REMOVE:
-          setPreset(v, null, v.getTitle());
+          setPreset(v, null, null);
           break;
 
         case PresetView.MENU_RENAME:

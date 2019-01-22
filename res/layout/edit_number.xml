@@ -6,18 +6,15 @@
     android:orientation="vertical">
 
   <EditText
+      android:layout_marginStart="@dimen/dialog_horizontal_padding"
+      android:layout_marginEnd="@dimen/dialog_horizontal_padding"
       android:id="@+id/edit_number"
-      android:contentDescription="@string/frequency"
+      android:contentDescription="@string/nill"
       android:layout_height="wrap_content"
       android:layout_width="match_parent"
-      android:scrollHorizontally="true"
-      android:textSize="28sp"
-      android:singleLine="true"
-      android:textAlignment="center"
-      android:layout_gravity="center"
-      android:gravity="center_horizontal"
-      android:inputType="numberDecimal"
+      android:textSize="24sp"
+      android:maxLines="1"
       android:textAppearance="?android:attr/textAppearanceMedium"
-      android:saveEnabled="false"/>
+      android:saveEnabled="false" />
 
 </LinearLayout>

@@ -2,11 +2,12 @@ package fm.a2d.sf;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
+import fm.a2d.sf.helper.Utils;
 import fm.a2d.sf.view.PreferenceView;
 
 import java.io.File;
@@ -18,6 +19,8 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
 
   private LinearLayout mRoot;
 
+  private boolean mNeedSettings = true;
+
   private static final int PREF_NOTIFICATION_TYPE = 0xfca0;
   private static final int PREF_WRITE_LOGS = 0x10c;
 
@@ -26,18 +29,29 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_settings);
 
+    Intent i = getIntent();
+
+    if (i != null) {
+      if (i.hasExtra(C.NO_PREFERENCES) && i.getBooleanExtra(C.NO_PREFERENCES, false)) {
+        mNeedSettings = false;
+      }
+    }
+
     mRoot = (LinearLayout) findViewById(R.id.pref_root);
     init();
   }
 
   private void init() {
-    mRoot.addView(new PreferenceView(this)
-        .setInfo(PREF_NOTIFICATION_TYPE, getString(R.string.pref_notification_custom), com_uti.prefs_get(this, C.NOTIFICATION_TYPE, C.NOTIFICATION_TYPE_CLASSIC) != 0, this)
-    );
 
-    mRoot.addView(new PreferenceView(this)
-        .setInfo(PREF_WRITE_LOGS, getString(R.string.pref_write_logs), com_uti.prefs_get(this, C.WRITE_LOGS, C.WRITE_LOGS_YES) != 0, this)
-    );
+    if (mNeedSettings) {
+     /* mRoot.addView(new PreferenceView(this)
+          .setInfo(PREF_NOTIFICATION_TYPE, getString(R.string.pref_notification_custom), Utils.getPrefInt(this, C.NOTIFICATION_TYPE) != 0, this)
+      );*/
+
+      /*mRoot.addView(new PreferenceView(this)
+          .setInfo(PREF_WRITE_LOGS, getString(R.string.pref_write_logs), com_uti.prefs_get(this, C.WRITE_LOGS, C.WRITE_LOGS_YES) != 0, this)
+      );*/
+    }
 
     mRoot.addView(new TestView(this));
   }
@@ -47,15 +61,8 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
   public void onChange(int pref, boolean value, PreferenceView v) {
     switch (pref) {
       case PREF_NOTIFICATION_TYPE:
-        com_uti.prefs_set(this, C.NOTIFICATION_TYPE, value ? C.NOTIFICATION_TYPE_CUSTOM : C.NOTIFICATION_TYPE_CLASSIC);
+        Utils.setPrefInt(this, C.NOTIFICATION_TYPE, value ? C.NOTIFICATION_TYPE_CUSTOM : C.NOTIFICATION_TYPE_CLASSIC);
         new com_api(this).key_set(C.NOTIFICATION_TYPE, "update");
-        break;
-
-      case PREF_WRITE_LOGS:
-        com_uti.prefs_set(this, C.WRITE_LOGS, value ? C.WRITE_LOGS_YES : C.WRITE_LOGS_NO);
-        if (value) {
-          Toast.makeText(this, R.string.pref_write_logs_toast, Toast.LENGTH_LONG).show();
-        }
         break;
     }
   }
@@ -85,6 +92,7 @@ public class SettingsActivity extends Activity implements PreferenceView.OnChang
       addRow("Product", Build.PRODUCT);
       addRow("SDK", String.valueOf(Build.VERSION.SDK_INT));
       addRow("su?", com_uti.sys_run("echo 1", true) >= 0);
+      addRowFile("/system/bin/su");
       addRowFile("/dev/radio0");
       addRowFile("/dev/fmradio");
       addRowFile("/dev/ttyHS99");

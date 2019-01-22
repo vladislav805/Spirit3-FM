@@ -23,7 +23,7 @@ import static android.view.HapticFeedbackConstants.LONG_PRESS;
 public class PresetView extends Button {
 
   private int mIndex;
-  private String mFrequency;
+  private int mFrequency;
   private String mTitle;
   private OnMenuPresetSelected mMenuListener;
 
@@ -48,7 +48,7 @@ public class PresetView extends Button {
   }
 
 
-  public PresetView populate(int index, String frequency, String title) {
+  public PresetView populate(int index, int frequency, String title) {
     mFrequency = frequency;
     mIndex = index;
     mTitle = title;
@@ -56,11 +56,11 @@ public class PresetView extends Button {
     if (isEmpty()) {
       setText("+");
     } else {
-
-      int n = mFrequency.length();
+      float freq = mFrequency / 1000f;
+      int n = String.valueOf(freq).length(); // FIXME
       String name = mTitle != null && !mTitle.isEmpty() ? mTitle : "-";
       int m = name.length();
-      String full = mFrequency + "\n" + name;
+      String full = freq + "\n" + name;
 
       Spannable span = new SpannableString(full);
       span.setSpan(new RelativeSizeSpan(1f), 0, n, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE);
@@ -77,7 +77,7 @@ public class PresetView extends Button {
     return this;
   }
 
-  public PresetView populate(String frequency, String title) {
+  public PresetView populate(int frequency, String title) {
     return populate(mIndex, frequency, title);
   }
 
@@ -122,7 +122,11 @@ public class PresetView extends Button {
     return mIndex;
   }
 
-  public String getFrequency() {
+  /**
+   * Frequency in KHz
+   * @return KHz
+   */
+  public int getFrequency() {
     return mFrequency;
   }
 
@@ -131,7 +135,7 @@ public class PresetView extends Button {
   }
 
   public boolean isEmpty() {
-    return mFrequency == null || mFrequency.isEmpty();
+    return mFrequency == 0;
   }
 
 }

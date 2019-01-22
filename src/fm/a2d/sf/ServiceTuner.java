@@ -1,11 +1,12 @@
 package fm.a2d.sf;
 
-import java.util.TimerTask;
-import java.util.Timer;
-
 import android.annotation.SuppressLint;
 import android.content.Context;
 import fm.a2d.sf.helper.L;
+import fm.a2d.sf.helper.Utils;
+
+import java.util.Timer;
+import java.util.TimerTask;
 
 // Tuner Sub-service
 
@@ -43,13 +44,13 @@ public class ServiceTuner {
       return mApi.tuner_state;
 
     else if (mApi.isTunerStarted())
-      return (com_uti.s2d_get (key));
+      return com_uti.s2d_get(key);
 
         // Else if not on, use cached info:
     else if (key.equalsIgnoreCase (C.TUNER_BAND))
       return mApi.tuner_band;
     else if (key.equalsIgnoreCase (C.TUNER_FREQUENCY))
-      return mApi.getStringFrequencyMHz();
+      return String.valueOf(mApi.int_tuner_freq);
     else if (key.equalsIgnoreCase ("tuner_stereo"))
       return (mApi.tuner_stereo);
     else if (key.equalsIgnoreCase ("tuner_thresh"))
@@ -70,7 +71,7 @@ public class ServiceTuner {
       return (mApi.tuner_extra_resp);
 
     else if (key.equalsIgnoreCase ("tuner_rssi"))
-      return (mApi.tuner_rssi);
+      return String.valueOf(mApi.tuner_rssi);
     else if (key.equalsIgnoreCase ("tuner_qual"))
       return (mApi.tuner_qual);
     else if (key.equalsIgnoreCase ("tuner_most"))
@@ -114,22 +115,21 @@ public class ServiceTuner {
       return;
     }
 
-    L.getInstance().write("ST::setTunerValue(" + key + ", " + val + "); isTunerStart = " + mApi.isTunerStarted());
+    L.w(L.T.SERVICE_TUNER, "setTunerValue(" + key + ", " + val + "); isTunerStart = " + mApi.isTunerStarted());
 
     if (key.equals(C.TUNER_STATE)) { // If tuner_state...
       setTunerState(val);
-    } else if (key.equalsIgnoreCase ("radio_nop")) {// If radio_nop...
+    } else if (key.equals(C.RADIO_NOP)) {// If radio_nop...
       com_uti.s2d_set(key, val);
     }
 
     //else if (key.equalsIgnoreCase (C.TUNER_BAND))
     //  return (tuner_band_set (val));
 
-    else if (mApi.isTunerStarted())          // If tuner_state = Start...
-    {
+    else if (mApi.isTunerStarted()) { // If tuner_state = Start...
       com_uti.s2d_set(key, val);
     } else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY)) {
-      mApi.tuner_freq = val;
+      mApi.int_tuner_freq = Utils.parseInt(val);
     } else if (key.equalsIgnoreCase ("tuner_stereo")) {
       mApi.tuner_stereo = val;
     } else if (key.equalsIgnoreCase ("tuner_thresh")) {
@@ -177,9 +177,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
   @SuppressLint("SdCardPath")
   private String setTunerState(String state) {
-    com_uti.logd("state: " + state + "; mApi.tuner_state: " + mApi.tuner_state);
-
-    L.getInstance().write("ST::setTunerState(" + state + ")");
+    L.w(L.T.SERVICE_TUNER, "setTunerState(" + state + ") with tuner_state=" + mApi.tuner_state);
 
     if (state.equals(C.TUNER_STATE_START)) {
       if (!isTunerStarted() && !isTunerStarting()) { // If not already started or starting
@@ -247,27 +245,29 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       // Frequency:
       String tempFrequencyStr = com_uti.s2d_get(C.TUNER_FREQUENCY);
 
-      int tempFrequencyInt = com_uti.int_get(tempFrequencyStr);
+      int tempFrequencyInt = Utils.parseInt(tempFrequencyStr);
 
       if (tempFrequencyInt >= 65000) {
-        mApi.tuner_freq = tempFrequencyStr;
-        mApi.int_tuner_freq = com_uti.int_get(mApi.tuner_freq);
+        mApi.int_tuner_freq = tempFrequencyInt;
 
         if (last_poll_freq != mApi.int_tuner_freq) {
           last_poll_freq = mApi.int_tuner_freq;
-          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, mApi.tuner_freq); // Inform change
+          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, tempFrequencyStr); // Inform change
         }
       }
 
       // RSSI:
-      mApi.tuner_rssi = com_uti.s2d_get("tuner_rssi");
-      if (last_poll_rssi != (last_poll_rssi = com_uti.int_get(mApi.tuner_rssi)))
-        mTuner.cb_tuner_key("tuner_rssi", mApi.tuner_rssi);                        // Inform change
+      mApi.tuner_rssi = Utils.parseInt(com_uti.s2d_get("tuner_rssi"));
+      if (last_poll_rssi != mApi.tuner_rssi) {
+        last_poll_rssi = mApi.tuner_rssi;
+        mTuner.cb_tuner_key("tuner_rssi", String.valueOf(mApi.tuner_rssi)); // Inform change
+      }
 
       // MOST:
       mApi.tuner_most = com_uti.s2d_get("tuner_most");
-      if (!last_poll_most.equals(mApi.tuner_most))
-        mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most);       // Inform change
+      if (!last_poll_most.equals(mApi.tuner_most)) {
+        mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most); // Inform change
+      }
 
       // RDS ps:
       /*mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");

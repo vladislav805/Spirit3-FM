@@ -35,4 +35,5 @@
   <string name="preset_rename_title">Переименовать</string>
   <string name="toast_frequency_changed">Переключено на частоту %.1f МГц</string>
   <string name="toast_frequency_invalid">Некорректная частота</string>
+  <string name="logcat_send_logs">Отправить логи</string>
 </resources>

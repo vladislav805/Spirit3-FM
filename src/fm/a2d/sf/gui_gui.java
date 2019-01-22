@@ -8,18 +8,19 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Typeface;
 import android.text.InputFilter;
+import android.text.InputType;
 import android.util.DisplayMetrics;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
+import android.view.*;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.*;
 import fm.a2d.sf.helper.L;
+import fm.a2d.sf.helper.Utils;
 import fm.a2d.sf.view.FrequencySeekView;
 import fm.a2d.sf.view.PresetView;
 import fm.a2d.sf.view.VisualizerView;
+
+import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
@@ -85,13 +86,13 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 //  private String last_rt = "";
   private int mLastAudioSessionId = 0;
 
-  private L ml;
+  private void log(String s) {
+    L.w(L.T.GUI, s);
+  }
 
   // Code:
   public gui_gui(Context c, com_api the_com_api) { // Constructor
-    ml = L.getInstance();
-
-    ml.write("GUI created");
+    log("GUI created");
 
     mContext = c;
     mActivity = (Activity) c;
@@ -101,7 +102,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   // Lifecycle API
 
   public boolean setState(String state) {
-    ml.write("GUI set state = " + state);
+    log("GUI set state = " + state);
     boolean ret = false;
     if (state.equals("start"))
       ret = gui_start();
@@ -111,9 +112,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private boolean gui_stop() {
-    ml.write("GUI stop");
+    log("GUI stop");
     if (mVisualizerDisabled)
-      com_uti.logd("mVisualizerDisabled = true");
+      log("gui_stop: mVisualizerDisabled = true");
     else
       gui_vis_stop();
     return true;
@@ -121,7 +122,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
 
   private boolean gui_start() {
-    ml.write("GUI initialize views...");
+    log("GUI initialize views...");
 
     // !! Hack for s2d comms to allow network activity on UI thread
     com_uti.strict_mode_set(false);
@@ -211,14 +212,14 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     audio_stereo_load_prefs();
     tuner_stereo_load_prefs();*/
 
-    ml.write("GUI initialize views successfully");
+    log("GUI initialize views successfully");
 
     return true;
   }
 
   private SeekBar.OnSeekBarChangeListener mOnSeekFrequencyChanged = new SeekBar.OnSeekBarChangeListener() {
 
-    private double current;
+    private Double current;
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -240,7 +241,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
         return; // Not Consumed
       }
 
-      setFrequency(String.valueOf(current));
+      Double d = current * 1000;
+
+      setFrequency(d.intValue());
     }
   };
 
@@ -257,7 +260,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
     int primaryColor = mContext.getResources().getColor(R.color.primary_blue);
     if (!power) {
-      //noinspection NumericOverflow
       primaryColor = (primaryColor & 0x00ffffff) | (0x88 << 24);
     }
 
@@ -297,7 +299,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private void gui_vis_start(int audio_sessid) {
     try {
-      com_uti.logd("m_gui_vis: " + mVisualizerView + "  audio_sessid: " + audio_sessid);
+      log("DEPRECATED: gui_vis_start / m_gui_vis: " + mVisualizerView + " audio_sessid: " + audio_sessid);
       mVisualizerView = (VisualizerView) mActivity.findViewById(R.id.gui_vis);
       if (mVisualizerView != null) {
         mVisualizerView.vis_start(audio_sessid);
@@ -309,7 +311,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private void gui_vis_stop() {
     try {
-      com_uti.logd("m_gui_vis: " + mVisualizerView);
+      log("DEPRECATED: gui_vis_stop / m_gui_vis: " + mVisualizerView);
       if (mVisualizerView != null) {
         mVisualizerView.vis_stop();
         mVisualizerView = null;
@@ -320,7 +322,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private void visualizer_state_set(String state) {
-    com_uti.logd("state: " + state);
+    log("DEPRECATED: visualizer_state_set(" + state + ")");
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
       mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
@@ -338,15 +340,16 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
 
   private void setupPresets() {
-    ml.write("GUI setup presets");
-    mPresetViews = new PresetView[com_api.PRESET_COUNT];
+    log("GUI setup presets");
+    mPresetViews = new PresetView[C.PRESET_COUNT];
     for (int idx = 0; idx < mPresetViews.length; idx++) { // For all presets...
-      String freq = com_uti.prefs_get(mContext, C.PRESET_KEY + idx, "");
-      String title = com_uti.prefs_get(mContext, C.PRESET_KEY_NAME + idx, "");
+      int freq = Utils.getPrefInt(mContext, C.PRESET_KEY + idx, 0);
+      String title = Utils.getPrefString(mContext, C.PRESET_KEY_NAME + idx, "");
       mPresetViews[idx] = new PresetView(mContext);
       mPresetViews[idx].populate(idx, freq, title).setListeners(mOnClickPresetListener, mMenuPresetListener);
       mViewListPresets.addView(mPresetViews[idx]);
     }
+    log("GUI setup presets successfully");
   }
 
 
@@ -365,15 +368,15 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
    * Открытие интро
    */
   private void openDialogIntro(@SuppressWarnings("unused") int count) {
-    ml.write("GUI intro dialog");
+    log("GUI intro dialog");
     View root = mActivity.getLayoutInflater().inflate(R.layout.dialog_startup, null);
     ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
     AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
             .setView(root)
-            .setNeutralButton("debug", new DialogInterface.OnClickListener() {
+            .setNeutralButton("Debug", new DialogInterface.OnClickListener() {
               @Override
               public void onClick(DialogInterface dialog, int which) {
-                Toast.makeText(mContext, "test", Toast.LENGTH_SHORT).show();
+                mActivity.startActivity(new Intent(mContext, LogCatActivity.class));
               }
             })
             .setCancelable(false);
@@ -386,7 +389,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
    * Изменение частотного диапазона
    */
   private void setTunerBand(String band) {
-    ml.write("GUI setTunerBand: " + band);
+    log("GUI setTunerBand: " + band);
     com_uti.setTunerBand(band); // To setup band values; different process than service
     mApi.key_set(C.TUNER_BAND, band);
   }
@@ -407,16 +410,24 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     View textEntryView = factory.inflate(R.layout.edit_number, null);
 
     final EditText freqEditView = (EditText) textEntryView.findViewById(R.id.edit_number);
-    freqEditView.setTypeface(mDigitalFont);
     freqEditView.setTextAlignment(TEXT_ALIGNMENT_CENTER);
-    freqEditView.setText(mApi.getStringFrequencyMHz());
+    freqEditView.setText(String.valueOf(mApi.getIntFrequencyKHz() / 1000f));
+
+    freqEditView.setInputType(InputType.TYPE_NUMBER_FLAG_DECIMAL);
+    freqEditView.setGravity(Gravity.CENTER_HORIZONTAL);
 
     dialog
         .setTitle(mContext.getString(R.string.dialog_frequency_title))
         .setView(textEntryView)
         .setPositiveButton(mContext.getString(android.R.string.ok), new DialogInterface.OnClickListener() {
           public void onClick(DialogInterface dialog, int whichButton) {
-            setFrequency(freqEditView.getEditableText().toString().replace(",", "."));
+            String mhzStr = freqEditView.getEditableText().toString().replace(",", ".");
+            try {
+              Double mhz = Double.valueOf(mhzStr) * 1000;
+              setFrequency(mhz.intValue());
+            } catch (NumberFormatException e) {
+              showToast("invalid format");
+            }
           }
         })
         .setNegativeButton(mContext.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
@@ -428,10 +439,10 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   /**
    * Изменение текущей частоты
    */
-  private void setFrequency(String nFreq) {
-
+  private void setFrequency(int freq) {
+    log("GUI request set frequency = " + freq);
     // If an empty string...
-    if (nFreq.isEmpty()) {
+    if (freq == 0) {
       return;
     }
 
@@ -440,33 +451,14 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
       return;
     }
 
-    int freq;
-    try {
-      freq = (int) (Float.valueOf(nFreq) * 1000);
-    } catch (Throwable e) {
-      com_uti.loge("fFrequency = Float.valueOf(nFreq); failed");
-      return;
-    }
-
-    if (freq <= 0) {
-      freq = 0;
-    } else if (freq >= mFrequencyLow * 10 && freq <= mFrequencyHigh * 10) {      // For 760 - 1080
-      freq /= 10;
-    } else if (freq >= mFrequencyLow * 100 && freq <= mFrequencyHigh * 100) {    // For 7600 - 10800
-      freq /= 100;
-    } else if (freq >= mFrequencyLow * 1000 && freq <= mFrequencyHigh * 1000) {  // For 76000 - 108000
-      freq /= 1000;
-    }
-
-    ml.write("GUI setFrequency: "  + freq);
+    log("GUI setFrequency: " + freq);
 
     if (freq >= mFrequencyLow && freq <= mFrequencyHigh) {
       mApi.key_set(C.TUNER_FREQUENCY, String.valueOf(freq));
-      float f = freq / 1000.0f;
+      float f = freq / 1000f;
       showToast(mContext.getString(R.string.toast_frequency_changed, f));
-      //onFrequencyChanged(f);
     } else {
-      com_uti.loge("Frequency invalid: " + freq);
+      log("setFrequency invalid: " + freq);
       showToast(mContext.getString(R.string.toast_frequency_invalid));
     }
   }
@@ -482,7 +474,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
    * Событие изменения частоты
    */
   private void onFrequencyChanged(float frequency) {
-    ml.write("GUI onFrequencyChanged = " + frequency);
+    log("GUI onFrequencyChanged(" + frequency + ")");
 
     String str = String.valueOf(frequency);
     setFrequencyText(str);
@@ -496,7 +488,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
     PresetView currentPreset = null;
     for (PresetView pv : mPresetViews) {
-      if (!pv.isEmpty() && pv.getFrequency().equals(str)) {
+      if (!pv.isEmpty() && pv.getFrequency() == (int) (frequency * 100)) {
         currentPreset = pv;
         break;
       }
@@ -518,15 +510,15 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   //
   private void do_gui_vis_start(int audio_sessid) {
-    com_uti.logd("audio_sessid: " + audio_sessid);
+    log("DEPRECATED do_gui_vis_start / audio_sessid: " + audio_sessid);
     if (mVisualizerDisabled) {
-      com_uti.logd("mVisualizerDisabled = true");
+      log("DEPRECATED mVisualizerDisabled = true");
     } else {
       gui_vis_start(audio_sessid);
     }
   }
 
-  private String mLastFrequency;
+  private int mLastFrequency;
   private String mLastRecord;
   private long mLastRecordStart;
 
@@ -534,10 +526,12 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   public void onReceivedUpdates(Intent intent) {
     // Audio Session ID:
 
+    log("GUI onReceivedUpdates: " + intent);
     int audio_sessid = com_uti.int_get(mApi.audio_sessid);
     if (audio_sessid != 0 && mLastAudioSessionId != audio_sessid) { // If audio session ID has changed...
       mLastAudioSessionId = audio_sessid;
-      com_uti.logd("mApi.audio_sessid: " + mApi.audio_sessid + "  audio_sessid: " + audio_sessid);
+      log("GUI onRU: api.audio_sid: " + mApi.audio_sessid + "; new audio_sid: " + audio_sessid);
+
       // If no session, do nothing (or stop visual and EQ)
       do_gui_vis_start(audio_sessid);
     }
@@ -545,15 +539,12 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     if (mApi.audio_state.equals(C.AUDIO_STATE_START) && mIntroDialog != null) {
       mIntroDialog.dismiss();
       mIntroDialog = null;
-      setFrequency(mApi.getStringFrequencyMHz());
+      setFrequency(mApi.getIntFrequencyKHz());
     }
 
-    if (!mApi.tuner_freq.equals(mLastFrequency)) {
-      mLastFrequency = mApi.getStringFrequencyMHz();
-      try {
-        float freq = Float.valueOf(mApi.tuner_freq);
-        onFrequencyChanged(freq);
-      } catch (NumberFormatException ignore) {}
+    if (mApi.int_tuner_freq != mLastFrequency) {
+      mLastFrequency = mApi.getIntFrequencyKHz();
+      onFrequencyChanged(mApi.int_tuner_freq / 1000f);
     }
 
 
@@ -614,7 +605,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private void updateTimeStringRecording() {
     Long s = com_uti.ms_get() - mLastRecordStart;
-    mViewRecordDuration.setText(com_uti.getTimeStringBySeconds(s.intValue()));
+    mViewRecordDuration.setText(Utils.getTimeStringBySeconds(s.intValue()));
   }
 
   private void setPlayToggleButtonState(String state) {
@@ -661,7 +652,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
    */
   private void updateSignalStretch() {
     try {
-      int f = Integer.valueOf(mApi.tuner_rssi);
+      int f = mApi.tuner_rssi;
 
       int resId = SIGNAL_RES[4];
 
@@ -673,7 +664,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
       }
 
       mViewSignal.setImageResource(resId);
-      mViewRSSI.setText(String.format("%3s", mApi.tuner_rssi));
+      mViewRSSI.setText(String.format(Locale.ENGLISH, "%3d", mApi.tuner_rssi));
     } catch (Exception ignore) {}
   }
 
@@ -686,7 +677,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
       PresetView preset = (PresetView) v;
 
       if (preset.isEmpty()) { // If no preset yet...
-        setPreset(preset, mApi.getStringFrequencyMHz(), "");
+        setPreset(preset, mApi.getIntFrequencyKHz(), "");
       } else {
         setFrequency(preset.getFrequency());
       }
@@ -696,11 +687,11 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   /**
    * Save preset in memory
    */
-  private void setPreset(PresetView preset, String frequency, String title) {
+  private void setPreset(PresetView preset, int frequency, String title) {
     preset.populate(frequency, title);
 
-    com_uti.prefs_set(mContext, C.PRESET_KEY + preset.getIndex(), frequency);
-    com_uti.prefs_set(mContext, C.PRESET_KEY_NAME + preset.getIndex(), title);
+    Utils.setPrefInt(mContext, C.PRESET_KEY + preset.getIndex(), frequency);
+    Utils.setPrefString(mContext, C.PRESET_KEY_NAME + preset.getIndex(), title);
   }
 
   /**
@@ -711,18 +702,18 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
       switch (action) {
         case PresetView.MENU_CREATE:
           if (v.isEmpty()) {
-            openRenamePresetDialog(v, mApi.getStringFrequencyMHz());
+            openRenamePresetDialog(v, mApi.getIntFrequencyKHz());
           } else {
-            setPreset(v, mApi.getStringFrequencyMHz(), v.getTitle());
+            setPreset(v, mApi.getIntFrequencyKHz(), v.getTitle());
           }
           break;
 
         case PresetView.MENU_REPLACE:
-          setPreset(v, mApi.getStringFrequencyMHz(), null);
+          setPreset(v, mApi.getIntFrequencyKHz(), null);
           break;
 
         case PresetView.MENU_REMOVE:
-          setPreset(v, null, null);
+          setPreset(v, 0, null);
           break;
 
         case PresetView.MENU_RENAME:
@@ -774,8 +765,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
       case R.id.iv_next:
         mApi.key_set(C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_UP);
         break;
-
-
     }
   }
 
@@ -811,21 +800,28 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     openRenamePresetDialog(v, v.getFrequency());
   }
 
-  private void openRenamePresetDialog(final PresetView v, final String frequency) {
+  private void openRenamePresetDialog(final PresetView v, final int frequency) {
+    final LayoutInflater factory = LayoutInflater.from(mContext);
     final AlertDialog.Builder ab = new AlertDialog.Builder(mContext);
-    final EditText et = new EditText(mContext);
     String title = v.getTitle();
+
+    final View textEntryView = factory.inflate(R.layout.edit_number, null);
 
     if (title == null) {
       title = "";
     }
 
-    et.setLayoutParams(new ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT));
+    final EditText et = (EditText) textEntryView.findViewById(R.id.edit_number);
+
     et.setFilters(new InputFilter[] {new InputFilter.LengthFilter(C.PRESET_NAME_MAX_LENGTH)});
     et.setText(title);
-    et.setSelection(0, title.length());
+    et.setSelection(title.length(), title.length());
+
+    et.setInputType(InputType.TYPE_TEXT_VARIATION_PERSON_NAME);
+    et.setGravity(Gravity.CENTER_HORIZONTAL);
 
     ab.setTitle(R.string.preset_rename_title)
+        .setView(textEntryView)
         .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
           @Override
           public void onClick(DialogInterface dialog, int which) {
@@ -838,16 +834,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
             dialog.cancel();
           }
         })
-        .setView(et)
         .create()
         .show();
 
-    et.postDelayed(new Runnable() {
-      @Override
-      public void run() {
-        et.requestFocus();
-      }
-    }, 500);
   }
 
 
@@ -864,9 +853,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private String audio_output_set_nonvolatile(String value) {  // Called only by speaker/headset checkbox change
-    com_uti.logd("value: " + value);
+    log("DEPRECATED: audio_output_set_nonvolatile / value: " + value);
     mApi.key_set(C.AUDIO_OUTPUT, value);
-    return (value); // No error
+    return value; // No error
   }
 
 
@@ -884,7 +873,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private String setVisualState(String state) {
-    com_uti.logd("state: " + state);
+    log("GUI: setVisualState(" + state + ")");
     if (state.equalsIgnoreCase("Start")) {
       mVisualizerDisabled = false;
 
@@ -901,7 +890,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
 
   private void cb_tuner_stereo(boolean checked) {
-    com_uti.logd("checked: " + checked);
+    log("DEPRECATED: cb_tuner_stereo / checked: " + checked);
     String val = "Stereo";
     if (!checked)
       val = "Mono";
@@ -909,7 +898,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
   private void cb_audio_stereo(boolean checked) {
-    com_uti.logd("checked: " + checked);
+    log("DEPRECATED: cb_audio_stereo / checked: " + checked);
     String val = "Stereo";
     if (!checked)
       val = "Mono";

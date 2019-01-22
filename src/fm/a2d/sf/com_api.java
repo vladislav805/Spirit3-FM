@@ -2,13 +2,16 @@
 package fm.a2d.sf;
 
 import android.app.PendingIntent;
-import android.content.Intent;
 import android.content.Context;
+import android.content.Intent;
 import android.os.Bundle;
+import android.util.SparseArray;
+import fm.a2d.sf.helper.L;
+import fm.a2d.sf.helper.Utils;
 
 public class com_api {
 
-  private Context m_context;
+  private Context mContext;
   private static int curr_pending_intent_num = 0;
 
   // Radio statuses:
@@ -36,7 +39,10 @@ public class com_api {
   public String tuner_state = C.TUNER_STATE_STOP;          // RW ... api States:   stop, start, pause, resume
 
   public final String tuner_band = "EU";       // RW CFG set Values:   US, EU, JAPAN, CHINA, EU_50K_OFFSET     (Set before Tuner Start)
-  public String tuner_freq = "";//-1";         // RW CFG api Values:   String  form: 50.000 - 499.999  (76-108 MHz)
+
+
+  //public String tuner_freq = "";//-1";       // RW CFG api Values:   String  form: 50.000 - 499.999  (76-108 MHz)
+
   public int int_tuner_freq = 0;//-1;          // ""                 Integer form in kilohertz
   public String tuner_stereo = "stereo";       // RW CFG set Values:   mono, stereo, switch, blend, ... ?
   public String tuner_thresh = "";             // RW CFG api Values:   Seek/scan RSSI threshold
@@ -49,7 +55,7 @@ public class com_api {
   public String tuner_extra_cmd = "";          // RW ... set Values:   Extra command
   public String tuner_extra_resp = "";         // ro ... ... Values:   Extra command response
 
-  public String tuner_rssi = "";//999";        // ro ... ... Values:   RSSI: 0 - 1000
+  public int tuner_rssi = 0;//999";        // ro ... ... Values:   RSSI: 0 - 1000
   public String tuner_qual = "";//SN 99";      // ro ... ... Values:   SN 99, SN 30
   public String tuner_most = "";//Mono";       // ro ... ... Values:   mono, stereo, 1, 2, blend, ... ?      1.5 ?
 
@@ -70,27 +76,53 @@ public class com_api {
   public String tuner_rds_ta = "";             // ro ... ... Values:   0 - 65535   TA Traffic Announcement code
   public String tuner_rds_taf = "";            // ro ... ... Values:   0 - 2^32-1  TAF TA Frequency
 
+  private static void log(String s) {
+    L.w(L.T.API, s);
+  }
 
   public com_api(Context context) { // Context constructor
-    m_context = context;
-    com_uti.logd("context: " + context);
+    mContext = context;
+    log("context: " + context);
+  }
+
+  private SparseArray<String> mPresetNames;
+
+  public String getPresetNameByFrequency(int khz) {
+    if (mPresetNames == null) {
+      loadPresets();
+    }
+
+    return mPresetNames.get(khz);
+  }
+
+  private void loadPresets() {
+    mPresetNames = new SparseArray<>();
+    for (int i = 0; i < C.PRESET_COUNT; ++i) {
+      int freq = Utils.getPrefInt(mContext, C.PRESET_KEY + i);
+      String name = Utils.getPrefString(mContext, C.PRESET_KEY_NAME + i);
+      if (freq > 0) {
+        mPresetNames.put(freq, name);
+      }
+    }
   }
 
 
   public void key_set(String key, String val) {
-    com_uti.logd("key: " + key + "; val: " + val);
+    log("Set [" + key + "] = '" + val + "'");
     Intent intent = new Intent(MainService.ACTION_SET);
-    intent.setClass(m_context, MainService.class);
+    intent.setClass(mContext, MainService.class);
     intent.putExtra(key, val);
-    m_context.startService(intent);
+    mContext.startService(intent);
   }
 
   private static final String DEFAULT_DETECT = "default_detect";
 
   public void radio_update(Intent intent) {
-    com_uti.logx("intent: " + intent);
-
     Bundle extras = intent.getExtras();
+
+    if (extras == null) {
+      return;
+    }
 
     String new_radio_phase = extras.getString("radio_phase", DEFAULT_DETECT);
     if (!new_radio_phase.equalsIgnoreCase(DEFAULT_DETECT))
@@ -122,13 +154,17 @@ public class com_api {
     if (!new_tuner_state.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_state = new_tuner_state;
 
-    String new_tuner_freq = extras.getString(C.TUNER_FREQUENCY, DEFAULT_DETECT);
+
     String new_tuner_stereo = extras.getString("tuner_stereo", DEFAULT_DETECT);
     String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);
     String new_tuner_scan_state = extras.getString(C.TUNER_SCAN_STATE, DEFAULT_DETECT);
 
-    if (!new_tuner_freq.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_freq = new_tuner_freq;
+
+    int new_tuner_freq = extras.getInt(C.TUNER_FREQUENCY, 0);
+    if (new_tuner_freq != 0)
+      int_tuner_freq = new_tuner_freq;
+
+
     if (!new_tuner_stereo.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_stereo = new_tuner_stereo;
     if (!new_tuner_thresh.equalsIgnoreCase(DEFAULT_DETECT))
@@ -157,7 +193,7 @@ public class com_api {
     String new_tuner_qual = extras.getString("tuner_qual", DEFAULT_DETECT);
     String new_tuner_most = extras.getString("tuner_most", DEFAULT_DETECT);
     if (!new_tuner_rssi.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_rssi = new_tuner_rssi;
+      tuner_rssi = Utils.parseInt(new_tuner_rssi);
     if (!new_tuner_qual.equalsIgnoreCase(DEFAULT_DETECT))
       tuner_qual = new_tuner_qual;
     if (!new_tuner_most.equalsIgnoreCase(DEFAULT_DETECT))
@@ -183,10 +219,6 @@ public class com_api {
     return PendingIntent.getService(context, ++curr_pending_intent_num, intent, PendingIntent.FLAG_UPDATE_CURRENT);
   }
 
-  public String getStringFrequencyMHz() {
-    return tuner_freq;
-  }
-
   public int getIntFrequencyKHz() {
     return int_tuner_freq;
   }
@@ -196,7 +228,7 @@ public class com_api {
   }
 
   public int getRssi() {
-    return com_uti.int_get(tuner_rssi, 0);
+    return tuner_rssi;
   }
 
   public static final int TUNER_UNKNOWN = 0;

@@ -3,12 +3,15 @@
 package fm.a2d.sf;
 
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.os.StrictMode;
 import android.util.Log;
 import fm.a2d.sf.helper.L;
+import fm.a2d.sf.helper.Utils;
 
-import java.io.*;
+import java.io.DataOutputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -64,16 +67,18 @@ public final class com_uti {
   private static int band_freq_inc = 100;
   private static int band_freq_odd = 0;
 
+  private static void log(String s) {
+    L.w(L.T.UTILS, s);
+  }
 
   public com_uti() { // Default constructor
-    com_uti.logd("stat_constrs: " + stat_constrs++);
+    log("com_uti: started " + stat_constrs++);
 
     Thread.setDefaultUncaughtExceptionHandler(new Thread.UncaughtExceptionHandler() {
       public void uncaughtException(Thread aThread, Throwable aThrowable) {
-        com_uti.loge("!!!!!!!! Uncaught exception: " + aThrowable);
+        log("!!!!!!!! Uncaught exception: " + aThrowable);
       }
     });
-    com_uti.loge("!!!!");
   }
 
   public static void strict_mode_set(boolean strict_mode) {
@@ -104,16 +109,12 @@ public final class com_uti {
 
   private static final int max_log_char = 7;//8;
 
-  public static void logx(String text) { // Extra logs
-    if (logx_enable) {
-      logd(text);
-    }
-  }
-
-  public static boolean logx_enable = false;
   public static boolean logd_enable = true;
   public static boolean loge_enable = true;
 
+  /**
+   * @deprecated
+   */
   public static void logd(String text) {
     if (!logd_enable) {
       return;
@@ -128,6 +129,9 @@ public final class com_uti {
     Log.d("sf" + tag, /*method2 + ":" +*/ stack_trace_el.getMethodName() + ": " + text);
   }
 
+  /**
+   * @deprecated
+   */
   public static void loge(String text) {
     if (!loge_enable)
       return;
@@ -205,8 +209,9 @@ public final class com_uti {
   // Time:
 
   public static void ms_sleep(int ms) {
-    if (ms > 10)
-      com_uti.loge("ms: " + ms);
+    if (ms > 10) {
+      log("sleep " + ms + "ms");
+    }
     try {
       Thread.sleep(ms); // Wait ms milliseconds
     } catch (InterruptedException ignore) { }
@@ -220,48 +225,22 @@ public final class com_uti {
     return System.currentTimeMillis();
   }
 
-  public static boolean file_delete(String filename) {
-    java.io.File f = null;
-    boolean ret = false;
-    try {
-      f = new File(filename);
-      f.delete();
-      ret = true;
-    } catch (Throwable e) {
-      com_uti.logd("Throwable e: " + e);
-      e.printStackTrace();
-    }
-    com_uti.logd("ret: " + ret);
-    return (ret);
-  }
+  public static String file_create(Context context, int id, String filename) {
+    // When daemon running !!!! java.io.FileNotFoundException: /data/data/com.WHATEVER.fm/files/sprtd (Text file busy)
 
-  public static boolean file_create(String filename) {
-    java.io.File f = null;
-    boolean ret = false;
-    try {
-      f = new File(filename);
-      ret = f.createNewFile();
-      com_uti.logd("ret: " + ret);
-      //f.delete ();
-    } catch (Throwable e) {
-      com_uti.logd("Throwable e: " + e);
-      e.printStackTrace();
-    }
-    return (ret);
-  }
-
-  public static String file_create(Context context, int id, String filename) {     // When daemon running !!!! java.io.FileNotFoundException: /data/data/com.WHATEVER.fm/files/sprtd (Text file busy)
-
-    if (context == null)
+    if (context == null) {
       return "";
+    }
 
     String full_filename = context.getFilesDir() + "/" + filename;
     try {
       InputStream ins = context.getResources().openRawResource(id); // Open raw resource file as input
-      int size = ins.available();                                   // Get input file size (actually bytes that can be read without indefinite wait)
+      int size = ins.available(); // Get input file size (actually bytes that can be read without indefinite wait)
 
-      if (size > 0 && file_size_get(full_filename) == size) {       // If file already exists and size is unchanged... (assumes size will change on update !!)
-        logd("file exists size unchanged");                    // !! Have to deal with updates !! Could check filesize, assuming filesize always changes.
+      if (size > 0 && file_size_get(full_filename) == size) {
+        // If file already exists and size is unchanged... (assumes size will change on update !!)
+
+        log("file exists size unchanged"); // !! Have to deal with updates !! Could check filesize, assuming filesize always changes.
         // Could use indicator file w/ version in file name... SSD running problem for update ??
         // Hypothetically, permissions may not be set for ssd due to sh failure
 
@@ -278,47 +257,30 @@ public final class com_uti {
       fos.write(buffer);                                               // Copy input to output file
       fos.close();                                                     // Close output file
 
-      com_uti.sys_run("chmod 755 " + full_filename + " 1>/dev/null 2>/dev/null", false);              // Set execute permission; otherwise rw-rw----
+      com_uti.sys_run("chmod 755 " + full_filename + " 1>/dev/null 2>/dev/null", false); // Set execute permission; otherwise rw-rw----
     } catch (Exception e) {
       e.printStackTrace();
-      return (null);
+      return null;
     }
 
-    return (full_filename);
+    return full_filename;
   }
 
-
-  public static int sys_commit(boolean su) {
-    String[] cmds = {sys_cmd};
-    com_uti.sys_run(cmds, su);
-    sys_cmd = "";
-    return 0;
-  }
-
-  public static int sys_run(String cmd, boolean su) {
-    String[] cmds = {("")};
-    cmds[0] = cmd;
-    return (sys_run(cmds, su));
-  }
-
-  public static int sys_run(String[] commands, boolean su) { // !! Crash in logs if any output to stderr !!
+  public static int sys_run(String cmd, boolean su) { // !! Crash in logs if any output to stderr !!
     try {
-      Process p = Runtime.getRuntime().exec(su ? "su" : "sh");
+      String prefix = su ? "su" : "sh";
+      Process p = Runtime.getRuntime().exec(prefix);
       DataOutputStream os = new DataOutputStream(p.getOutputStream());
-      for (String line : commands) {
-        logd("su: " + su + "  line: " + line);
-        os.writeBytes(line + "\n");
-      }
+
+      log(">>> " + prefix + " " + cmd);
+      os.writeBytes(cmd + "\n");
       os.writeBytes("exit\n");
       os.flush();
 
-      int exit_val = p.waitFor();
-      if (exit_val != 0)
-        com_uti.loge("exit_val: " + exit_val);
-      else
-        com_uti.logd("exit_val: " + exit_val);
+      int exitValue = p.waitFor();
+      log("exitValue: " + exitValue);
 
-      return (exit_val);
+      return exitValue;
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -406,7 +368,7 @@ failure to promptly write the input stream or read the output stream of the subp
   }
 
   public static boolean file_get(String filename) {
-    return (file_get(filename, true));
+    return file_get(filename, true);
   }
 
   public static boolean access_get(String filename, boolean read, boolean write, boolean execute) {
@@ -436,16 +398,6 @@ failure to promptly write the input stream or read the output stream of the subp
   public static boolean motog_get() {
     return m_device.startsWith("FALCON") || m_device.startsWith("PEREGRINE") || m_device.startsWith("TITAN") || m_device.startsWith("XT102") || m_device.startsWith("XT103") || m_device.startsWith("XT104") || m_device.startsWith("XT106");
   }
-
-  public static boolean lg2_stock_get() {
-    if (!lg2_stock_set) {
-      lg2_stock_set = true;
-      if (com_uti.file_get("/system/framework/com.lge.systemservice.core.jar") || com_uti.file_get("/system/framework/com.lge.core.jar") || com_uti.file_get("/system/framework/com.lge.frameworks.jar"))
-        lg2_stock = true;
-    }
-    return (lg2_stock);
-  }
-
 
   public static boolean htc_one_onemini_get() {
     boolean ret = false;
@@ -498,51 +450,25 @@ GT-I9000    GT-I9000        Mackay. Unofficial ?
 Evo 4G LTE  jewel
 */
 
-  private static String string_device_get() {
-    switch (device) {
-      case DEV_UNK:
-        return ("UNK");
-      case DEV_GEN:
-        return ("GEN");
-      case DEV_GS1:
-        return ("GS1");
-      case DEV_GS2:
-        return ("GS2");
-      case DEV_GS3:
-        return ("GS3");
-      case DEV_QCV:
-        return ("QCV");
-      case DEV_ONE:
-        return ("ONE");
-      case DEV_LG2:
-        return ("LG2");
-      case DEV_XZ2:
-        return ("XZ2");
-      case DEV_SDR:
-        return ("SDR");
-    }
-    return ("UNK");
-  }
-
   private static int device_get() {
-    String arch = System.getProperty("os.arch");                       // armv7l
+    String arch = System.getProperty("os.arch"); // armv7l
     if (arch != null)
-      com_uti.logd(arch);
-    String name = System.getProperty("os.name");                       // Linux
+      log(arch);
+    String name = System.getProperty("os.name"); // Linux
     if (name != null)
-      com_uti.logd(name);
-    String vers = System.getProperty("os.version");                    // 3.0.60-g8a65ee9
+      log(name);
+    String vers = System.getProperty("os.version"); // 3.0.60-g8a65ee9
     if (vers != null)
-      com_uti.logd(vers);
+      log(vers);
 
-    com_uti.logd(android.os.Build.BOARD);                                // aries
-    com_uti.logd(android.os.Build.BRAND);                                // samsung          SEMC
-    com_uti.logd(android.os.Build.DEVICE);                               // GT-I9000
-    com_uti.logd(android.os.Build.HARDWARE);                             // aries            st-ericsson
-    com_uti.logd(android.os.Build.ID);                                   // JOP40D
-    com_uti.logd(android.os.Build.MANUFACTURER);                         // samsung          Sony
-    com_uti.logd(android.os.Build.MODEL);                                // GT-I9000
-    com_uti.logd(android.os.Build.PRODUCT);                              // GT-I9000
+    log(android.os.Build.BOARD);        // aries
+    log(android.os.Build.BRAND);        // samsung          SEMC
+    log(android.os.Build.DEVICE);       // GT-I9000
+    log(android.os.Build.HARDWARE);     // aries            st-ericsson
+    log(android.os.Build.ID);           // JOP40D
+    log(android.os.Build.MANUFACTURER); // samsung          Sony
+    log(android.os.Build.MODEL);        // GT-I9000
+    log(android.os.Build.PRODUCT);      // GT-I9000
 
     //if (android.os.Build.DEVICE.toUpperCase (Locale.getDefault ()).equals "GT-I900")
 
@@ -604,77 +530,44 @@ Evo 4G LTE  jewel
       // Qualcomm is always V4L and has this FM /sys directory
       if (com_uti.file_get("/dev/radio0") && com_uti.file_get("/sys/devices/platform/APPS_FM.6")) {
         dev = DEV_QCV;  // Redundant, see 
-      } else
-
-      // Samsung always have one of these driver names for Samsung Silicon Labs driver
-      if (com_uti.file_get("/dev/radio0") || com_uti.file_get("/dev/fmradio")) {
-        if (com_uti.file_get("/sys/kernel/debug/asoc/smdkc110/wm8994-samsung-codec.4-001a/codec_reg"))
-          dev = DEV_GS1;
-        else if (com_uti.file_get("/sys/kernel/debug/asoc/U1-YMU823") || com_uti.file_get("/sys/devices/platform/soc-audio/MC1N2 AIF1") || com_uti.file_get("/sys/kernel/debug/asoc/U1-YMU823/mc1n2.6-003a"))
-          dev = DEV_GS2;
-        else
-          dev = DEV_GS3;
-      } else {                                                                          // Only remaining alternative is Broadcom
-        if (com_uti.file_get("/dev/ttyHS99") && com_uti.file_get("/sys/class/g2_rgb_led"))
-          dev = DEV_LG2;
-        else if (com_uti.file_get("/dev/ttyHS0") && (com_uti.file_get("/sys/devices/platform/m7_rfkill") || com_uti.file_get("/sys/devices/platform/mipi_m7.0") || com_uti.file_get("/sys/module/board_m7_audio")))
-          dev = DEV_ONE;
       }
-      com_uti.loge("DEV_UNK fix -> dev: " + dev);
+      log("DEV_UNK fix -> dev: " + dev);
     }
 
-    com_uti.logd("dev: " + dev);
+    log("device_get: dev=" + dev);
     return (dev);
   }
 
-
-  // Preferences:
-  static int int_parse(String str) {
-    try {
-      return Integer.parseInt(str);
-    } catch (Exception e) {
-      return 0;
-    }
+  /**
+   * @deprecated
+   */
+  public static int prefs_get(Context context, String key, int def) {
+    int res = Utils.getPrefInt(context, key);
+    return res != Integer.MAX_VALUE ? res : def;
   }
 
-
-  // Prefs:
-  private static final String prefs_file = "sf_prefs";
-  private static final int MODE_MULTI_PROCESS = 4;
-
-  // Prefs Get:
-  public static int prefs_get(Context context, String key, int int_def) {
-    String def = "" + int_def;
-    String int_str = prefs_get(context, key, def);
-    int int_parsed = int_parse(int_str);
-    com_uti.logd("key: " + key + "  def: " + def + "  int_str: " + int_str + "  int_parsed: " + int_parsed);
-    return (int_parsed);
-  }
-
+  /**
+   * @deprecated
+   */
   public static String prefs_get(Context context, String key, String def) {
-    String res = def;
-    try {
-      SharedPreferences sp = context.getSharedPreferences(prefs_file, Context.MODE_MULTI_PROCESS);
-      res = sp.getString(key, def);   // java.lang.ClassCastException if wrong type !!
-    } catch (Exception ignore) { }
-    com_uti.logd("key: " + key + "  def: " + def + "  res: " + res);
-    return (res);
+    String res = Utils.getPrefString(context, key);
+    return res != null ? res : def;
   }
 
-  // Prefs Set:
+  /**
+   * @deprecated
+   */
   public static void prefs_set(Context context, String key, String val) {
-    prefs_set(context, prefs_file, key, val);
+    Utils.setPrefString(context, key, val);
   }
 
-  public static void prefs_set(Context context, String key, int int_val) {
-    String val = String.valueOf(int_val);
-    prefs_set(context, key, val);
+  /**
+   * @deprecated
+   */
+  public static void prefs_set(Context context, String key, int val) {
+    Utils.setPrefInt(context, key, val);
   }
 
-  public static void prefs_set(Context context, String prefs_file, String key, String val) {
-    com_uti.logd("prefs_set: " + key + " = " + val);
-    context.getSharedPreferences(prefs_file, Context.MODE_PRIVATE | Context.MODE_MULTI_PROCESS).edit().putString(key, val).apply();
-  }
 
   // Hidden Audiosystem stuff:
 /*
@@ -712,25 +605,6 @@ Evo 4G LTE  jewel
     return (ret);
   }
 */
-
-
-  public static byte[] file_read_16k(String filename) {
-    byte[] content = new byte[0];
-    int bufSize = 16384;
-    byte[] content1 = new byte[bufSize];
-    try {
-      FileInputStream in = new FileInputStream(filename);
-      int n = in.read(content1, 0, bufSize);
-      in.close();
-      content = new byte[n];
-      for (int ctr = 0; ctr < n; ctr++)
-        content[ctr] = content1[ctr];
-    } catch (Exception e) {
-      com_uti.logd("Exception: " + e);
-      //e.printStackTrace ();
-    }
-    return (content);
-  }
 
   // Conversions:
 /*
@@ -873,12 +747,13 @@ Evo 4G LTE  jewel
   private static int dg_s2d_cmd(int cmd_len, byte[] cmd_buf, int res_len, byte[] res_buf, int rx_tmo) {
     int len = 0;
 
-    String cmd = (com_uti.byteArrayToString(cmd_buf)).substring(0, cmd_len);
+    String cmd = com_uti.byteArrayToString(cmd_buf).substring(0, cmd_len);
 
     dg_s2d_log = com_uti.file_get("/mnt/sdcard/sf/s2d_log", false);
 
-    if (dg_s2d_log)
-      com_uti.logd("Before sem++ cmd: " + cmd + "  res_len: " + res_len + "  rx_tmo: " + rx_tmo);
+    if (dg_s2d_log) {
+      //log("Before sem++ cmd: " + cmd + "  res_len: " + res_len + "  rx_tmo: " + rx_tmo);
+    }
 
     dg_s2d_cmd_sem++;
     while (dg_s2d_cmd_sem != 1) {
@@ -907,33 +782,33 @@ Evo 4G LTE  jewel
       ds.receive(dps);
       // java.net.PortUnreachableException Caused by: libcore.io.ErrnoException: recvfrom failed: ECONNREFUSED (Connection refused)
       // java.net.SocketTimeoutException
-      //com_uti.logd ("After  receive() cmd: " + cmd);
+      //log("After  receive() cmd: " + cmd);
 
       byte[] receivedBuffer = dps.getData();
 
       len = dps.getLength();
 
       if (dg_s2d_log) {
-        com_uti.logd("After getLength() cmd: " + cmd + "  len: " + len);
+        log("After getLength() cmd: " + cmd + "  len: " + len);
         if (rx_tmo == 1002) {
-          com_uti.logd("hexstr res: " + (com_uti.ba_to_hexstr(receivedBuffer)).substring(0, len * 2));
+          log("hexstr res: " + com_uti.ba_to_hexstr(receivedBuffer).substring(0, len * 2));
         } else {
-          com_uti.logd("   str res: " + (com_uti.byteArrayToString(receivedBuffer)).substring(0, len));
+          log("   str res: " + com_uti.byteArrayToString(receivedBuffer).substring(0, len));
         }
       }
 
       // 0 is valid length, eg empty RT
       if (len < 0) {
-        com_uti.loge("cmd: " + cmd + "; len: " + len);
+        log("s2d_cmd: cmd=" + cmd + "; len=" + len);
       } else {
         System.arraycopy(receivedBuffer, 0, res_buf, 0, len);
       }
     } catch (SocketTimeoutException e) {
       if (rx_tmo != RADIO_NOP_TIMEOUT) {
-        com_uti.loge("java.net.SocketTimeoutException rx_tmo: " + rx_tmo + "  cmd: " + cmd);
+        log("s2d_cmd: java.net.SocketTimeoutException: rx_tmo: " + rx_tmo + "  cmd: " + cmd);
       }
     } catch (Throwable e) {
-      com_uti.loge("Exception: " + e + "  rx_tmo: " + rx_tmo + "  cmd: " + cmd);
+      log("s2d_cmd [exception]: type=" + e + "; rx_tmo=" + rx_tmo + "; cmd='" + cmd + "'");
       e.printStackTrace();
     }
     dg_s2d_cmd_sem--;
@@ -957,7 +832,7 @@ Evo 4G LTE  jewel
    */
   public static String s2d_set(String key, String val) {
     String res = s2d_cmd("s " + key + " " + val);
-    com_uti.logd("s2d_set: " + key + " = " + val + " // => " + res);
+    log("s2d_set: [" + key + "] = '" + val + "' ===> '" + res + "'");
     return res;
   }
 
@@ -971,16 +846,15 @@ Evo 4G LTE  jewel
   private static String s2d_cmd(String command) {
     int commandLength = command.length();
     if (s2d_cmd_log) {
-      com_uti.logd("cmd_len: " + commandLength + "  cmd: \"" + command + "\"");
+      log("s2d cmd: len=" + commandLength + "; cmd=\"" + command + "\"");
     }
 
-    L l = L.getInstance();
     long mss = System.currentTimeMillis();
 
     byte[] commandBuffer = com_uti.stringToByteArray(command);
     commandLength = commandBuffer.length;
 
-    l.write(String.format(Locale.ENGLISH, "cmd%d: --> \"%s\"; length = %d", cmdN, command, commandLength));
+    log(String.format(Locale.ENGLISH, "cmd%d: --> \"%s\"; length = %d", cmdN, command, commandLength));
 
     int resultLength = DEF_BUF;
     byte[] resultBuffer = new byte[resultLength];
@@ -989,7 +863,7 @@ Evo 4G LTE  jewel
 
     if (command.equalsIgnoreCase("s tuner_state start")) {
       rx_timeout = 15000;
-    } else if (command.equalsIgnoreCase("s radio_nop start")) {
+    } else if (command.equals("s radio_nop start")) {
       rx_timeout = RADIO_NOP_TIMEOUT; // Always fails so make it short
     }
 
@@ -1002,13 +876,14 @@ Evo 4G LTE  jewel
       result = com_uti.byteArrayToString(resultBuffer);
       result = result.substring(0, resultLength);     // Remove extra data
 
-      l.write(String.format(Locale.ENGLISH, "cmd%d: <-- \"%s\"; len = %d; dur = %dms", cmdN++, result, resultLength, System.currentTimeMillis() - mss));
-      if (s2d_cmd_log)
-        com_uti.logd("res: \"" + result + "\"");
+      L.w(L.T.UTILS, String.format(Locale.ENGLISH, "cmd%d: <-- \"%s\"; len = %d; dur = %dms", cmdN++, result, resultLength, System.currentTimeMillis() - mss));
+      if (s2d_cmd_log) {
+        log("res: \"" + result + "\"");
+      }
     } else if (resultLength == 0) {
       result = ""; // Empty string
     } else {
-      com_uti.loge("res_len: " + resultLength + "  cmd: " + command);
+      log("res_len=" + resultLength + "; cmd='" + command + "'");
     }
     return result;
   }
@@ -1107,7 +982,7 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
       com_uti.band_freq_inc = 50;
     }
 
-    com_uti.logd("low: " + com_uti.band_freq_lo + "; high: " + com_uti.band_freq_hi + "; inc: " + com_uti.band_freq_inc + "; odd: " + band_freq_odd);
+    log("low=" + com_uti.band_freq_lo + "; high=" + com_uti.band_freq_hi + "; inc=" + com_uti.band_freq_inc + "; odd=" + band_freq_odd);
   }
 
 
@@ -1161,18 +1036,18 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
     // w/ Odd:   87500- 87699 ->  87500     = Add 100, Divide by 200, then multiply by 200, then subtract 100
     // w/ Even:  87600- 87799 ->  87600     = Divide by 200, then multiply by 200  (freq_inc)
 
-    //com_uti.logd ("lo: " + com_uti.band_freq_lo + "  hi: " + com_uti.band_freq_hi + "  inc: " + com_uti.band_freq_inc + "  odd: " + com_uti.band_freq_odd);
+    //log ("lo: " + com_uti.band_freq_lo + "  hi: " + com_uti.band_freq_hi + "  inc: " + com_uti.band_freq_inc + "  odd: " + com_uti.band_freq_odd);
 
     if (com_uti.band_freq_odd != 0) {
       freq += com_uti.band_freq_inc / 2;    // 87700
       freq /= com_uti.band_freq_inc;
       freq *= com_uti.band_freq_inc;        // 87600
       freq -= com_uti.band_freq_inc / 2;    // 87500
-      //com_uti.logd ("US ODD freq: "  + freq);
+      //log ("US ODD freq: "  + freq);
     } else {
       freq /= com_uti.band_freq_inc;
       freq *= com_uti.band_freq_inc;
-      //com_uti.logd ("EU ALL freq: "  + freq);
+      //log ("EU ALL freq: "  + freq);
     }
     return (freq);
   }
@@ -1716,14 +1591,6 @@ It should be noted that operation in this region is the same as it is for all RD
       com_uti.loge("Unknown RDS Program Type: " + pt);
     //return ("Pt: " + pt);
     return ("");
-  }
-
-  public static String getTimeStringBySeconds(int number) {
-    double second = Math.floor(number % 60);
-    double minute = Math.floor(number / 60f % 60f);
-    double hour = Math.floor(number / 60f / 60f % 60f);
-
-    return (hour > 0 ? hour + ":" : "") + String.format(Locale.ENGLISH, "%02.0f:%02.0f", minute, second);
   }
 
 }

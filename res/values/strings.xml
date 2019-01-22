@@ -39,9 +39,8 @@
   <string name="preset_rename_title">Rename preset</string>
   <string name="toast_frequency_changed">Frequency changed to %.1f MHz</string>
   <string name="toast_frequency_invalid">Invalid frequency</string>
-  <string name="pref_notification_custom">New custom notification</string>
-  <string name="pref_write_logs">Write logs</string>
   <string name="pref_write_logs_toast">In the next run Spirit 3 will write logs</string>
   <string name="pref_write_logs_started">Logging started</string>
+  <string name="logcat_send_logs">Send logs</string>
 
 </resources>

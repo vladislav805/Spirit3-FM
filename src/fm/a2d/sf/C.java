@@ -6,7 +6,7 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20190120;
+  public static final int BUILD = 20190123;
   public static final boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
@@ -46,6 +46,8 @@ public class C {
   public static final String TUNER_SCAN_UP = "up";
   public static final String TUNER_SCAN_DOWN = "down";
 
+  public static final String RADIO_NOP = "radio_nop";
+
   public static final String PRESET_KEY = "preset_frequency";
   public static final String PRESET_KEY_NAME = "preset_title";
 
@@ -57,4 +59,12 @@ public class C {
   public static final String WRITE_LOGS = "write_logs";
   public static final int WRITE_LOGS_YES = 1;
   public static final int WRITE_LOGS_NO = 0;
+
+  public static final String AUDIO_SAMPLE_RATE = "audio_sample_rate";
+  public static final String AUDIO_FRAMES_PER_BUFFER = "audio_fpb";
+  public static final String AUDIO_SOURCE = "audio_fpb";
+
+  public static final String NO_PREFERENCES = "no_prefs";
+  public static final String DEFAULT_PREFERENCES = "sf_prefs";
+  public static final int PRESET_COUNT = 30;
 }

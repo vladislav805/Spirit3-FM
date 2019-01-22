@@ -20,7 +20,9 @@ public class MainActivity extends Activity {
   private gui_gui m_gui = null;
   private Context mContext = null;
 
-  private L ml;
+  private static void log(String s) {
+    L.w(L.T.ACTIVITY, s);
+  }
 
   // Lifecycle:
 
@@ -28,9 +30,7 @@ public class MainActivity extends Activity {
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    ml = L.getInstance();
-
-    ml.write("Activity::onCreate");
+    log("starting");
 
     mContext = this;
 
@@ -43,6 +43,8 @@ public class MainActivity extends Activity {
 
     gui_start();
     initBroadcastListener();
+
+    log("activity done");
   }
 
   // Create        Start,Resume       Pause,Resume        Pause,Stop,Restart       Start,Resume
@@ -61,7 +63,8 @@ public class MainActivity extends Activity {
     // One of these caused crashes:
     stopBroadcastListener();
     gui_stop();
-    ml.write("Activity::onDestroy");
+
+    log("activity destroy");
 
     // super.onDestroy dismisses any dialogs or cursors the activity was managing. If the logic in onDestroy has something to do with these things, then order may matter.
     super.onDestroy();
@@ -69,13 +72,13 @@ public class MainActivity extends Activity {
 
   private void gui_start() {
     try {
-      ml.write("gui_start in");
+      log("gui_start");
       m_gui = new gui_gui(mContext, m_com_api); // Instantiate UI
       if (!m_gui.setState("start")) { // Start UI. If error...
-        com_uti.loge("gui_start error");
+        log("gui_start error");
         m_gui = null;
       } else {
-        com_uti.logd("gui_start OK");
+        log("gui_start OK");
       }
     } catch (Throwable e) {
       e.printStackTrace();
@@ -84,13 +87,14 @@ public class MainActivity extends Activity {
 
   private void gui_stop() {
     try {
-      ml.write("gui_stop in");
-      if (m_gui == null)
-        com_uti.loge("already stopped");
-      else if (!m_gui.setState("stop"))                          // Stop UI. If error...
-        com_uti.loge("gui_stop error");
-      else
-        com_uti.logd("gui_stop OK");
+      log("gui_stop in");
+      if (m_gui == null) {
+        log("already stopped");
+      } else if (!m_gui.setState("stop")) { // Stop UI. If error...
+        log("gui_stop error");
+      } else {
+        log("gui_stop OK");
+      }
       m_gui = null;
     } catch (Throwable e) {
       e.printStackTrace();
@@ -100,7 +104,7 @@ public class MainActivity extends Activity {
 
   private void initBroadcastListener() {
     if (mBroadcastListener == null) {
-      ml.write("Initializing broadcast listener...");
+      log("Initializing broadcast listener...");
       mBroadcastListener = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -125,23 +129,23 @@ public class MainActivity extends Activity {
       if (mContext != null) {
         // No permission, no handler scheduler thread.
         lastStateIntent = mContext.registerReceiver(mBroadcastListener, intFilter, null, null);
-        ml.write("Broadcast registered");
+        log("Broadcast registered");
       }
 
       if (lastStateIntent != null) {
-        ml.write("Last broadcast: " + lastStateIntent);
+        log("Last broadcast: " + lastStateIntent);
       }
     }
   }
 
   private void stopBroadcastListener() {
-    ml.write("Broadcast listener unregister");
+    log("Broadcast listener unregister");
     if (mBroadcastListener != null) { // Remove the State listener
       if (mContext != null) {
         mContext.unregisterReceiver(mBroadcastListener);
       }
       mBroadcastListener = null;
-      ml.write("Broadcast listener unregistered successfully");
+      log("Broadcast listener unregistered successfully");
     }
   }
 

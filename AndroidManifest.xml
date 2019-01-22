@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="fm.a2d.sf"
-    android:versionCode="307"
-    android:versionName="3.0.7" >
+    android:versionCode="308"
+    android:versionName="3.0.8" >
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" tools:ignore="OldTargetApi"/>
 
@@ -14,18 +14,20 @@
   <uses-permission android:name="android.permission.BROADCAST_STICKY"/>
   <uses-permission android:name="android.permission.BLUETOOTH"/>
   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+  <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
   <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
   <uses-permission android:name="android.permission.WRITE_SETTINGS" tools:ignore="ProtectedPermissions"/>
   <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />
-
+  <uses-permission android:name="android.permission.READ_LOGS" tools:ignore="ProtectedPermissions"/>
 
 <!-- android:clearTaskOnLaunch="true" -->
 
 <!-- App drawer name for all unless locally over-ridden -->
   <application
+      android:name=".MyApp"
       android:allowBackup="true"
       android:icon="@drawable/ic_launcher"
       android:label="@string/application_name"
@@ -45,6 +47,7 @@
         android:name=".SettingsActivity"
         android:theme="@android:style/Theme.Material.Dialog"
         android:label="Settings"/>
+    <activity android:name=".LogCatActivity"/>
 
     <!-- ! Need separate process or get fg/bg problems !!! -->
     <service

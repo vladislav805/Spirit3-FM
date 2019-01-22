@@ -1,12 +1,17 @@
 package fm.a2d.sf;
 
 import android.content.Context;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.Toast;
+import fm.a2d.sf.helper.Utils;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.RandomAccessFile;
 import java.lang.Thread.State;
+import java.lang.ref.WeakReference;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -95,12 +100,15 @@ public class RadioRecorder {
     }
   };
 
+  private WeakReference<Context> mWContext;
+
   @SuppressWarnings("WeakerAccess")
   public RadioRecorder(Context context, int sampleRate, int channels, com_api api) {
     com_uti.logd("constructor context: " + context + "  sampleRate: " + sampleRate + "  channels: " + channels + "  api: " + api);
     mSampleRate = sampleRate;
     mChannels = channels;
     mApi = api;
+    mWContext = new WeakReference<>(context);
   }
 
   public void write(byte[] buffer, int length) {
@@ -156,12 +164,28 @@ public class RadioRecorder {
   }
 
   public void stop() {
+    final int size = mRecordDataSize;
     com_uti.logd("audio_record_state: " + mApi.audio_record_state);
     mRecordWriteThreadActive = false;
     if (mRecordThread != null) {
       mRecordThread.interrupt();
     }
     mApi.audio_record_state = C.RECORD_STATE_STOP;
+    final Context c = mWContext.get();
+
+    // TODO replace by receivers
+    if (c != null) {
+      new Handler(Looper.getMainLooper()).post(new Runnable() {
+        @Override
+        public void run() {
+          String dur = Utils.getTimeStringBySeconds(getCurrentDuration());
+
+          float sizeMB = size / 1024f / 1024f;
+
+          Toast.makeText(c, String.format(Locale.ENGLISH, "Recorded %s - %.1f MB.", dur, sizeMB), Toast.LENGTH_LONG).show();
+        }
+      });
+    }
   }
 
   public boolean start() {
@@ -382,7 +406,7 @@ public class RadioRecorder {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("HHmmss", Locale.getDefault());
     sdf.setTimeZone(TimeZone.getDefault());
-    return String.format(Locale.ENGLISH, "FM-%4s-%s.wav", mApi.getStringFrequencyMHz().replace(".", ""), sdf.format(now)).replace(" ", "0");
+    return String.format(Locale.ENGLISH, "FM-%04d-%s.wav", mApi.getIntFrequencyKHz() / 100, sdf.format(now)).replace(" ", "0");
   }
 
   public int getCurrentDuration() {

@@ -164,6 +164,7 @@ public class RadioRecorder {
   }
 
   public void stop() {
+    boolean active = mRecordWriteThreadActive;
     final int size = mRecordDataSize;
     com_uti.logd("audio_record_state: " + mApi.audio_record_state);
     mRecordWriteThreadActive = false;
@@ -174,7 +175,7 @@ public class RadioRecorder {
     final Context c = mWContext.get();
 
     // TODO replace by receivers
-    if (c != null) {
+    if (c != null && active) {
       new Handler(Looper.getMainLooper()).post(new Runnable() {
         @Override
         public void run() {

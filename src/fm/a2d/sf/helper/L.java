@@ -12,7 +12,9 @@ public class L {
     SERVICE_MAIN,
     SERVICE_AUDIO,
     SERVICE_TUNER,
+    SERVICE_MEDIA_RECEIVER,
     GUI,
+    RECORDER,
     UTILS,
     API,
     FM;

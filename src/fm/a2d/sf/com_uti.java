@@ -2,6 +2,7 @@
 
 package fm.a2d.sf;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.StrictMode;
 import android.util.Log;
@@ -16,8 +17,6 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
 import java.nio.charset.StandardCharsets;
 import java.util.Locale;
 
@@ -541,14 +540,6 @@ Evo 4G LTE  jewel
   /**
    * @deprecated
    */
-  public static int prefs_get(Context context, String key, int def) {
-    int res = Utils.getPrefInt(context, key);
-    return res != Integer.MAX_VALUE ? res : def;
-  }
-
-  /**
-   * @deprecated
-   */
   public static String prefs_get(Context context, String key, String def) {
     String res = Utils.getPrefString(context, key);
     return res != null ? res : def;
@@ -561,12 +552,6 @@ Evo 4G LTE  jewel
     Utils.setPrefString(context, key, val);
   }
 
-  /**
-   * @deprecated
-   */
-  public static void prefs_set(Context context, String key, int val) {
-    Utils.setPrefInt(context, key, val);
-  }
 
 
   // Hidden Audiosystem stuff:
@@ -630,18 +615,6 @@ Evo 4G LTE  jewel
   }
 */
 
-  public static short[] ba_to_sa(byte[] ba) {                        // Byte array to short array
-    short[] sa = new short[ba.length / 2];
-    ByteBuffer.wrap(ba).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().get(sa); // to turn bytes to shorts as either big endian or little endian.
-    return (sa);
-  }
-
-  public static byte[] ba_to_sa(short[] sa) {                        // Short array to byte array
-    byte[] ba = new byte[sa.length * 2];
-    ByteBuffer.wrap(ba).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer().put(sa);
-    return (ba);
-  }
-
   /**
    * String to byte array
    */
@@ -656,7 +629,7 @@ Evo 4G LTE  jewel
       //  content [i] = '~';
       //}
     }
-    return (content);
+    return content;
   }
 
   /**
@@ -669,7 +642,7 @@ Evo 4G LTE  jewel
     } catch (Exception e) {
       //e.printStackTrace ();
     }
-    return (s);
+    return s;
   }
 
   public static String ba_to_hexstr(byte[] ba) {
@@ -717,13 +690,12 @@ Evo 4G LTE  jewel
   }
 
 
+  @SuppressLint("SdCardPath")
   public static File getExternalStorageDirectory() {
-    File ret;
-    //String path = Environment.getExternalStorageDirectory ().getPath ();
-    //String path = Environment.getExternalStorageDirectory ().toString ();
-    //ret = Environment.getExternalStorageDirectory ();   // Stopped working for some 4.2+ due to multi-user and 0
-    ret = new File("/sdcard/");
-    return ret;
+    //String path = Environment.getExternalStorageDirectory().getPath();
+    //String path = Environment.getExternalStorageDirectory().toString();
+    //ret = Environment.getExternalStorageDirectory(); // Stopped working for some 4.2+ due to multi-user and 0
+    return new File("/sdcard/");
   }
 
 
@@ -1005,38 +977,38 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
     return String.valueOf(dfreq);
   }
 
+  /**
+   * Used
+   */
   public static int tnru_khz_get(String freq) {
     double dfreq = com_uti.double_get(freq);
-    if (dfreq >= 50000 && dfreq <= 499999)                          // If 50,000 - 499,999  KHz...
-      dfreq *= 1;                                                   // -> Khz
-    else if (dfreq >= 5000 && dfreq <= 49999)                       // If 5,000 - 49,999    x 0.01 MHz...
-      dfreq *= 10;                                                  // -> Khz
-    else if (dfreq >= 500 && dfreq <= 4999)                         // If 500 - 4,999       x 0.10 MHz...
-      dfreq *= 100;                                                 // -> Khz
-    else if (dfreq >= 50 && dfreq <= 499)                           // If 50 - 499          MHz...
-      dfreq *= 1000;                                                // -> Khz
-    return ((int) dfreq);
+    if (dfreq >= 50000 && dfreq <= 499999)    // If 50,000 - 499,999  KHz...
+      dfreq *= 1;                             // -> Khz
+    else if (dfreq >= 5000 && dfreq <= 49999) // If 5,000 - 49,999    x 0.01 MHz...
+      dfreq *= 10;                            // -> Khz
+    else if (dfreq >= 500 && dfreq <= 4999)   // If 500 - 4,999       x 0.10 MHz...
+      dfreq *= 100;                           // -> Khz
+    else if (dfreq >= 50 && dfreq <= 499)     // If 50 - 499          MHz...
+      dfreq *= 1000;                          // -> Khz
+    return (int) dfreq;
   }
 
   public static int tnru_band_new_freq_get(String freq, int int_tuner_freq) {
-    int ifreq = 106900;
+    int ifreq;
     if (freq.equalsIgnoreCase("down"))
       ifreq = com_uti.band_freq_updn_get(int_tuner_freq, false);
     else if (freq.equalsIgnoreCase("up"))
       ifreq = com_uti.band_freq_updn_get(int_tuner_freq, true);
     else
       ifreq = com_uti.tnru_khz_get(freq);
-    return (ifreq);
+    return ifreq;
   }
 
   public static int tnru_freq_fix(int freq) {
-
     // w/ Odd:  107900-108099 -> 107900     = Add 100, Divide by 200, then multiply by 200, then subtract 100
     // w/ Even: 108000-108199 -> 108000     = Divide by 200, then multiply by 200  (freq_inc)
     // w/ Odd:   87500- 87699 ->  87500     = Add 100, Divide by 200, then multiply by 200, then subtract 100
     // w/ Even:  87600- 87799 ->  87600     = Divide by 200, then multiply by 200  (freq_inc)
-
-    //log ("lo: " + com_uti.band_freq_lo + "  hi: " + com_uti.band_freq_hi + "  inc: " + com_uti.band_freq_inc + "  odd: " + com_uti.band_freq_odd);
 
     if (com_uti.band_freq_odd != 0) {
       freq += com_uti.band_freq_inc / 2;    // 87700
@@ -1049,7 +1021,7 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
       freq *= com_uti.band_freq_inc;
       //log ("EU ALL freq: "  + freq);
     }
-    return (freq);
+    return freq;
   }
 
   public static int tnru_freq_enforce(int freq) {
@@ -1057,108 +1029,8 @@ http://www.netmite.com/android/mydroid/frameworks/base/include/utils/threads.h
       freq = com_uti.band_freq_hi;
     if (freq > com_uti.band_freq_hi)
       freq = com_uti.band_freq_lo;
-    freq = com_uti.tnru_freq_fix(freq);
-    return (freq);
+    return com_uti.tnru_freq_fix(freq);
   }
-
-
-  public static String tnru_rds_picl_get(String band, int pi) {             // Get North American callsign string for Program ID
-    String ret = "";
-
-    if (band.equalsIgnoreCase("US"))                                   // If North America...
-      ret = na_pi_parse(pi);                                              // Parse/convert PI to callsign
-    else if (pi != 0)
-      ret = com_uti.hex_get((short) pi);                                 // Return hex PI
-
-    com_uti.logd("band: " + band + "  pi: " + pi + "  ret: " + ret);
-    return (ret);
-  }
-
-  // Convert Program ID to North American call-sign string, if possible.
-  // Example: 0x54A6 -> KZZY
-  private static String na_pi_parse(int pi) {
-    String call_sign = "";                                              // CALL LETTERS THAT MAP TO PI CODES = _ _ 0 0.
-
-    if ((pi >> 8) == 0xAF) {                                           // If PI = 0xAFrs
-      pi = ((pi & 0xFF) << 8);                                          //    PI = 0xrs00
-    }
-    // Run the second exception. NOTE: For 9 special cases 1000,2000,..,9000 a double mapping occurs utilizing exceptions 1 and 2:
-    //     1000->A100->AFA1;2000->A200->AFA2; ... ;
-    //     8000->A800->AFA8;9000->A900->AFA9
-    if ((pi >> 12) == 0xA) {                                           // If PI = 0xAqrs
-      pi = ((pi & 0xF00) << 4) + (pi & 0xFF);                           //    PI = 0xq0rs
-    }
-    if ((pi >= 0x1000) && (pi <= 0x994E)) { //&& (pi != 0x163e) && (pi != 0x15d6) ) {   // If PI = 0x1000 (4096) - 0x944E (37966)  !!! (Exceptions) and not 0x163e (88.5) or 0x15d6 (89.9)
-      String cs_start_char;
-      // KAAA - KZZZ
-      if ((pi >= 0x1000) && (pi <= 0x54A7)) {
-        pi -= 0x1000;
-        cs_start_char = "K";
-      } else { /* WAAA - WZZZ*/
-        pi -= 0x54A8;
-        cs_start_char = "W";
-      }
-      int CharDiv = pi / 26;                                            // 26^3 = 17576 = 0x44a8
-      int CharPos = pi - (CharDiv * 26);
-      char c3 = (char) ('A' + CharPos);
-
-      pi = CharDiv;
-      CharDiv = pi / 26;
-      CharPos = pi - (CharDiv * 26);
-      char c2 = (char) ('A' + CharPos);
-
-      pi = CharDiv;
-      CharDiv = pi / 26;
-      CharPos = pi - (CharDiv * 26);
-      char c1 = (char) ('A' + CharPos);
-      call_sign = cs_start_char + c1 + c2 + c3;
-    } else if ((pi >= 0x9950) && (pi <= 0x9EFF)) {   // 3-LETTER-ONLY CALL LETTERS
-      call_sign = letter3_call_sign_get(pi);
-    } else {//NATIONALLY-LINKED RADIO STATIONS CARRYING DIFFERENT CALL LETTERS
-      call_sign = other_call_sign_get(pi);
-    }
-    return (call_sign);
-  }
-
-  private static String other_call_sign_get(int pi) {
-    //String cs = "";
-    int pi_nat_reg = pi & 0xf0ff;                                       // Isolate National/Regional
-
-    if (pi == 0 || pi == -1)                                            // If invalid PI...
-      return ("");                                                      // Done w/ empty string
-
-    if (pi_nat_reg == 0xb001)                                           // If NPR 0xb*01...
-      return ("NPR");
-
-//    if (fm_apln.canada_get () == 0) {                                   // If not a Canadian applicable band...
-//      return (null);                                                    // Done w/ no callsign
-//    }
-
-    //logd ("region / other_call_sign_get testing canada/ottawa pi");
-
-    if (pi_nat_reg == 0xb002)                                           // If CBC Radio 1 (English)...
-      return ("CBC R1");
-    else if (pi_nat_reg == 0xb004)
-      return ("CBC R1a");
-    else if (pi_nat_reg == 0xb003)                                      // If CBC Radio 2 (French)...
-      return ("CBC R2");
-    else if (pi_nat_reg == 0xb005)
-      return ("CBC R2a");
-
-    //else if (pi== 0xb102)
-    //  return ("CBC R1a");                                             // Ott 91.5
-    //else if (pi== 0xB103)
-    //  return ("CBC R2a");                                             // Ott 103.3 CBOQ
-
-    if (pi >= 0xC000 && pi <= 0xCFFF) {
-      return (to_canadian_call(pi));
-    }
-    //else
-    //  cs = null;
-    //return (cs);
-    return (null);
-  }
-
 
 /*
 // 97.9 CHIN    = 51755
@@ -1220,377 +1092,5 @@ B_01 - B_FF, D_01 - D_FF, E_01 - E_FF
 assigned for national networks in US, Canada, and Mexico. Regionalization allowed. NRSC to provide assignments for all three countries.
 It should be noted that operation in this region is the same as it is for all RDS PI codes.
 */
-  private static String to_canadian_call(int pi) {
-    if (pi < 0xC000 || pi > 0xCFFF)
-      return ("cpi: " + pi);
-    pi -= 0xC000;                                                       // pi = 0x0000 - 0x0FFF
-    String retbuf = "C";
-    int G, H;
-    char i, j, k, tmp;
-    for (i = 0; i < 5; i++) {                                          // i = 0 - 4
-      for (j = 0; j < 26; j++) {                                       // j = 0 - 25
-        for (k = 0; k < 27; k++) {                                     // k = 0 - 26
-
-          G = i * 702 + j * 27 + k + 257;                               // Canada PI formula for Rev 2. Rev 1 used 676 instead of 702
-          H = (G - 257) / 255;  // -252-3=-2, 4-256=-1, 512-766=1, 767-1024=2, 1025-1280=3, 1277-  ???????????
-//     H =          G/255 - 257/255
-// G + H = pi = G +  G/255 - 257/255
-//            = 256*G/255 - 257/255
-//            = (256 * i * 702 + 256 * j * 27 + 256 * k + 256 * 257) - 257)/255
-
-// 255 * H = G - 257
-// G = 255 * H + 257
-
-
-          if (pi == G + H) {                                            // If PI match
-
-            if (i > 0)                                                  // If not first block, IE not CFxx...
-              i++;                                                     // Skip CGxx
-            tmp = (char) i;
-            tmp += 'F';
-            retbuf += tmp;                                              // F, H, I, J, K
-
-            tmp = (char) j;
-            tmp += 'A';
-            retbuf += tmp;                                              // A - Z
-
-            if (k == 0)
-              k -= 32;                                                  // 0 = " "
-            tmp = (char) k;
-            tmp += '@';
-            retbuf += tmp;
-
-            return (retbuf);
-          }
-
-        }
-      }
-    }
-    //return ("" + pi);
-    return ("ci: " + pi);
-  }
-
-
-  private static String letter3_call_sign_get(int pi) {  // 72 values out of 106 possible (slightly sparse): 0x9950 - 0x99b9
-    switch (pi) {
-      case 0x99A5:
-        return "KBW";
-      case 0x9992:
-        return "KOY";
-      case 0x9978:
-        return "WHO";
-      case 0x99A6:
-        return "KCY";
-      case 0x9993:
-        return "KPQ";
-      case 0x999C:
-        return "WHP";
-      case 0x9990:
-        return "KDB";
-      case 0x9964:
-        return "KQV";
-      case 0x999D:
-        return "WIL";
-      case 0x99A7:
-        return "KDF";
-      case 0x9994:
-        return "KSD";
-      case 0x997A:
-        return "WIP";
-      case 0x9950:
-        return "KEX";
-      case 0x9965:
-        return "KSL";
-      case 0x99B3:
-        return "WIS";
-      case 0x9951:
-        return "KFH";
-      case 0x9966:
-        return "KUJ";
-      case 0x997B:
-        return "WJR";
-      case 0x9952:
-        return "KFI";
-      case 0x9995:
-        return "KUT";
-      case 0x99B4:
-        return "WJW";
-      case 0x9953:
-        return "KGA";
-      case 0x9967:
-        return "KVI";
-      case 0x99B5:
-        return "WJZ";
-      case 0x9991:
-        return "KGB";
-      case 0x9968:
-        return "KWG";
-      case 0x997C:
-        return "WKY";
-      case 0x9954:
-        return "KGO";
-      case 0x9996:
-        return "KXL";
-      case 0x997D:
-        return "WLS";
-      case 0x9955:
-        return "KGU";
-      case 0x9997:
-        return "KXO";
-      case 0x997E:
-        return "WLW";
-      case 0x9956:
-        return "KGW";
-      case 0x996B:
-        return "KYW";
-      case 0x999E:
-        return "WMC";
-      case 0x9957:
-        return "KGY";
-      case 0x9999:
-        return "WBT";
-      case 0x999F:
-        return "WMT";
-      case 0x99AA:
-        return "KHQ";
-      case 0x996D:
-        return "WBZ";
-      case 0x9981:
-        return "WOC";
-      case 0x9958:
-        return "KID";
-      case 0x996E:
-        return "WDZ";
-      case 0x99A0:
-        return "WOI";
-      case 0x9959:
-        return "KIT";
-      case 0x996F:
-        return "WEW";
-      case 0x9983:
-        return "WOL";
-      case 0x995A:
-        return "KJR";
-      case 0x999A:
-        return "WGH";
-      case 0x9984:
-        return "WOR";
-      case 0x995B:
-        return "KLO";
-      case 0x9971:
-        return "WGL";
-      case 0x99A1:
-        return "WOW";
-      case 0x995C:
-        return "KLZ";
-      case 0x9972:
-        return "WGN";
-      case 0x99B9:
-        return "WRC";
-      case 0x995D:
-        return "KMA";
-      case 0x9973:
-        return "WGR";
-      case 0x99A2:
-        return "WRR";
-      case 0x995E:
-        return "KMJ";
-      case 0x999B:
-        return "WGY";
-      case 0x99A3:
-        return "WSB";
-      case 0x995F:
-        return "KNX";
-      case 0x9975:
-        return "WHA";
-      case 0x99A4:
-        return "WSM";
-      case 0x9960:
-        return "KOA";
-      case 0x9976:
-        return "WHB";
-      case 0x9988:
-        return "WWJ";
-      case 0x99AB:
-        return "KOB";
-      case 0x9977:
-        return "WHK";
-      case 0x9989:
-        return "WWL";
-    }
-    return "";
-  }
-
-
-  public static String tnru_rds_ptype_get(String band, int pt) {            // !! English only !!
-    String ret = "";
-    if (band.equalsIgnoreCase("US"))                                           // If outside North America...
-      ret = tuner_rbds_pt_str_get(pt);
-    else
-      ret = tuner_rds_pt_str_get(pt);
-    //com_uti.loge ("band: " + band + "  pt: " + pt + "  ret: " + ret);
-    return (ret);
-  }
-
-  private static String tuner_rbds_pt_str_get(int pt) {                // Get String for RBDS Program type Code (North America)
-    switch (pt) {
-      case 0:
-        return "";
-      case 1:
-        return "News";
-      case 2:
-        return "Info";//rmation";
-      case 3:
-        return "Sports";
-      case 4:
-        return "Talk";
-      case 5:
-        return "Rock";
-      case 6:
-        return "Class Rock";//"Classic Rock";
-      case 7:
-        return "Adult Hits";
-      case 8:
-        return "Soft Rock";
-      case 9:
-        return "Top 40";
-      case 10:
-        return "Country";
-      case 11:
-        return "Oldies";
-      case 12:
-        return "Soft";
-      case 13:
-        return "Nostalgia";
-      case 14:
-        return "Jazz";
-      case 15:
-        return "Classical";
-      case 16:
-        return "R & B";//"Rhythm and Blues";
-      case 17:
-        return "Soft R & B";//"Soft Rhythm and Blues";
-      case 18:
-        return "Foreign";// Language";
-      case 19:
-        return "";//"Religious Music";
-      case 20:
-        return "";//"Religious Talk";
-      case 21:
-        return "Personality";
-      case 22:
-        return "Public";
-      case 23:
-        return "College";
-
-//gap   24  !! Saw 24 in Montreal. Jazz ?
-//""
-//""
-//""
-//""    28
-      case 24:
-        return "Jazz ?";//"Jazz Music";
-      case 25:
-        return "Country";// Music";
-      case 26:
-        return "National";// Music";
-      case 27:
-        return "Oldies";// Music";
-      case 28:
-        return "Folk";// Music";
-
-      case 29:
-        return "Weather";
-      case 30:
-        return "Emerg Test";//"Emergency Test";
-      case 31:
-        return "Emergency";
-    }
-    if (pt == -1)
-      com_uti.logd("Unknown RBDS Program Type: " + pt);
-    else if (pt == -2)
-      com_uti.logd("Unknown RBDS Program Type: " + pt);
-    else
-      com_uti.loge("Unknown RBDS Program Type: " + pt);
-    //return ("Pt: " + pt);
-    return ("");
-  }
-
-  private static String tuner_rds_pt_str_get(int pt) {   // Get the Text String for the RDS Program type Code (Non-North America)
-    switch (pt) {
-      case 0:
-        return "";
-      case 1:
-        return "News";
-      case 2:
-        return "Cur Affairs";//"Current Affairs";
-      case 3:
-        return "Information";
-      case 4:
-        return "Sport";
-      case 5:
-        return "Education";
-      case 6:
-        return "Drama";
-      case 7:
-        return "Culture";
-      case 8:
-        return "Science";
-      case 9:
-        return "Varied";
-      case 10:
-        return "Pop";// Music";
-      case 11:
-        return "Rock";// Music";
-      case 12:
-        return "Easy Listen";//ing Music";
-      case 13:
-        return "Light Class";//ical";
-      case 14:
-        return "SeriousClass";//"Serious classical";
-      case 15:
-        return "Other";// Music";
-      case 16:
-        return "Weather";
-      case 17:
-        return "Finance";
-      case 18:
-        return "Children";//'s programs";
-      case 19:
-        return "Soc Affairs";//"Social Affairs";
-      case 20:
-        return "Religion";
-      case 21:
-        return "Phone In";
-      case 22:
-        return "Travel";
-      case 23:
-        return "Leisure";
-      case 24:
-        return "Jazz";// Music";
-      case 25:
-        return "Country";// Music";
-      case 26:
-        return "National";// Music";
-      case 27:
-        return "Oldies";// Music";
-      case 28:
-        return "Folk";// Music";
-      case 29:
-        return "Documentary";
-      case 30:
-        return "Emerg Test";//"Emergency Test";
-      case 31:
-        return "Emergency";
-    }
-    if (pt == -1)
-      com_uti.logd("Unknown RDS Program Type: " + pt);
-    else if (pt == -2)
-      com_uti.logd("Unknown RDS Program Type: " + pt);
-    else
-      com_uti.loge("Unknown RDS Program Type: " + pt);
-    //return ("Pt: " + pt);
-    return ("");
-  }
 
 }

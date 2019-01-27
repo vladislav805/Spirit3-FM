@@ -6,7 +6,10 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.media.*;
+import android.media.AudioFormat;
+import android.media.AudioManager;
+import android.media.AudioRecord;
+import android.media.AudioTrack;
 import android.os.Handler;
 import fm.a2d.sf.helper.AudioHelper;
 import fm.a2d.sf.helper.L;
@@ -176,11 +179,11 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
   }
 
   private void fetchSampleRate(Context c) {
-    if (!Utils.hasPref(c, C.AUDIO_SAMPLE_RATE)) {
+    if (!Utils.hasPref(c, C.PREFERENCE_AUDIO_SAMPLE_RATE)) {
       log("sample rate not filled; set to default");
-      Utils.setPrefInt(c, C.AUDIO_SAMPLE_RATE, 44100); // !! Fixed now !!
+      Utils.setPrefInt(c, C.PREFERENCE_AUDIO_SAMPLE_RATE, C.DEFAULT_SAMPLE_RATE); // !! Fixed now !!
     }
-    mSampleRate = Utils.getPrefInt(c, C.AUDIO_SAMPLE_RATE);
+    mSampleRate = Utils.getPrefInt(c, C.PREFERENCE_AUDIO_SAMPLE_RATE);
     log("Fetched sample rate = " + mSampleRate);
   }
 
@@ -204,7 +207,7 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 
   private void fetchHardwareBufferSize() {
     m_hw_size = AudioRecord.getMinBufferSize(mSampleRate, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
-    log("Fetched sample rate = " + m_hw_size);
+    log("Fetched hw_size = " + m_hw_size);
   }
 
   // Command handlers:
@@ -952,7 +955,7 @@ if (intent != null)
 
     //audio_routing_get();
 
-    com_uti.prefs_set(mContext, C.AUDIO_OUTPUT, new_audio_output);
+    Utils.setPrefString(mContext, C.AUDIO_OUTPUT, new_audio_output);
     mApi.audio_output = new_audio_output; // Set new audio output
 
     if (need_restart) {
@@ -1074,6 +1077,10 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
     return true;
   }
 
+  private int fetchPreferredAudioSource() {
+    return Utils.parseInt(Utils.getPrefString(mContext, C.PREFERENCE_AUDIO_SOURCE, "0")); // MediaRecorder.AudioSource.DEFAULT
+  }
+
   @SuppressWarnings("DanglingJavadoc")
   private AudioRecord audio_record_get() {
     /**
@@ -1087,25 +1094,24 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
      * VOICE_COMMUNICATION  пашет, микрофон говно, но очень чувствительный
      * REMOTE_SUBMIX        не пашет
      */
-    int src = MediaRecorder.AudioSource.DEFAULT;
+    int src = fetchPreferredAudioSource();
     //for (int cnt_src : m_srcs) { // For all sources...
       // Тут был src==11, который проверял файл /mnt/sdcard/sf/rec_src
 
-      short audioFormat = AudioFormat.ENCODING_PCM_16BIT;
-      short channelConfig = AudioFormat.CHANNEL_IN_STEREO; // AUDIO_CHANNEL_IN_FRONT_BACK?
-      int rate = 44100; // 44kHz
+    short audioFormat = AudioFormat.ENCODING_PCM_16BIT;
+    short channelConfig = AudioFormat.CHANNEL_IN_STEREO; // AUDIO_CHANNEL_IN_FRONT_BACK?
 
-      try {
-        int bufferSize = AudioRecord.getMinBufferSize(rate, channelConfig, audioFormat);
-        log("src=" + src + "; rate=" + rate + "; audioFormat: " + audioFormat + "; channelConfig: " + channelConfig + "; bufferSize: " + bufferSize);
-        AudioRecord recorder = new AudioRecord(src, rate, channelConfig, audioFormat, m_hw_size);
-        if (recorder.getState() == AudioRecord.STATE_INITIALIZED) { // If works, then done
-          mRecorderSource = src;
-          return recorder;
-        }
-      } catch (Exception e) {
-        log("audio_record_get: exception: " + e);
+    try {
+      int bufferSize = AudioRecord.getMinBufferSize(mSampleRate, channelConfig, audioFormat);
+      log("src=" + src + "; rate=" + mSampleRate + "; audioFormat: " + audioFormat + "; channelConfig: " + channelConfig + "; bufferSize: " + bufferSize);
+      AudioRecord recorder = new AudioRecord(src, mSampleRate, channelConfig, audioFormat, m_hw_size);
+      if (recorder.getState() == AudioRecord.STATE_INITIALIZED) { // If works, then done
+        mRecorderSource = src;
+        return recorder;
       }
+    } catch (Exception e) {
+      log("audio_record_get: exception: " + e);
+    }
 
     //}
     return null;

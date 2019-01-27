@@ -36,4 +36,24 @@
   <string name="toast_frequency_changed">Переключено на частоту %.1f МГц</string>
   <string name="toast_frequency_invalid">Некорректная частота</string>
   <string name="logcat_send_logs">Отправить логи</string>
+  <string name="frequency_invalid_format">Неправильный формат частоты</string>
+  <string name="pref_restart_title">Требуется перезапуск</string>
+  <string name="pref_restart_message">Вы изменили некоторые настройки, которые могут примениться только после полного перезапуска приложения. Перезапуститься сейчас?</string>
+  <string name="pref_restart_ok">Хорошо</string>
+  <string name="preference_about">О приложении</string>
+  <string name="preference_about_4pda">Тема на 4pda</string>
+  <string name="preference_about_authors">Авторы</string>
+  <string name="preference_about_github">Репозиторий на GitHub</string>
+  <string name="preference_about_github_summary">Open-source проект</string>
+  <string name="preference_about_version">Версия</string>
+  <string name="preference_application">Приложение</string>
+  <string name="preference_application_auto_start">Автостарт</string>
+  <string name="preference_application_auto_start_summary">Включать воспроизведение радио сразу после запуска приложения</string>
+  <string name="preference_title">Настройки</string>
+  <string name="preference_tuner">Тюнер</string>
+  <string name="preference_tuner_audio_source_title">Аудиовыход</string>
+  <string name="preference_tuner_sample_rate_holder">Обычно это 44100 или 48000</string>
+  <string name="preference_tuner_sample_rate_title">Sample rate (частота дискретизации)</string>
+  <string name="preference_tuner_stereo_summary">Стерео</string>
+  <string name="preference_tuner_stereo_title">Включение стерео звука на уровне железа</string>
 </resources>

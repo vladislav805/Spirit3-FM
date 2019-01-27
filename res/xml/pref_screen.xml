@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <PreferenceCategory
+      android:title="@string/preference_tuner">
+    <SwitchPreference
+        android:defaultValue="false"
+        android:key="tuner_most"
+        android:summary="@string/preference_tuner_stereo_title"
+        android:title="@string/preference_tuner_stereo_summary" />
+
+    <fm.a2d.sf.view.IntEditTextPreference
+        android:key="audio_sample_rate"
+        android:title="@string/preference_tuner_sample_rate_title"
+        android:defaultValue="44100"
+        android:dialogTitle="@string/preference_tuner_sample_rate_title"
+        android:dialogMessage="@string/preference_tuner_sample_rate_holder" />
+    <ListPreference
+        android:key="pref_audio_source"
+        android:title="@string/preference_tuner_audio_source_title"
+        android:defaultValue="0"
+        android:entries="@array/pref_audio_source_titles"
+        android:entryValues="@array/pref_audio_source_values" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      android:title="@string/preference_application">
+    <SwitchPreference
+        android:key="pref_auto_start"
+        android:defaultValue="true"
+        android:title="@string/preference_application_auto_start"
+        android:summary="@string/preference_application_auto_start_summary" />
+  </PreferenceCategory>
+
+  <PreferenceCategory
+      android:title="@string/preference_about">
+    <Preference
+        android:key="pref_version"
+        android:title="@string/preference_about_version"
+        android:persistent="false" />
+    <Preference
+        android:title="@string/preference_about_4pda">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/preference_about_4pda_link" />
+    </Preference>
+    <Preference
+        android:title="@string/preference_about_github"
+        android:summary="@string/preference_about_github_summary">
+      <intent
+          android:action="android.intent.action.VIEW"
+          android:data="@string/preference_about_github_link" />
+    </Preference>
+    <Preference
+        android:persistent="false"
+        android:title="@string/preference_about_authors"
+        android:summary="Mike Reid, Vladislav Veluga" />
+  </PreferenceCategory>
+
+  <PreferenceScreen
+      android:title="Debug menu">
+    <PreferenceCategory
+        android:title="Information">
+      <Preference
+          android:key="pref_debug_info"
+          android:persistent="false"
+          android:title="Device info" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Native">
+      <Preference
+          android:key="pref_start_native_service"
+          android:persistent="false"
+          android:title="Force start native process"
+          android:summary="# /data/data/fm.a2d/sf/lib/libs2d.so &amp;" />
+
+      <Preference
+          android:key="pref_kill_native_service"
+          android:persistent="false"
+          android:title="Force kill native process"
+          android:summary="# killall libs2d.so" />
+    </PreferenceCategory>
+
+    <PreferenceCategory
+        android:title="Force commands for service">
+      <Preference
+          android:key="pref_force_tuner_state"
+          android:persistent="false"
+          android:title="tuner_state" />
+      <Preference
+          android:key="pref_force_audio_state"
+          android:persistent="false"
+          android:title="audio_state" />
+    </PreferenceCategory>
+
+  </PreferenceScreen>
+</PreferenceScreen>

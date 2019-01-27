@@ -23,129 +23,74 @@ public class ServiceTuner {
   private int last_poll_rssi = -1;
   private String last_poll_most = "-1";
 
+  private static void log(String s) {
+    L.w(L.T.SERVICE_TUNER, s);
+  }
+
   // Context & Tuner API callback constructor
   public ServiceTuner(Context c, MainService cb_tnr, com_api svc_com_api) {
-    com_uti.logd ("constructor context: " + c + "  cb_tnr: " + cb_tnr);
+    log("context=" + c + "; cb_tnr=" + cb_tnr);
     mTuner = cb_tnr;
     mApi = svc_com_api;
   }
 
-
-  // Tuner API:
-
-  public String getTunerValue(String key) {
-    if (key == null)
-      return ("");
-
-    else if (key.equalsIgnoreCase ("test"))
-      return (com_uti.s2d_get (key));
-
-    else if (key.equalsIgnoreCase(C.TUNER_STATE))
-      return mApi.tuner_state;
-
-    else if (mApi.isTunerStarted())
-      return com_uti.s2d_get(key);
-
-        // Else if not on, use cached info:
-    else if (key.equalsIgnoreCase (C.TUNER_BAND))
-      return mApi.tuner_band;
-    else if (key.equalsIgnoreCase (C.TUNER_FREQUENCY))
-      return String.valueOf(mApi.int_tuner_freq);
-    else if (key.equalsIgnoreCase ("tuner_stereo"))
-      return (mApi.tuner_stereo);
-    else if (key.equalsIgnoreCase ("tuner_thresh"))
-      return (mApi.tuner_thresh);
-    else if (key.equals(C.TUNER_SCAN_STATE))
-      return mApi.tuner_scan_state;
-
-    /*else if (key.equalsIgnoreCase ("tuner_rds_state"))
-      return (mApi.tuner_rds_state);
-    else if (key.equalsIgnoreCase ("tuner_rds_af_state"))
-      return (mApi.tuner_rds_af_state);
-    else if (key.equalsIgnoreCase ("tuner_rds_ta_state"))
-      return (mApi.tuner_rds_ta_state);*/
-
-    else if (key.equalsIgnoreCase ("tuner_extra_cmd"))
-      return (mApi.tuner_extra_cmd);
-    else if (key.equalsIgnoreCase ("tuner_extra_resp"))
-      return (mApi.tuner_extra_resp);
-
-    else if (key.equalsIgnoreCase ("tuner_rssi"))
-      return String.valueOf(mApi.tuner_rssi);
-    else if (key.equalsIgnoreCase ("tuner_qual"))
-      return (mApi.tuner_qual);
-    else if (key.equalsIgnoreCase ("tuner_most"))
-      return (mApi.tuner_most);
-
-    /*else if (key.equalsIgnoreCase ("tuner_rds_pi"))
-      return (mApi.tuner_rds_pi);
-    else if (key.equalsIgnoreCase ("tuner_rds_picl"))
-      return (mApi.tuner_rds_picl);
-    else if (key.equalsIgnoreCase ("tuner_rds_pt"))
-      return (mApi.tuner_rds_pt);
-    else if (key.equalsIgnoreCase ("tuner_rds_ptyn"))
-      return (mApi.tuner_rds_ptyn);
-    else if (key.equalsIgnoreCase ("tuner_rds_ps"))
-      return (mApi.tuner_rds_ps);
-    else if (key.equalsIgnoreCase ("tuner_rds_rt"))
-      return (mApi.tuner_rds_rt);
-
-    else if (key.equalsIgnoreCase ("tuner_rds_af"))
-      return (mApi.tuner_rds_af);
-    else if (key.equalsIgnoreCase ("tuner_rds_ms"))
-      return (mApi.tuner_rds_ms);
-    else if (key.equalsIgnoreCase ("tuner_rds_ct"))
-      return (mApi.tuner_rds_ct);
-    else if (key.equalsIgnoreCase ("tuner_rds_tmc"))
-      return (mApi.tuner_rds_tmc);
-    else if (key.equalsIgnoreCase ("tuner_rds_tp"))
-      return (mApi.tuner_rds_tp);
-    else if (key.equalsIgnoreCase ("tuner_rds_ta"))
-      return (mApi.tuner_rds_ta);
-    else if (key.equalsIgnoreCase ("tuner_rds_taf"))
-      return (mApi.tuner_rds_taf);*/
-
-    else
-      return ("0");  //return ("");
-
+  /**
+   * Возврашает текущую частоту.
+   * Если включен тюнер - делаетя запрос к тюнеру, иначе
+   * воозвращается последнее кэшированное значение
+   * @return KHz
+   */
+  public int getCurrentFrequency() {
+    if (mApi.isTunerStarted()) {
+      mApi.int_tuner_freq = Utils.parseInt(com_uti.s2d_get(C.TUNER_FREQUENCY));
+    }
+    return mApi.int_tuner_freq;
   }
 
+  /**
+   * Все команды для тюнера, в native-часть
+   * @param key команда
+   * @param val значение
+   */
   public void setTunerValue(String key, String val) {
     if (key == null) {
       return;
     }
 
-    L.w(L.T.SERVICE_TUNER, "setTunerValue(" + key + ", " + val + "); isTunerStart = " + mApi.isTunerStarted());
+    log("setTunerValue(" + key + ", " + val + "); isTunerStart = " + mApi.isTunerStarted());
 
-    if (key.equals(C.TUNER_STATE)) { // If tuner_state...
-      setTunerState(val);
-    } else if (key.equals(C.RADIO_NOP)) {// If radio_nop...
-      com_uti.s2d_set(key, val);
+    switch (key) {
+      case C.TUNER_STATE:
+        setTunerState(val);
+        break;
+
+      case C.RADIO_NOP:
+        com_uti.s2d_set(C.RADIO_NOP, "start");
+        break;
     }
 
-    //else if (key.equalsIgnoreCase (C.TUNER_BAND))
-    //  return (tuner_band_set (val));
-
-    else if (mApi.isTunerStarted()) { // If tuner_state = Start...
+    if (mApi.isTunerStarted()) {
       com_uti.s2d_set(key, val);
-    } else if (key.equalsIgnoreCase(C.TUNER_FREQUENCY)) {
-      mApi.int_tuner_freq = Utils.parseInt(val);
-    } else if (key.equalsIgnoreCase ("tuner_stereo")) {
-      mApi.tuner_stereo = val;
-    } else if (key.equalsIgnoreCase ("tuner_thresh")) {
-      mApi.tuner_thresh = val;
-    } else if (key.equals(C.TUNER_SCAN_STATE)) {
-      mApi.tuner_scan_state = val;
-    } else if (key.equalsIgnoreCase ("tuner_rds_state")) {
-      mApi.tuner_rds_state = val;
-    } else if (key.equalsIgnoreCase ("tuner_rds_af_state")) {
-      mApi.tuner_rds_af_state = val;
-    } else if (key.equalsIgnoreCase ("tuner_rds_ta_state")) {
-      mApi.tuner_rds_ta_state = val;
-    } else if (key.equalsIgnoreCase ("tuner_extra_cmd")) {
-      mApi.tuner_extra_cmd = val;
+      return;
     }
 
+    switch (key) {
+      case C.TUNER_FREQUENCY:
+        mApi.int_tuner_freq = Utils.parseInt(val);
+        break;
+
+      case "tuner_stereo":
+        mApi.tuner_stereo = val;
+        break;
+
+      case "tuner_thresh":
+        mApi.tuner_thresh = val;
+        break;
+
+      case C.TUNER_SCAN_STATE:
+        mApi.tuner_scan_state = val;
+        break;
+    }
   }
 
 /* Test Freq codes:
@@ -176,42 +121,61 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
   }
 
   @SuppressLint("SdCardPath")
-  private String setTunerState(String state) {
-    L.w(L.T.SERVICE_TUNER, "setTunerState(" + state + ") with tuner_state=" + mApi.tuner_state);
+  private void setTunerState(String state) {
+    log("setTunerState(" + state + ") with tuner_state=" + mApi.tuner_state);
 
-    if (state.equals(C.TUNER_STATE_START)) {
-      if (!isTunerStarted() && !isTunerStarting()) { // If not already started or starting
-        mApi.tuner_state = C.TUNER_STATE_STARTING; // !! Already set
+    switch (state) {
+      case C.TUNER_STATE_START:
+        if (!isTunerStarted() && !isTunerStarting()) { // If not already started or starting
+          start();
+        }
+        break;
 
-        int ret = com_uti.sys_run("killall libs2d.so 1>/dev/null 2>/dev/null ; /data/data/fm.a2d.sf/lib/libs2d.so " + com_uti.device + "  1>/dev/null 2>/dev/null", true);
-
-        com_uti.logd("daemon kill/start ret: " + ret);
-
-        com_uti.ms_sleep(200); // !!!! MUST have delay here
-        com_uti.loge("800 ms delay starting..., fix later");
-        //com_uti.ms_sleep(400); // Extra stock HTC One M7 ?
-        //                ^ was 600
-
-        mApi.tuner_state = com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_START); // State = Start
-        com_uti.logd("start tuner_state: " + mApi.tuner_state);
-        pollStart(); // Start polling for changes
-      }
-    } else if (state.equals(C.TUNER_STATE_STOP)) {
-      if (!isTunerStopped()) {
-        pollStop(); // Stop polling for changes
-        mApi.tuner_state = C.TUNER_STATE_STOPPING;
-
-        com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
-        com_uti.ms_sleep(100); // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
-        //                ^ was 500
-
-        mApi.tuner_state = C.TUNER_STATE_STOP;
-      }
+      case C.TUNER_STATE_STOP:
+        if (!isTunerStopped()) {
+          stop();
+        }
+        break;
     }
 
     mTuner.cb_tuner_key(C.TUNER_STATE, mApi.tuner_state);
+  }
 
-    return mApi.tuner_state;
+  private void start() {
+    mApi.tuner_state = C.TUNER_STATE_STARTING; // !! Already set
+
+    int ret = com_uti.sys_run("killall libs2d.so 1>/dev/null 2>/dev/null ; /data/data/fm.a2d.sf/lib/libs2d.so " + com_uti.device + " 1>/dev/null 2>/dev/null", true);
+
+    log("daemon (kill) and start; result = " + ret);
+
+    com_uti.ms_sleep(200); // !!!! MUST have delay here
+    log("800 ms delay starting..., fix later");
+
+    mApi.tuner_state = com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_START); // State = Start
+    log("start tuner_state: " + mApi.tuner_state);
+    pollStart(); // Start polling for changes
+  }
+
+  private void stop() {
+    pollStop(); // Stop polling for changes
+    mApi.tuner_state = C.TUNER_STATE_STOPPING;
+
+    com_uti.s2d_set(C.TUNER_STATE, C.TUNER_STATE_STOP);
+    com_uti.ms_sleep(400);
+    //                ^ was 500
+    // Wait 500 ms for s2d daemon to stop, before killing (which may kill network socket or tuner access)
+
+
+
+    mApi.tuner_state = C.TUNER_STATE_STOP;
+  }
+
+  public int killNative() {
+    int ret = com_uti.sys_run("killall libs2d.so 1>/dev/null 2>/dev/null", true);
+
+    log("killing native server; ret = " + ret);
+
+    return ret;
   }
 
   private void pollStart() {
@@ -243,61 +207,33 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       }
 
       // Frequency:
-      String tempFrequencyStr = com_uti.s2d_get(C.TUNER_FREQUENCY);
-
-      int tempFrequencyInt = Utils.parseInt(tempFrequencyStr);
-
-      if (tempFrequencyInt >= 65000) {
-        mApi.int_tuner_freq = tempFrequencyInt;
-
-        if (last_poll_freq != mApi.int_tuner_freq) {
-          last_poll_freq = mApi.int_tuner_freq;
-          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, tempFrequencyStr); // Inform change
-        }
-      }
+      int tuner_freq = Utils.parseInt(com_uti.s2d_get(C.TUNER_FREQUENCY));
 
       // RSSI:
       mApi.tuner_rssi = Utils.parseInt(com_uti.s2d_get("tuner_rssi"));
+
+      // MOST:
+      mApi.tuner_most = com_uti.s2d_get("tuner_most");
+
+      if (tuner_freq >= 65000) {
+        mApi.int_tuner_freq = tuner_freq;
+
+        if (last_poll_freq != mApi.int_tuner_freq) {
+          last_poll_freq = mApi.int_tuner_freq;
+          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, String.valueOf(tuner_freq)); // Inform change
+        }
+      }
+
+
       if (last_poll_rssi != mApi.tuner_rssi) {
         last_poll_rssi = mApi.tuner_rssi;
         mTuner.cb_tuner_key("tuner_rssi", String.valueOf(mApi.tuner_rssi)); // Inform change
       }
 
-      // MOST:
-      mApi.tuner_most = com_uti.s2d_get("tuner_most");
+
       if (!last_poll_most.equals(mApi.tuner_most)) {
         mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most); // Inform change
       }
-
-      // RDS ps:
-      /*mApi.tuner_rds_ps = com_uti.s2d_get("tuner_rds_ps");
-      if (!last_poll_rds_ps.equals(mApi.tuner_rds_ps))
-        mTuner.cb_tuner_key("tuner_rds_ps", last_poll_rds_ps = mApi.tuner_rds_ps); // Inform change
-
-      // RDS rt:
-      mApi.tuner_rds_rt = com_uti.s2d_get("tuner_rds_rt                                                                    ").trim();    // !!!! Must have ~ 64 characters due to s2d design.
-      if (!last_poll_rds_rt.equals(mApi.tuner_rds_rt))
-        mTuner.cb_tuner_key("tuner_rds_rt", last_poll_rds_rt = mApi.tuner_rds_rt); // Inform change
-
-      // RDS pi:
-      mApi.tuner_rds_pi = com_uti.s2d_get("tuner_rds_pi");
-      int rds_pi = com_uti.int_get(mApi.tuner_rds_pi);
-      if (last_poll_rds_pi != rds_pi) {
-        last_poll_rds_pi = rds_pi;
-        mApi.tuner_rds_picl = com_uti.tnru_rds_picl_get(mApi.tuner_band, rds_pi);
-        mTuner.cb_tuner_key("tuner_rds_pi", mApi.tuner_rds_pi);                    // Inform change
-      }
-
-      // RDS pt:
-      mApi.tuner_rds_pt = com_uti.s2d_get("tuner_rds_pt");
-      int rds_pt = com_uti.int_get(mApi.tuner_rds_pt);
-      if (last_poll_rds_pt != rds_pt) {
-        last_poll_rds_pt = rds_pt;
-        mApi.tuner_rds_pt = mApi.tuner_rds_ptyn = com_uti.tnru_rds_ptype_get(mApi.tuner_band, rds_pt);
-        mTuner.cb_tuner_key("tuner_rds_pt", mApi.tuner_rds_pt);                    // Inform change
-      }*/
     }
   }
-
 }
-

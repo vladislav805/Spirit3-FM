@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Handler;
 import android.os.Looper;
 import android.widget.Toast;
+import fm.a2d.sf.helper.L;
 import fm.a2d.sf.helper.Utils;
 
 import java.io.BufferedOutputStream;
@@ -18,7 +19,6 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 public class RadioRecorder {
-  private static String mDirectory;
   private int mChannels;
   private com_api mApi;
   private boolean mNeedFinish = false;
@@ -32,7 +32,8 @@ public class RadioRecorder {
   private int mSampleRate = 44100;
 
   private int mRecordDataSize = 0;
-  private byte[] mRecordBufferData = new byte[1048576];
+  private final int RECORD_BUFFER_SIZE = 1048576;
+  private byte[] mRecordBufferData = new byte[RECORD_BUFFER_SIZE];
   private int mRecordBufferHead = 0;
   private int mRecordBufferTail = 0;
 
@@ -41,17 +42,20 @@ public class RadioRecorder {
 
   private long mStartTime;
 
+  private static void log(String s) {
+    L.w(L.T.RECORDER, s);
+  }
+
   private final Runnable mRecordWriteRunnable = new Runnable() {
 
     public void run() {
-      com_uti.logd("mRecordWriteRunnable run()");
+      log("mRecordWriteRunnable run()");
       int cur_buf_tail;
+
       if (mRecordBufferData == null) {
-        mRecordBufferData = new byte[1048576];
+        mRecordBufferData = new byte[RECORD_BUFFER_SIZE];
       }
-      if (mRecordBufferData == null) {
-        mRecordWriteThreadActive = false;
-      }
+
       while (mRecordWriteThreadActive) {
         try {
           cur_buf_tail = mRecordBufferTail;
@@ -59,17 +63,15 @@ public class RadioRecorder {
           if (cur_buf_tail == mRecordBufferHead) {
             Thread.sleep(1000);
           } else {
-            if (cur_buf_tail > mRecordBufferHead) {
-              len = cur_buf_tail - mRecordBufferHead;
-            } else if (cur_buf_tail < mRecordBufferHead) {
-              len = 1048576 - mRecordBufferHead;
-            }
+            len = cur_buf_tail > mRecordBufferHead
+                  ? cur_buf_tail - mRecordBufferHead
+                : RECORD_BUFFER_SIZE - mRecordBufferHead;
             if (len == 0) {
-              com_uti.logd("len = 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + 1048576);
+              log("len = 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + RECORD_BUFFER_SIZE);
             } else if (len < 0) {
-              com_uti.loge("len < 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + 1048576);
+              log("len < 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + RECORD_BUFFER_SIZE);
             } else {
-              com_uti.logd("len > 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + 1048576);
+              log("len > 0 mRecordWriteRunnable run() len: " + len + "  mRecordBufferHead: " + mRecordBufferHead + "  cur_buf_tail: " + cur_buf_tail + "  rec_buf_size: " + RECORD_BUFFER_SIZE);
               if (mRandomAccessFile == null) {
                 mRandomAccessFile = new RandomAccessFile(mRecordFile, "rw");
               }
@@ -77,22 +79,22 @@ public class RadioRecorder {
                 mBufferOutStream.write(mRecordBufferData, mRecordBufferHead, len);
                 mRecordDataSize += len;
               }
-              com_uti.logd("Wrote len: " + len + "  to mRecordBufferHead: " + mRecordBufferHead);
+              log("Wrote " + len + " bytes to record buffer head: " + mRecordBufferHead);
               mRecordBufferHead += len;
-              if (mRecordBufferHead < 0 || mRecordBufferHead >= 1048576) {
+              if (mRecordBufferHead < 0 || mRecordBufferHead >= RECORD_BUFFER_SIZE) {
                 mRecordBufferHead = 0;
               }
-              com_uti.logd("new mRecordBufferHead: " + mRecordBufferHead);
+              log("new mRecordBufferHead: " + mRecordBufferHead);
             }
           }
         } catch (InterruptedException e) {
-          com_uti.logd("mRecordWriteRunnable run() throwable InterruptedException");
+          log("mRecordWriteRunnable run() throwable InterruptedException");
         } catch (Throwable e2) {
-          com_uti.loge("mRecordWriteRunnable run() throwable: " + e2);
+          log("mRecordWriteRunnable run() throwable: " + e2);
           e2.printStackTrace();
         }
       }
-      com_uti.logd("mRecordWriteRunnable run() done");
+      log("mRecordWriteRunnable run() done");
       if (mNeedFinish) {
         mNeedFinish = false;
         audio_record_finish();
@@ -102,13 +104,94 @@ public class RadioRecorder {
 
   private WeakReference<Context> mWContext;
 
-  @SuppressWarnings("WeakerAccess")
   public RadioRecorder(Context context, int sampleRate, int channels, com_api api) {
-    com_uti.logd("constructor context: " + context + "  sampleRate: " + sampleRate + "  channels: " + channels + "  api: " + api);
     mSampleRate = sampleRate;
     mChannels = channels;
     mApi = api;
     mWContext = new WeakReference<>(context);
+  }
+
+  public boolean start() {
+    if (!mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
+      return false;
+    }
+
+    log("Staring recording...");
+
+    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
+    sdf.setTimeZone(TimeZone.getDefault());
+    String directory = "/Music/FM" + File.separator + sdf.format(new Date());
+
+    mRecordFile = null;
+
+    mStartTime = System.currentTimeMillis();
+
+    File recordDirectory = new File(com_uti.getExternalStorageDirectory().getPath() + directory);
+
+    if (!(recordDirectory.exists() || recordDirectory.mkdirs())) {
+      log("start(): Directory " + recordDirectory + " mkdir fails");
+    }
+
+    if (!recordDirectory.canWrite()) {
+      recordDirectory = com_uti.getExternalStorageDirectory();
+    }
+    if (!recordDirectory.canWrite()) {
+      log("start(): cannot write");
+      return false;
+    }
+
+    String filename = getFilename();
+    try {
+      mRecordFile = new File(recordDirectory, filename);
+      log("start(): trying create in dir " + recordDirectory + " file " + filename);
+
+      //noinspection ResultOfMethodCallIgnored
+      mRecordFile.createNewFile();
+
+      mFileOutStream = new FileOutputStream(mRecordFile, true);
+      mBufferOutStream = new BufferedOutputStream(mFileOutStream, 131072);
+
+      mRecordDataSize = 0;
+
+      if (!writeWavHeader()) {
+        audio_record_finish();
+        return false;
+      }
+
+      if (!mRecordWriteThreadActive) {
+        mRecordThread = new Thread(mRecordWriteRunnable, "rec_write");
+        log("record thread: " + mRecordThread);
+
+        if (mRecordThread == null) {
+          log("record thread == null; finishing...");
+          audio_record_finish();
+          return false;
+        }
+
+        mRecordWriteThreadActive = true;
+
+        try {
+          if (mRecordThread.getState() == State.NEW || mRecordThread.getState() == State.TERMINATED) {
+            mRecordThread.start();
+          }
+        } catch (Throwable e) {
+          log("on start thread exception occurred: " + e);
+          log("finishing...");
+          e.printStackTrace();
+          audio_record_finish();
+          mApi.audio_record_state = C.RECORD_STATE_STOP;
+          return false;
+        }
+      }
+
+      mApi.audio_record_state = C.RECORD_STATE_START;
+      mNeedFinish = true;
+      return true;
+    } catch (Throwable e1) {
+      log("start(): unable to create file: " + e1);
+      e1.printStackTrace();
+      return false;
+    }
   }
 
   public void write(byte[] buffer, int length) {
@@ -116,11 +199,12 @@ public class RadioRecorder {
       return;
     }
 
-    if (mRecordDataSize < 0 && (mRecordDataSize + length) + 36 > -4) {
-      com_uti.loge("!!! Max mRecordDataSize: " + mRecordDataSize + "  length: " + length);
+    if (mRecordDataSize < 0 && mRecordDataSize + length + 36 > -4) {
+      log("write(): !!! Max mRecordDataSize: " + mRecordDataSize + "; length: " + length);
       mApi.audio_record_state = C.RECORD_STATE_STOP;
       mNeedFinish = true;
     }
+
     if (!mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
       writeBuffer(buffer, length);
     }
@@ -128,7 +212,7 @@ public class RadioRecorder {
 
   public void setState(String state) {
     if (state.equals(C.RECORD_STATE_TOGGLE)) {
-      if (mApi.audio_record_state.equalsIgnoreCase(C.RECORD_STATE_STOP)) {
+      if (mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
         state = C.RECORD_STATE_START;
       } else {
         state = C.RECORD_STATE_STOP;
@@ -157,7 +241,7 @@ public class RadioRecorder {
         mFileOutStream = null;
       }
     } catch (Throwable e) {
-      com_uti.loge("throwable: " + e);
+      log("throwable: " + e);
       e.printStackTrace();
     }
     mRandomAccessFile = null;
@@ -166,7 +250,7 @@ public class RadioRecorder {
   public void stop() {
     boolean active = mRecordWriteThreadActive;
     final int size = mRecordDataSize;
-    com_uti.logd("audio_record_state: " + mApi.audio_record_state);
+    log("stop(): record_state=" + mApi.audio_record_state);
     mRecordWriteThreadActive = false;
     if (mRecordThread != null) {
       mRecordThread.interrupt();
@@ -189,125 +273,44 @@ public class RadioRecorder {
     }
   }
 
-  public boolean start() {
-    if (!mApi.audio_record_state.equals(C.RECORD_STATE_STOP)) {
-      return false;
-    }
-    SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
-    sdf.setTimeZone(TimeZone.getDefault());
-    mDirectory = "/Music/FM" + File.separator + sdf.format(new Date());
-
-    mRecordFile = null;
-
-    mStartTime = System.currentTimeMillis();
-
-    File recordDirectory = new File(com_uti.getExternalStorageDirectory().getPath() + mDirectory);
-
-    if (!(recordDirectory.exists() || recordDirectory.mkdirs())) {
-      com_uti.loge("record_start Directory " + recordDirectory + " creation error");
-    }
-
-    if (!recordDirectory.canWrite()) {
-      recordDirectory = com_uti.getExternalStorageDirectory();
-    }
-    if (!recordDirectory.canWrite()) {
-      com_uti.logd("cannot write");
-      return false;
-    }
-
-    String filename = getFilename();
-    try {
-      mRecordFile = new File(recordDirectory, filename);
-      com_uti.logd("CREATE; dir = " + recordDirectory + "; filename = " + filename);
-      //noinspection ResultOfMethodCallIgnored
-      mRecordFile.createNewFile();
-      try {
-        mFileOutStream = new FileOutputStream(mRecordFile, true);
-        mBufferOutStream = new BufferedOutputStream(mFileOutStream, 131072);
-
-        mRecordDataSize = 0;
-
-        if (!writeWavHeader()) {
-          audio_record_finish();
-          return false;
-        }
-
-        if (!mRecordWriteThreadActive) {
-          mRecordThread = new Thread(mRecordWriteRunnable, "rec_write");
-          com_uti.logd("mRecordThread: " + mRecordThread);
-
-          if (mRecordThread == null) {
-            com_uti.loge("mRecordThread == null");
-            audio_record_finish();
-            return false;
-          }
-
-          mRecordWriteThreadActive = true;
-
-          try {
-            if (mRecordThread.getState() == State.NEW || mRecordThread.getState() == State.TERMINATED) {
-              mRecordThread.start();
-            }
-          } catch (Throwable e) {
-            com_uti.loge("Throwable: " + e);
-            e.printStackTrace();
-            audio_record_finish();
-            mApi.audio_record_state = C.RECORD_STATE_STOP;
-            return false;
-          }
-        }
-        mApi.audio_record_state = C.RECORD_STATE_START;
-        mNeedFinish = true;
-        return true;
-
-
-      } catch (Throwable e2) {
-        e2.printStackTrace();
-        return false;
-      }
-    } catch (Throwable e22) {
-      com_uti.loge("record_start unable to create file: " + e22);
-      e22.printStackTrace();
-      return false;
-    }
-
-  }
-
   private void writeBuffer(byte[] buffer, int length) {
-    int have1_len = 0;
-    int have2_len = 0;
+    int have1_len;
+    int have2_len;
     int cur_buf_head = mRecordBufferHead;
 
     if (mRecordBufferData == null || buffer == null || length <= 0 || buffer.length < length) {
       //noinspection ImplicitArrayToString
-      com_uti.loge("!!! start length: " + length + "  buffer: " + buffer + "  mRecordBufferData: " + mRecordBufferData);
+      log("writeBuffer(): !!! length=" + length + "; buffer=" + buffer + "; mRecordBufferData=" + mRecordBufferData);
       return;
     }
 
-    if (cur_buf_head < 0 || cur_buf_head > 1048576) {
-      com_uti.loge("!!!  cur_buf_head: " + cur_buf_head);
+    if (cur_buf_head < 0 || cur_buf_head > RECORD_BUFFER_SIZE) {
+      log("!!!  cur_buf_head: " + cur_buf_head);
       cur_buf_head = 0;
       mRecordBufferHead = 0;
     }
-    if (mRecordBufferTail < 0 || mRecordBufferTail > 1048576) {
-      com_uti.loge("!!!  mRecordBufferTail: " + mRecordBufferTail);
+
+    if (mRecordBufferTail < 0 || mRecordBufferTail > RECORD_BUFFER_SIZE) {
+      log("!!!  mRecordBufferTail: " + mRecordBufferTail);
       mRecordBufferTail = 0;
     }
+
     if (mRecordBufferTail == cur_buf_head) {
       have1_len = 0;
       have2_len = 0;
     } else if (mRecordBufferTail > cur_buf_head) {
       have1_len = mRecordBufferTail - cur_buf_head;
       have2_len = 0;
-    } else if (mRecordBufferTail < cur_buf_head) {
-      have1_len = 1048576 - cur_buf_head;
+    } else {
+      have1_len = RECORD_BUFFER_SIZE - cur_buf_head;
       have2_len = mRecordBufferTail;
     }
 
     if (have1_len < 0) {
-      com_uti.loge("!!! Negative have length: " + length + "  have1_len: " + have1_len + "  have2_len: " + have2_len + "  cur_buf_head: " + cur_buf_head + "  mRecordBufferTail: " + mRecordBufferTail + "  rec_buf_size: " + 1048576);
-    } else if (have1_len + have2_len + length >= 1048576) {
-      com_uti.loge("!!! Attempt to exceed record buf length: " + length + "  have1_len: " + have1_len + "  have2_len: " + have2_len + "  cur_buf_head: " + cur_buf_head + "  mRecordBufferTail: " + mRecordBufferTail + "  rec_buf_size: " + 1048576);
+      log("writeBuffer(): !!! Negative have length: " + length + "  have1_len: " + have1_len + "  have2_len: " + have2_len + "  cur_buf_head: " + cur_buf_head + "  mRecordBufferTail: " + mRecordBufferTail + "  rec_buf_size: " + RECORD_BUFFER_SIZE);
+    } else if (have1_len + have2_len + length >= RECORD_BUFFER_SIZE) {
+      com_uti.loge("!!! Attempt to exceed record buf length: " + length + "  have1_len: " + have1_len + "  have2_len: " + have2_len + "  cur_buf_head: " + cur_buf_head + "  mRecordBufferTail: " + mRecordBufferTail + "  rec_buf_size: " + RECORD_BUFFER_SIZE);
+
       if (mRecordThread != null) {
         mRecordThread.interrupt();
       }
@@ -315,34 +318,38 @@ public class RadioRecorder {
       int writ1_len;
       int writ2_len;
 
-      if (mRecordBufferTail + length <= 1048576) {
+      if (mRecordBufferTail + length <= RECORD_BUFFER_SIZE) {
         writ1_len = length;
         writ2_len = 0;
       } else {
-        writ1_len = 1048576 - mRecordBufferTail;
+        writ1_len = RECORD_BUFFER_SIZE - mRecordBufferTail;
         writ2_len = length - writ1_len;
       }
 
       if (writ1_len > 0) {
         System.arraycopy(buffer, 0, mRecordBufferData, mRecordBufferTail, writ1_len);
 
-        com_uti.logd("Wrote writ1_len: " + writ1_len + "  to mRecordBufferTail: " + mRecordBufferTail);
+        log("Wrote writ1_len: " + writ1_len + "  to mRecordBufferTail: " + mRecordBufferTail);
 
         mRecordBufferTail += writ1_len;
-        if (mRecordBufferTail >= 1048576 || mRecordBufferTail < 0) {
+        if (mRecordBufferTail >= RECORD_BUFFER_SIZE || mRecordBufferTail < 0) {
           mRecordBufferTail = 0;
         }
-        com_uti.logd("new mRecordBufferTail: " + mRecordBufferTail);
+
+        log("new mRecordBufferTail: " + mRecordBufferTail);
         if (writ2_len > 0) {
           System.arraycopy(buffer, writ1_len, mRecordBufferData, 0, writ2_len);
           mRecordBufferTail = writ2_len;
-          com_uti.logd("Wrote writ2_len: " + writ2_len + "  to mRecordBufferTail 0 / BEGIN  new mRecordBufferTail: " + mRecordBufferTail);
+
+          log("Wrote writ2_len: " + writ2_len + "  to mRecordBufferTail 0 / BEGIN  new mRecordBufferTail: " + mRecordBufferTail);
         }
       }
-      if (mRecordBufferTail >= 1048576 || mRecordBufferTail < 0) {
+
+      if (mRecordBufferTail >= RECORD_BUFFER_SIZE || mRecordBufferTail < 0) {
         mRecordBufferTail = 0;
       }
-      com_uti.logd("final new mRecordBufferTail: " + mRecordBufferTail);
+
+      log("final new mRecordBufferTail: " + mRecordBufferTail);
     }
   }
 
@@ -363,7 +370,7 @@ public class RadioRecorder {
 
   private boolean writeWavHeader() {
     byte[] header = com_uti.stringToByteArray("RIFF....WAVEfmt sc1safncsamrbytrbabsdatasc2s");
-    com_uti.logd("wavHeader.length: " + header.length);
+    log("wavHeader.length: " + header.length);
     writeBytes(header, 4, 4, mRecordDataSize + 36);
     writeBytes(header, 16, 4, 16);
     writeBytes(header, 20, 2, 1);
@@ -373,6 +380,7 @@ public class RadioRecorder {
     writeBytes(header, 32, 2, mChannels * 2);
     writeBytes(header, 34, 2, 16);
     writeBytes(header, 40, 4, mRecordDataSize);
+
     try {
       mBufferOutStream.write(header);
       return true;
@@ -407,7 +415,7 @@ public class RadioRecorder {
     Date now = new Date();
     SimpleDateFormat sdf = new SimpleDateFormat("HHmmss", Locale.getDefault());
     sdf.setTimeZone(TimeZone.getDefault());
-    return String.format(Locale.ENGLISH, "FM-%04d-%s.wav", mApi.getIntFrequencyKHz() / 100, sdf.format(now)).replace(" ", "0");
+    return String.format(Locale.ENGLISH, "FM-%s-%04d.wav", sdf.format(now), mApi.getIntFrequencyKHz() / 100).replace(" ", "0");
   }
 
   public int getCurrentDuration() {

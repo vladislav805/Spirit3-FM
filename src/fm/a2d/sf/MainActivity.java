@@ -1,6 +1,8 @@
 package fm.a2d.sf;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -8,14 +10,15 @@ import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.TextView;
 import fm.a2d.sf.helper.L;
-
-// GUI Activity:
 
 public class MainActivity extends Activity {
 
-  public static com_api m_com_api = null;
+  private com_api mApi = null;
   private static BroadcastReceiver mBroadcastListener = null;
+
+  private Dialog mIntroDialog = null;
 
   private gui_gui m_gui = null;
   private Context mContext = null;
@@ -37,8 +40,8 @@ public class MainActivity extends Activity {
     // Must be done from an Activity
     setVolumeControlStream(AudioManager.STREAM_MUSIC);
 
-    if (m_com_api == null) {
-      m_com_api = new com_api(mContext);
+    if (mApi == null) {
+      mApi = new com_api(mContext);
     }
 
     gui_start();
@@ -73,7 +76,7 @@ public class MainActivity extends Activity {
   private void gui_start() {
     try {
       log("gui_start");
-      m_gui = new gui_gui(mContext, m_com_api); // Instantiate UI
+      m_gui = new gui_gui(mContext, mApi); // Instantiate UI
       if (!m_gui.setState("start")) { // Start UI. If error...
         log("gui_start error");
         m_gui = null;
@@ -103,38 +106,40 @@ public class MainActivity extends Activity {
 
 
   private void initBroadcastListener() {
-    if (mBroadcastListener == null) {
-      log("Initializing broadcast listener...");
-      mBroadcastListener = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-          String action = intent.getAction();
+    if (mBroadcastListener != null) {
+      return;
+    }
 
-          if (action == null || !action.equalsIgnoreCase("fm.a2d.sf.result.get")) {
-            return;
-          }
+    log("Initializing broadcast listener...");
+    mBroadcastListener = new BroadcastReceiver() {
+      @Override
+      public void onReceive(Context context, Intent intent) {
+        String action = intent.getAction();
 
-          if (m_com_api != null && m_gui != null) {
-            m_com_api.radio_update(intent);
-            m_gui.onReceivedUpdates(intent);
-          }
+        if (action == null || !action.equalsIgnoreCase(MainService.ACTION_GET)) {
+          return;
         }
-      };
 
-      IntentFilter intFilter = new IntentFilter();
-      intFilter.addAction("fm.a2d.sf.result.get"); // Can add more actions if needed
-      intFilter.addCategory(Intent.CATEGORY_DEFAULT);
-
-      Intent lastStateIntent = null;
-      if (mContext != null) {
-        // No permission, no handler scheduler thread.
-        lastStateIntent = mContext.registerReceiver(mBroadcastListener, intFilter, null, null);
-        log("Broadcast registered");
+        if (mApi != null && m_gui != null) {
+          mApi.radio_update(intent);
+          m_gui.onReceivedUpdates(intent);
+        }
       }
+    };
 
-      if (lastStateIntent != null) {
-        log("Last broadcast: " + lastStateIntent);
-      }
+    IntentFilter intFilter = new IntentFilter();
+    intFilter.addAction(MainService.ACTION_GET); // Can add more actions if needed
+    intFilter.addCategory(Intent.CATEGORY_DEFAULT);
+
+    Intent lastStateIntent = null;
+    if (mContext != null) {
+      // No permission, no handler scheduler thread.
+      lastStateIntent = mContext.registerReceiver(mBroadcastListener, intFilter, null, null);
+      log("Broadcast registered");
+    }
+
+    if (lastStateIntent != null) {
+      log("Last broadcast: " + lastStateIntent);
     }
   }
 
@@ -153,4 +158,55 @@ public class MainActivity extends Activity {
     m_gui.onClickView(v);
   }
 
+  /**
+   * Открытие интро
+   */
+  public void openDialogIntro() {
+    log("intro dialog");
+    View root = getLayoutInflater().inflate(R.layout.dialog_startup, null);
+    ((TextView) root.findViewById(R.id.dialog_startup_build)).setText(mContext.getString(R.string.dialog_startup_build, C.BUILD));
+
+    hideIntroDialog();
+
+    AlertDialog.Builder dialog = new AlertDialog.Builder(mContext)
+        .setView(root)
+        /*.setNeutralButton("Debug", new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialog, int which) {
+            startActivity(new Intent(mContext, LogCatActivity.class));
+          }
+        })*/
+        .setCancelable(false);
+
+    mIntroDialog = dialog.create();
+    mIntroDialog.show();
+  }
+
+  private void openDialogRestartTuner() {
+    AlertDialog.Builder ab = new AlertDialog.Builder(this);
+    ab.setTitle(R.string.pref_restart_title)
+        .setMessage(R.string.pref_restart_message)
+        .setPositiveButton(R.string.pref_restart_ok, null)
+        .setCancelable(false);
+
+    mIntroDialog = ab.create();
+    mIntroDialog.show();
+  }
+
+  public void hideIntroDialog() {
+    if (mIntroDialog != null) {
+      mIntroDialog.dismiss();
+      mIntroDialog = null;
+    }
+  }
+
+
+  @Override
+  protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    if (requestCode == 0 && resultCode == RESULT_OK) {
+      openDialogRestartTuner();
+    }
+
+    super.onActivityResult(requestCode, resultCode, data);
+  }
 }

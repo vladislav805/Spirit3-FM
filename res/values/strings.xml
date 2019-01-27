@@ -42,5 +42,32 @@
   <string name="pref_write_logs_toast">In the next run Spirit 3 will write logs</string>
   <string name="pref_write_logs_started">Logging started</string>
   <string name="logcat_send_logs">Send logs</string>
+  <string name="preference_summary_version" translatable="false">v%1$s (build %2$d)</string>
+  <string name="frequency_invalid_format">Invalid format of frequency</string>
+  <string name="pref_restart_title">Need restart</string>
+  <string name="pref_restart_message">You\'ve modified preferences, that need restart tuner. Please, turn off tuner and turn on it again.</string>
+  <string name="pref_restart_ok">OK</string>
+  <string name="pref_restart_no">No, later</string>
+  <string name="pref_restarting">Now the application will restart ITSELF. Nothing to do manually.</string>
+  <string name="preference_title">Preferences</string>
+  <string name="preference_tuner">Tuner</string>
+  <string name="preference_tuner_stereo_title">Tuner stereo</string>
+  <string name="preference_tuner_stereo_summary">Stereo</string>
+  <string name="preference_tuner_sample_rate_title">Sample rate</string>
+  <string name="preference_tuner_sample_rate_holder">Usual values 44100 and 48000</string>
+  <string name="preference_tuner_audio_source_title">Audio source</string>
+  <string name="preference_application">Application</string>
+  <string name="preference_application_auto_start">Auto start</string>
+  <string name="preference_application_auto_start_summary">Immediately start radio service after app started</string>
+  <string name="preference_about">About</string>
+  <string name="preference_about_version">Version</string>
+  <string name="preference_about_4pda">4pda topic</string>
+  <string name="preference_about_authors">Authors</string>
+  <string name="preference_about_4pda_link"
+      translatable="false">https://4pda.ru/forum/index.php?showtopic=543819</string>
+  <string name="preference_about_github">GitHub repository</string>
+  <string name="preference_about_github_summary">Modification are open source project</string>
+  <string name="preference_about_github_link"
+      translatable="false">https://github.com/vladislav805/Spirit3-FM</string>
 
 </resources>

@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <string-array name="pref_audio_source_titles">
+    <item>0 - DEFAULT (by default)</item>
+    <item>1 - MIC</item>
+    <item>2 - VOICE_UPLINK</item>
+    <item>3 - VOICE_DOWNLINK</item>
+    <item>4 - VOICE_CALL</item>
+    <item>5 - CAMCORDER</item>
+    <item>6 - VOICE_RECOGNITION</item>
+    <item>7 - VOICE_COMMUNICATION</item>
+    <item>8 - REMOTE_SUBMIX</item>
+  </string-array>
+  <string-array name="pref_audio_source_values">
+    <item>0</item>
+    <item>1</item>
+    <item>2</item>
+    <item>3</item>
+    <item>4</item>
+    <item>5</item>
+    <item>6</item>
+    <item>7</item>
+    <item>8</item>
+  </string-array>
+</resources>

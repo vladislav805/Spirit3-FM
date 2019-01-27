@@ -88,11 +88,16 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     pendingRecord = com_api.createPendingIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
     pendingPrev = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
     pendingNext = com_api.createPendingIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
+
+    //IntentFilter intentFilter = new IntentFilter(MainService.ACTION_SET);
+    //mContext.registerReceiver(mReceiver, intentFilter);
   }
 
   @Override
   public void onDestroy() {
     notif_state_set(false);
+    //mContext.unregisterReceiver(mReceiver);
+
     super.onDestroy();
   }
 
@@ -113,6 +118,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
       }
 
       String action = intent.getAction();
+
       if (action == null) {
         log("action == null");
         return START_STICKY;
@@ -124,6 +130,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
       }
 
       Bundle extras = intent.getExtras();
+
       log("extras: " + extras);
       if (extras == null) {
         return START_STICKY;
@@ -131,16 +138,23 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
       String val;
 
-      val = extras.getString(C.NOTIFICATION_TYPE, "");
-      if (!val.isEmpty()) {
-        showNotificationAndStartForeground(false);
+      if (extras.containsKey(C.EVENT_PRESET_UPDATED)) {
+        log("Request for reload presets data in API");
+        if (mApi != null) {
+          mApi.loadPresets();
+        }
+        return START_STICKY;
+      }
+
+      if (extras.getString(C.TUNER_KILL, null) != null) {
+        mTunerAPI.killNative();
         return START_STICKY;
       }
 
       // Tuner:
-      val = extras.getString(C.TUNER_STATE, "");
-      if (!val.isEmpty()) {
-        tuner_state_set(val);
+      val = extras.getString(C.TUNER_STATE, null);
+      if (val != null) {
+        setTunerState(val);
       }
 
       // tuner_scan_state
@@ -196,6 +210,12 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         com_uti.prefs_set(mContext, "audio_stereo", val);
       }
 
+      val = extras.getString(C.TUNER_RESTART, null);
+      if (val != null) {
+        setTunerState(C.TUNER_STATE_STOP);
+
+      }
+
       sendRadioStatus(); // Return results
     } catch (Throwable e) {
       e.printStackTrace();
@@ -212,50 +232,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   }
 
 
-  private void putTunerExtra(Intent intent) {
-    intent.putExtra(C.TUNER_STATE, mApi.tuner_state);//mTunerAPI.getTunerValue(C.TUNER_STATE));
-    intent.putExtra(C.TUNER_BAND, mApi.tuner_band);
-
-    String freq_khz = mTunerAPI.getTunerValue(C.TUNER_FREQUENCY);
-
-    int ifreq = com_uti.int_get(freq_khz);
-    if (ifreq >= 50000 && ifreq < 500000) {
-      mApi.int_tuner_freq = ifreq;
-    }
-    log("putTunerExtra: api.int_tuner_freq: " + mApi.getIntFrequencyKHz());
-    intent.putExtra(C.TUNER_FREQUENCY, mApi.getIntFrequencyKHz());
-
-    //intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
-    //intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
-    //intent.putExtra ("tuner_scan_state",   mTunerAPI.getTunerValue ("tuner_scan_state"));
-
-    //intent.putExtra ("tuner_rds_state",    mTunerAPI.getTunerValue ("tuner_rds_state"));
-    //intent.putExtra ("tuner_rds_af_state", mTunerAPI.getTunerValue ("tuner_rds_af_state"));
-    //intent.putExtra ("tuner_rds_ta_state", mTunerAPI.getTunerValue ("tuner_rds_ta_state"));
-
-    //intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
-    //intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
-
-    intent.putExtra("tuner_rssi",         String.valueOf(mApi.getRssi())); //mTunerAPI.getTunerValue ("tuner_rssi"));
-    //intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
-    intent.putExtra("tuner_most",         "stereo");      //mTunerAPI.getTunerValue ("tuner_most"));
-
-    intent.putExtra("tuner_rds_pi",       mApi.tuner_rds_pi);    //mTunerAPI.getTunerValue ("tuner_rds_pi"));
-    intent.putExtra("tuner_rds_picl",     mApi.tuner_rds_picl);  //mTunerAPI.getTunerValue ("tuner_rds_picl"));
-    //intent.putExtra ("tuner_rds_pt",       mApi.tuner_rds_pt);  //mTunerAPI.getTunerValue ("tuner_rds_pt"));
-    intent.putExtra("tuner_rds_ptyn",     mApi.tuner_rds_ptyn);  //mTunerAPI.getTunerValue ("tuner_rds_ptyn"));
-    intent.putExtra("tuner_rds_ps",       mApi.tuner_rds_ps);    //mTunerAPI.getTunerValue ("tuner_rds_ps"));
-    intent.putExtra("tuner_rds_rt",       mApi.tuner_rds_rt);    //mTunerAPI.getTunerValue ("tuner_rds_rt"));
-
-    //intent.putExtra ("tuner_rds_af",       mTunerAPI.getTunerValue ("tuner_rds_af"));
-    //intent.putExtra ("tuner_rds_ms",       mTunerAPI.getTunerValue ("tuner_rds_ms"));
-    //intent.putExtra ("tuner_rds_ct",       mTunerAPI.getTunerValue ("tuner_rds_ct"));
-    //intent.putExtra ("tuner_rds_tmc",      mTunerAPI.getTunerValue ("tuner_rds_tmc"));
-    //intent.putExtra ("tuner_rds_tp",       mTunerAPI.getTunerValue ("tuner_rds_tp"));
-    //intent.putExtra ("tuner_rds_ta",       mTunerAPI.getTunerValue ("tuner_rds_ta"));
-    //intent.putExtra ("tuner_rds_taf",      mTunerAPI.getTunerValue ("tuner_rds_taf"));
-  }
-
   private Intent sendRadioStatus() { // Send all radio state & status info
 
     mAudioAPI.audio_sessid_get(); // Better to update here ?
@@ -263,10 +239,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     log("sendRadioStatus: audio_state: " + mApi.audio_state + "; audio_output: " + mApi.audio_output + "; audio_stereo: " + mApi.audio_stereo + "; audio_record_state: " + mApi.audio_record_state);
 
     Intent intent = new Intent(ACTION_GET);
-
-    intent.putExtra("radio_phase", mApi.radio_phase);
-    intent.putExtra("radio_cdown", mApi.radio_cdown);
-    intent.putExtra("radio_error", mApi.radio_error);
 
     intent.putExtra(C.AUDIO_STATE, mApi.audio_state);
     intent.putExtra(C.AUDIO_OUTPUT, mApi.audio_output);
@@ -277,7 +249,26 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     if (mTunerAPI == null) {
       intent.putExtra(C.TUNER_STATE, C.TUNER_STATE_STOP);
     } else {
-      putTunerExtra(intent);
+      intent.putExtra(C.TUNER_STATE, mApi.tuner_state);
+      intent.putExtra(C.TUNER_BAND, mApi.tuner_band);
+
+      int kHz = mTunerAPI.getCurrentFrequency();
+
+      if (kHz >= 50000 && kHz < 500000) {
+        mApi.int_tuner_freq = kHz;
+      }
+
+      intent.putExtra(C.TUNER_FREQUENCY, mApi.getIntFrequencyKHz());
+
+      //intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
+      //intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
+      //intent.putExtra ("tuner_scan_state",   mTunerAPI.getTunerValue ("tuner_scan_state"));
+      //intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
+      //intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
+
+      intent.putExtra("tuner_rssi", mApi.getRssi());
+      //intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
+      intent.putExtra("tuner_most",         "stereo");      //mTunerAPI.getTunerValue ("tuner_most"));
     }
     try {
       mContext.sendBroadcast(intent); // Send Broadcast with all info
@@ -287,32 +278,12 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     return intent;
   }
 
-    // Phase/Countdown/Error stuff:
-
-  private void phase_cdown_set(String phase, int cdown) {
-    log("phase_cdown_set / phase=" + phase + "; cdown=" + cdown);
-    mApi.radio_phase = phase;
-    mApi.radio_cdown = "" + cdown;
-    //sendRadioStatus (); // Update widgets, apps, etc. (displays_update too intense ?)
-  }
-
-  private void phase_error_set(String phase, String error) {
-    log("phase_error_set / phase=" + phase + "; error=" + error);
-    mApi.radio_phase = phase;
-    mApi.radio_error = error;
-    mApi.radio_cdown = "0";
-    //sendRadioStatus (); // Update widgets, apps, etc. (displays_update too intense ?)
-  }
-
   // AUDIO:
   private String audio_state_set(String state) { // Called only by onStartCommand()
     log("audio_state_set(" + state + ")");
 
     if (state.equals(C.AUDIO_STATE_TOGGLE)) { // TOGGLE:
-      if (mApi.audio_state.equals(C.AUDIO_STATE_START))
-        state = C.AUDIO_STATE_PAUSE;
-      else
-        state = C.AUDIO_STATE_START;
+      state = mApi.audio_state.equals(C.AUDIO_STATE_START) ? C.AUDIO_STATE_PAUSE :  C.AUDIO_STATE_START;
       log("audio_state_set(" + state + ") <= after replace toggle");
     }
 
@@ -320,14 +291,14 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     if (state.equals(C.AUDIO_STATE_START)) { // If Audio Start...
       log("set audio_state=start");
       if (!mApi.audio_state.equals(C.AUDIO_STATE_START)) { // If audio not started (Could be stopped or paused)
-        String stereo = com_uti.prefs_get(mContext, "audio_stereo", "stereo"); // FIXME
+        String stereo = Utils.getPrefString(mContext, "audio_stereo", "stereo");
         mAudioAPI.audio_stereo_set(stereo); // Set audio stereo from prefs, before audio is started
 
         if (mApi.isTunerStarted()) { // If tuner started
           mAudioAPI.audio_state_set(C.AUDIO_STATE_START); // Set Audio State synchronously
         } else { // Else if tuner not started
           mApi.audio_state = C.AUDIO_STATE_STARTING; // Signal tuner state callback that audio needs to be started
-          tuner_state_set(C.TUNER_STATE_START); // Start tuner first, audio will start later via callback
+          setTunerState(C.TUNER_STATE_START); // Start tuner first, audio will start later via callback
         }
       }
     } else { // Else for Audio Stop or Pause...
@@ -363,33 +334,47 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
 
   // TUNER:
-  private String tuner_state_set(String state) { // Called only by onStartCommand(), (maybe onDestroy in future)
-    log("tuner_state_set(" + state + ")");
+  private void setTunerState(String state) { // Called only by onStartCommand(), (maybe onDestroy in future)
+    log("setTunerState(" + state + ")");
 
     if (state.equals(C.TUNER_STATE_TOGGLE)) {
       state = mApi.isTunerStarted() ? C.TUNER_STATE_STOP : C.TUNER_STATE_START;
-      log("tuner_state_set(" + state + ") <== after resolve toggle");
+      log("setTunerState(" + state + ") <== after resolve toggle");
     }
 
     switch (state.toLowerCase()) {
       case C.TUNER_STATE_START:
         // One shot Poll timer for file creates, SU commands, Bluedroid Init, then start tuner
         mIntervalTunerStateTimer = new Timer("t_api start", true);
-        mIntervalTunerStateTimer.schedule(new IntervalTunerStateHandler(), 10); // Once after 0.01 seconds.
-        return mApi.tuner_state;
+        mIntervalTunerStateTimer.schedule(new InitFiles(), 10); // Once after 0.01 seconds.
+        return;
 
       case C.TUNER_STATE_STOP:
         mAudioAPI.audio_state_set(C.AUDIO_STATE_STOP); // Set Audio State  synchronously to Stop
         mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_STOP); // Set Tuner State asynchronously to Stop
-        return mApi.tuner_state; // Return new tuner state
     }
 
     // Else if not stop...
-    return state;
+  }
+
+  private class InitFiles extends TimerTask {
+
+    public void run () {
+      log("TimerTask: Starting Tuner...");
+
+      mTunerAPI.setTunerValue(C.RADIO_NOP, C.TUNER_STATE_START); // 1st packet always fails, so this is a NOP
+      mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_START); // This starts the daemon
+
+      if (mIntervalTunerStateTimer != null) {
+        mIntervalTunerStateTimer.cancel(); // Stop one shot poll timer
+      }
+
+      log("TimerTask: tuner done");
+    }
   }
 
 
-    // Callback: tuner_state_chngd & tuner_state_set in TunerAPIInterface/tnr_afm calls cb_tuner_state indirectly w/ Stop, Starting, Pause
+    // Callback: tuner_state_chngd & setTunerState in TunerAPIInterface/tnr_afm calls cb_tuner_state indirectly w/ Stop, Starting, Pause
   private void cb_tuner_state(String tuner_state) {
     log("cb_tuner_state(" + tuner_state + ")");
     if (tuner_state.equalsIgnoreCase ("starting") || tuner_state.equalsIgnoreCase("start")) {  // If tuner = Start or Starting...
@@ -409,32 +394,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     }
   }
 
-  private class IntervalTunerStateHandler extends TimerTask {
 
-    public void run () {
-      int ret;
-
-      phase_cdown_set("Files Init", 5);
-      ret = files_init(); // /data/data/fm.a2d.sf/files/: busybox, ssd, s.wav, b1.bin, b2.bin
-      if (ret != 0) {
-        log("files_init IGNORE Errors: " + ret);
-        //phase_error_set ("Files Init", "File Errors: " + ret);
-        //return;
-      }
-
-      log("TimerTask: Starting Tuner...");
-      phase_cdown_set("Tuner Start", 20);
-
-      mTunerAPI.setTunerValue(C.RADIO_NOP, C.TUNER_STATE_START); // 1st packet always fails, so this is a NOP
-      mTunerAPI.setTunerValue(C.TUNER_STATE, C.TUNER_STATE_START); // This starts the daemon
-
-      if (mIntervalTunerStateTimer != null) {
-        mIntervalTunerStateTimer.cancel(); // Stop one shot poll timer
-      }
-
-      log("TimerTask: tuner done");
-    }
-  }
 
 
   // Other non state machine tuner stuff:
@@ -453,7 +413,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
     //tuner_rds_af_state_set(com_uti.prefs_get (mContext, "tuner_rds_af_state", "stop")); // !! Always rewrites pref
 
-    int freq = com_uti.prefs_get(mContext, C.TUNER_FREQUENCY, 87500);
+    int freq = Utils.getPrefInt(mContext, C.TUNER_FREQUENCY, 87500);
     tuner_freq_set(String.valueOf(freq)); // Set initial frequency
   }
 
@@ -501,14 +461,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         cb_tuner_rssi (val);
       else if (key.equalsIgnoreCase ("tuner_qual"))
         cb_tuner_qual (val);
-      else if (key.equalsIgnoreCase ("tuner_rds_pi"))
-        cb_tuner_rds_pi (val);
-      else if (key.equalsIgnoreCase ("tuner_rds_pt"))
-        cb_tuner_rds_pt (val);
-      else if (key.equalsIgnoreCase ("tuner_rds_ps"))
-        cb_tuner_rds_ps (val);
-      else if (key.equalsIgnoreCase ("tuner_rds_rt"))
-        cb_tuner_rds_rt (val);
     }
   }
 
@@ -522,19 +474,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     mApi.tuner_rssi = 0;     // ro ... ... Values:   RSSI: 0 - 1000
     mApi.tuner_qual = "";     // ro ... ... Values:   SN 99, SN 30
     //mApi.tuner_most = "";   // ro ... ... Values:   mono, stereo, 1, 2, blend, ... ?      1.5 ?
-    mApi.tuner_rds_pi = "";   // ro ... ... Values:   0 - 65535
-    mApi.tuner_rds_picl = ""; // ro ... ... Values:   North American Call Letters or Hex PI for tuner_rds_pi
-    mApi.tuner_rds_pt = "";   // ro ... ... Values:   0 - 31
-    mApi.tuner_rds_ptyn = ""; // ro ... ... Values:   Describes tuner_rds_pt (English !)
-    mApi.tuner_rds_ps = "";   // ro ... ... Values:   RBDS 8 char info or RDS Station
-    mApi.tuner_rds_rt = "";   // ro ... ... Values:   64 char
-    mApi.tuner_rds_af = "";   // ro ... ... Values:   Space separated array of AF frequencies
-    mApi.tuner_rds_ms = "";   // ro ... ... Values:   0 - 65535   M/S Music/Speech switch code
-    mApi.tuner_rds_ct = "";   // ro ... ... Values:   14 char CT Clock Time & Date
-    mApi.tuner_rds_tmc = "";  // ro ... ... Values:   Space separated array of shorts
-    mApi.tuner_rds_tp = "";   // ro ... ... Values:   0 - 65535   TP Traffic Program Identification code
-    mApi.tuner_rds_ta = "";   // ro ... ... Values:   0 - 65535   TA Traffic Announcement code
-    mApi.tuner_rds_taf = "";  // ro ... ... Values:   0 - 2^32-1  TAF TA Frequency
 
     int new_freq = com_uti.tnru_freq_fix(25 + com_uti.tnru_khz_get(freq));
     //mApi.tuner_freq = com_uti.tnru_mhz_get (new_freq);
@@ -542,7 +481,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
     displays_update();
 
-    com_uti.prefs_set(mContext, C.TUNER_FREQUENCY, new_freq);
+    Utils.setPrefInt(mContext, C.TUNER_FREQUENCY, new_freq);
   }
   private void cb_tuner_rssi(String rssi) {
     displays_update ();
@@ -550,65 +489,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
   // Qual:
   private void cb_tuner_qual(String qual) {}
-
-  // RDS:
-  private void cb_tuner_rds_pi (String pi) {
-    displays_update ();
-  }
-  private void cb_tuner_rds_pt (String pt) {
-    displays_update ();
-  }
-  private void cb_tuner_rds_ps (String ps) {
-    displays_update ();
-  }
-  private void cb_tuner_rds_rt (String rt) {
-    displays_update ();
-  }
-
-
-  // Hardware / API dependent part of MainService:
-  private int files_init() {
-    log("files_init: starting...");
-
-    //String bsb_full_filename = com_uti.file_create (mContext, R.raw.busybox,  "busybox",       true);
-    //    String ssd_full_filename = "";
-    //if (com_uti.ssd_via_sys_run)
-    //      ssd_full_filename = com_uti.file_create (mContext, R.raw.ssd,           "ssd",           true);
-    //String wav_full_filename = com_uti.file_create (mContext, R.raw.s_wav,    "s.wav",         false);             // Not executable
-
-
-    String filename = com_uti.file_create (mContext, R.raw.spirit_sh,  "99-spirit.sh");
-//    String bb1_full_filename = com_uti.file_create (mContext, R.raw.b1_bin,     "b1.bin",        false);             // Not executable
-//    String bb2_full_filename = com_uti.file_create (mContext, R.raw.b2_bin,     "b2.bin",        false);             // Not executable
-
-        // Check:
-    int ret = 0;
-        //if (! com_uti.access_get (bsb_full_filename, false, false, true)) { // rwX
-        //  log("error unexecutable busybox utility");
-        //  ret ++;
-        //}
-        //      if (/*com_uti.ssd_via_sys_run &&*/ ! com_uti.access_get (ssd_full_filename, false, false, true)) { // rwX
-        //        log("error unexecutable ssd utility");                  // !!!! Get this sometimes, so must ignore errors.
-        //        ret ++;
-        //      }
-
-      if (!com_uti.access_get(filename, false, false, true)) { // rwX
-        log("error unexecutable addon.d script 99-spirit.sh");
-        ret ++;
-      }
-/*
-      if (! com_uti.access_get (bb1_full_filename, true, false, false)) { // Rwx
-        log("error inaccessible bb1 file");
-        ret ++;
-      }
-      if (! com_uti.access_get (bb2_full_filename, true, false, false)) { // Rwx
-        log("error inaccessible bb2 file");
-        ret ++;
-      }
-*/
-    log("files_init: {done ret}=" + ret);
-    return ret;
-  }
 
 
   // Remote control client, for lockscreen and BT AVRCP:

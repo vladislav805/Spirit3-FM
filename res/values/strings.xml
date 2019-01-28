@@ -31,7 +31,6 @@
   <string name="dialog_startup">Initializing Spirit 3… Please, wait…</string>
   <string name="toast_record_stop">Record saved</string>
   <string name="dialog_startup_build">build %d</string>
-  <string name="button_visualizer">Visualizer</string>
   <string name="popup_preset_create">Add here</string>
   <string name="popup_preset_replace">Replace by current</string>
   <string name="popup_preset_rename">Rename</string>
@@ -69,5 +68,6 @@
       translatable="false">MHz</string>
   <string name="preference_application_custom_notification_title">Custom notification</string>
   <string name="preference_application_custom_notification_summary">Custom notification has more features for control</string>
+  <string name="preference_application_visualizer_title">Visualizer</string>
 
 </resources>

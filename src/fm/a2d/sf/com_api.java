@@ -17,14 +17,20 @@ public class com_api {
   private Context mContext;
   private static int curr_pending_intent_num = 0;
 
-  public static final int PRESET_COUNT = 30;
-
   // Audio:
   public String audio_state = C.AUDIO_STATE_STOP;
   public String audio_output = C.AUDIO_OUTPUT_HEADSET;
   public String audio_stereo = "stereo";
   public String audio_record_state = C.RECORD_STATE_STOP;
-  public String audio_sessid = "0";
+  private volatile int mAudioSessionId = 0;
+
+  public int getAudioSessionId() {
+    return mAudioSessionId;
+  }
+
+  public void setAudioSessionId(int id) {
+    mAudioSessionId = id;
+  }
 
   // Tuner:
   //    CFG = Saved in config
@@ -76,7 +82,7 @@ public class com_api {
       mPresetNames = new SparseArray<>();
     }
     for (int i = 0; i < C.PRESET_COUNT; ++i) {
-      int freq = Utils.getPrefInt(mContext, C.PRESET_KEY + i);
+      int freq = Utils.getPrefInt(mContext, C.PRESET_KEY + i, -1);
       if (freq > 0) {
         String name = Utils.getPrefString(mContext, C.PRESET_KEY_NAME + i);
         log(String.format(Locale.ENGLISH, "%2d. %s", freq, name));
@@ -99,7 +105,6 @@ public class com_api {
     String new_audio_output = extras.getString(C.AUDIO_OUTPUT, DEFAULT_DETECT);//headset");
     String new_audio_stereo = extras.getString("audio_stereo", DEFAULT_DETECT);//Stereo");
     String new_audio_record_state = extras.getString(C.RECORD_STATE, DEFAULT_DETECT);//stop");
-    String new_audio_sessid = extras.getString("audio_sessid", DEFAULT_DETECT);
     if (!new_audio_state.equalsIgnoreCase(DEFAULT_DETECT))
       audio_state = new_audio_state;
     if (!new_audio_output.equalsIgnoreCase(DEFAULT_DETECT))
@@ -108,8 +113,6 @@ public class com_api {
       audio_stereo = new_audio_stereo;
     if (!new_audio_record_state.equalsIgnoreCase(DEFAULT_DETECT))
       audio_record_state = new_audio_record_state;
-    if (!new_audio_sessid.equalsIgnoreCase(DEFAULT_DETECT))
-      audio_sessid = new_audio_sessid;
 
     String new_tuner_state = extras.getString(C.TUNER_STATE, DEFAULT_DETECT);
     if (!new_tuner_state.equalsIgnoreCase(DEFAULT_DETECT))

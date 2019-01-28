@@ -77,7 +77,7 @@ public class MainActivity extends Activity {
     try {
       log("gui_start");
       m_gui = new gui_gui(mContext, mApi); // Instantiate UI
-      if (!m_gui.setState("start")) { // Start UI. If error...
+      if (!m_gui.setState(true)) { // Start UI. If error...
         log("gui_start error");
         m_gui = null;
       } else {
@@ -93,7 +93,7 @@ public class MainActivity extends Activity {
       log("gui_stop in");
       if (m_gui == null) {
         log("already stopped");
-      } else if (!m_gui.setState("stop")) { // Stop UI. If error...
+      } else if (!m_gui.setState(false)) { // Stop UI. If error...
         log("gui_stop error");
       } else {
         log("gui_stop OK");
@@ -152,10 +152,6 @@ public class MainActivity extends Activity {
       mBroadcastListener = null;
       log("Broadcast listener unregistered successfully");
     }
-  }
-
-  public void gap_gui_clicked(View v) {
-    m_gui.onClickView(v);
   }
 
   /**

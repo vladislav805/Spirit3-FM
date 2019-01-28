@@ -5,6 +5,11 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
+#### build 20190128 (3.0.10)
+* Исправление критической ошибки версии 3.0.9a;
+* Восстановление в настройках кастомного уведомления + улучшение самого уведомления;
+* Восстановление визуализатора в настройках.
+
 #### build 20190127 (3.0.9a)
 Эта версия нестабильная, может сопровождаться окнтами ANR (пока что неизвестна их причина).
 * Исправлен баг с выводом названия пресета на экране под частотой;

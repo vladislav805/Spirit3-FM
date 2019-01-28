@@ -258,24 +258,5 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
   </LinearLayout>
-
-<!-- Settings -->
-  <LinearLayout
-      android:visibility="gone"
-      android:layout_gravity="center_vertical"
-      android:orientation="horizontal"
-      android:layout_width="match_parent"
-      android:layout_height="@dimen/settings_height">
-    <CheckBox
-        android:id="@+id/cb_visu"
-        android:padding="4dp"
-        android:layout_width="wrap_content"
-        android:layout_height="match_parent"
-        android:checked="false"
-        android:text="@string/button_visualizer"
-        android:button="@drawable/cb_visualizer"
-        android:onClick="gap_gui_clicked"
-        android:contentDescription="@string/button_visualizer" />
-  </LinearLayout>
 </LinearLayout>
 

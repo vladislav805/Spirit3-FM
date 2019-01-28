@@ -228,9 +228,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
 
   private Intent sendRadioStatus() { // Send all radio state & status info
-
-    mAudioAPI.audio_sessid_get(); // Better to update here ?
-
     log("sendRadioStatus: audio_state: " + mApi.audio_state + "; audio_output: " + mApi.audio_output + "; audio_stereo: " + mApi.audio_stereo + "; audio_record_state: " + mApi.audio_record_state);
 
     Intent intent = new Intent(ACTION_GET);
@@ -239,7 +236,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     intent.putExtra(C.AUDIO_OUTPUT, mApi.audio_output);
     intent.putExtra("audio_stereo", mApi.audio_stereo);
     intent.putExtra(C.RECORD_STATE, mApi.audio_record_state);
-    intent.putExtra("audio_sessid", mApi.audio_sessid);
 
     if (mTunerAPI == null) {
       intent.putExtra(C.TUNER_STATE, C.TUNER_STATE_STOP);
@@ -255,6 +251,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
       intent.putExtra(C.TUNER_FREQUENCY, mApi.getIntFrequencyKHz());
       intent.putExtra(C.TUNER_RSSI, mApi.getRssi());
+      intent.putExtra(C.AUDIO_SESSION_ID, mApi.getAudioSessionId());
 
       //intent.putExtra ("tuner_stereo", mTunerAPI.getTunerValue ("tuner_stereo"));
       //intent.putExtra ("tuner_thresh", mTunerAPI.getTunerValue ("tuner_thresh"));

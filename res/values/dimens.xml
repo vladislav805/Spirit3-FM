@@ -27,7 +27,7 @@
   <dimen name="dialog_startup_margin_vertical">18dp</dimen>
 
   <dimen name="visualizer_height">120dp</dimen>
-  <dimen name="visualizer_vertical_margin">5dp</dimen>
+  <dimen name="visualizer_vertical_margin">8dp</dimen>
 
   <dimen name="settings_height">28dp</dimen>
   <dimen name="dialog_horizontal_padding">16dp</dimen>

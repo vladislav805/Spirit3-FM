@@ -27,7 +27,6 @@
   <string name="seek_up">Поиск позднее</string>
   <string name="toast_record_stop">Запись сохранена</string>
   <string name="button_previous">Предыдущая</string>
-  <string name="button_visualizer">Визуализатор</string>
   <string name="popup_preset_create">Добавить сюда</string>
   <string name="popup_preset_replace">Заменить текущей</string>
   <string name="popup_preset_rename">Переименовать</string>

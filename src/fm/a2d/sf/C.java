@@ -6,7 +6,7 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20190127;
+  public static final int BUILD = 20190128;
   public static final boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
@@ -38,6 +38,8 @@ public class C {
   public static final String AUDIO_OUTPUT_EARPIECE = "earpiece";
   public static final String AUDIO_OUTPUT_TOGGLE = "toggle";
 
+  public static final String AUDIO_SESSION_ID = "audio_session_id";
+
   public static final String RECORD_STATE = "audio_record_state";
   public static final String RECORD_STATE_START = "start";
   public static final String RECORD_STATE_STOP = "stop";
@@ -60,6 +62,7 @@ public class C {
   public static final String PREFERENCE_AUDIO_SAMPLE_RATE = "audio_sample_rate";
   public static final String PREFERENCE_AUTO_START = "pref_auto_start";
   public static final String PREFERENCE_AUDIO_SOURCE = "pref_audio_source";
+  public static final String PREFERENCE_VISUAL_STATE = "pref_visualizer";
   public static final String AUDIO_FRAMES_PER_BUFFER = "audio_fpb";
 
   public static final int PRESET_COUNT = 30;

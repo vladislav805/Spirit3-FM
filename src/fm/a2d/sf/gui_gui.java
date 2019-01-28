@@ -24,6 +24,7 @@ import java.util.Locale;
 
 import static android.view.View.TEXT_ALIGNMENT_CENTER;
 
+@SuppressWarnings({"BooleanMethodIsAlwaysInverted", "WeakerAccess"})
 public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private static final String TAG = "GUI_GUI";
@@ -38,7 +39,8 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   // Visualizer
   private VisualizerView mVisualizerView;
-  private boolean mVisualizerDisabled = true;
+  private boolean mVisualizerEnabled = false;
+  private int mVisualizerLastAudioSessionId = -1;
 
   // TODO: User Interface:
   private Typeface mDigitalFont;
@@ -101,22 +103,16 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   // Lifecycle API
 
-  public boolean setState(String state) {
+  public boolean setState(boolean state) {
     log("GUI set state = " + state);
-    boolean ret = false;
-    if (state.equals("start"))
-      ret = gui_start();
-    else if (state.equals("stop"))
-      ret = gui_stop();
-    return ret;
+    return state ? gui_start() : gui_stop();
   }
 
   private boolean gui_stop() {
     log("GUI stop");
-    if (mVisualizerDisabled)
-      log("gui_stop: mVisualizerDisabled = true");
-    else
-      gui_vis_stop();
+    if (mVisualizerEnabled) {
+      stopVisualizer(true);
+    }
     return true;
   }
 
@@ -186,6 +182,8 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     mViewFrequency.setTypeface(mDigitalFont);
     mViewRSSI.setTypeface(mDigitalFont);
 
+    mVisualizerView = (VisualizerView) mActivity.findViewById(R.id.gui_vis);
+
     mViewName = (TextView) mActivity.findViewById(R.id.curr_name_station);
 
     setupPresets();
@@ -215,7 +213,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
     updateUIViewsByPowerState(autoStart); // !!!! Move later to Radio API callback
 
-    loadPreferenceVisualState();
     /*audio_output_load_prefs();
     audio_stereo_load_prefs();
     tuner_stereo_load_prefs();*/
@@ -275,76 +272,70 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
     mViewFrequency.setTextColor(primaryColor);
 
+    View[] views = {
+        mViewPrevious,
+        mViewNext,
+        mViewSeekUp,
+        mViewSeekDown,
+        mViewRecord,
+        mViewSignal,
+        mViewAudioOut,
+        mViewName,
+        mViewSeekFrequency,
+        mViewRSSI
+    };
+
     // Power button is always enabled
-    mViewPrevious.setEnabled(power);
-    mViewNext.setEnabled(power);
-    mViewSeekUp.setEnabled(power);
-    mViewSeekDown.setEnabled(power);
-    mViewRecord.setEnabled(power);
-    mViewSeekFrequency.setEnabled(power);
+    for (View v : views) {
+      v.setEnabled(power);
+      v.setAlpha(alpha);
+    }
 
-    mViewPrevious.setAlpha(alpha);
-    mViewNext.setAlpha(alpha);
-    mViewSeekDown.setAlpha(alpha);
-    mViewSeekUp.setAlpha(alpha);
-    mViewRecord.setAlpha(alpha);
-    mViewSignal.setAlpha(alpha);
-    mViewAudioOut.setAlpha(alpha);
-    mViewName.setAlpha(alpha);
-    mViewSeekFrequency.setAlpha(alpha);
-    mViewRSSI.setAlpha(alpha);
-
-
-    for (int idx = 0; idx < com_api.PRESET_COUNT; idx++) { // For all presets...
-      if (mPresetViews[idx] != null) {
-        mPresetViews[idx].setEnabled(power);
-      }
+    for (View v : mPresetViews) { // For all presets...
+      v.setEnabled(power);
     }
   }
 
 
   // Visualizer:
+  private void setVisualizerState(boolean state) {
+    View parent = mActivity.findViewById(R.id.vis);
 
-  private void gui_vis_start(int audio_sessid) {
-    try {
-      log("DEPRECATED: gui_vis_start / m_gui_vis: " + mVisualizerView + " audio_sessid: " + audio_sessid);
-      mVisualizerView = (VisualizerView) mActivity.findViewById(R.id.gui_vis);
-      if (mVisualizerView != null) {
-        mVisualizerView.vis_start(audio_sessid);
-      }
-    } catch (Throwable e) {
-      e.printStackTrace();
+    mVisualizerEnabled = state;
+
+    if (state) {
+      parent.setVisibility(View.VISIBLE);
+      int aid = mApi.getAudioSessionId();
+      mVisualizerLastAudioSessionId = aid;
+
+      startVisualizer(aid);
+    } else {
+      parent.setVisibility(View.INVISIBLE);
+      stopVisualizer(false);
     }
   }
 
-  private void gui_vis_stop() {
+  private void startVisualizer(int audioId) {
+    //if (mVisualizerView != null) {
+      mVisualizerView.vis_start(audioId);
+    //}
+  }
+
+  private void stopVisualizer(boolean kill) {
     try {
-      log("DEPRECATED: gui_vis_stop / m_gui_vis: " + mVisualizerView);
+      log("stopVisualizer: m_gui_vis: " + mVisualizerView);
       if (mVisualizerView != null) {
         mVisualizerView.vis_stop();
-        mVisualizerView = null;
+        if (kill) {
+          mVisualizerView = null;
+        }
       }
     } catch (Throwable e) {
       e.printStackTrace();
     }
   }
+  // End visualizer
 
-  private void visualizer_state_set(String state) {
-    log("DEPRECATED: visualizer_state_set(" + state + ")");
-    if (state.equalsIgnoreCase("Start")) {
-      mVisualizerDisabled = false;
-      mActivity.findViewById(R.id.vis).setVisibility(View.VISIBLE);
-      int audio_sessid = com_uti.int_get(mApi.audio_sessid);
-      //if (audio_sessid > 0) {
-        do_gui_vis_start(audio_sessid);
-      //}
-    } else {
-      mVisualizerDisabled = true;
-      mActivity.findViewById(R.id.vis).setVisibility(View.INVISIBLE);
-      gui_vis_stop();
-    }
-    com_uti.prefs_set(mContext, "gui_visualizer_state", state);
-  }
 
 
   private void setupPresets() {
@@ -419,10 +410,7 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
             }
           }
         })
-        .setNegativeButton(mContext.getString(android.R.string.cancel), new DialogInterface.OnClickListener() {
-          public void onClick(DialogInterface dialog, int whichButton) {
-          }
-        }).create().show();
+        .setNegativeButton(mContext.getString(android.R.string.cancel), null).create().show();
   }
 
   /**
@@ -500,19 +488,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
   }
 
 
-
-
-
-  //
-  private void do_gui_vis_start(int audio_sessid) {
-    log("DEPRECATED do_gui_vis_start / audio_sessid: " + audio_sessid);
-    if (mVisualizerDisabled) {
-      log("DEPRECATED mVisualizerDisabled = true");
-    } else {
-      gui_vis_start(audio_sessid);
-    }
-  }
-
   private int mLastFrequency;
   private String mLastRecord;
   private long mLastRecordStart;
@@ -524,18 +499,14 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     // Audio Session ID:
 
     log("GUI onReceivedUpdates: " + intent);
-    int audio_sessid = com_uti.int_get(mApi.audio_sessid);
-    if (audio_sessid != 0 && mLastAudioSessionId != audio_sessid) { // If audio session ID has changed...
-      mLastAudioSessionId = audio_sessid;
-      log("onRU: api.audio_sid: " + mApi.audio_sessid + "; new audio_sid: " + audio_sessid);
-
-      // If no session, do nothing (or stop visual and EQ)
-      do_gui_vis_start(audio_sessid);
-    }
 
     if (mApi.audio_state.equals(C.AUDIO_STATE_START) && mJustStarted) {
       ((MainActivity) mActivity).hideIntroDialog();
       setFrequency(mApi.getIntFrequencyKHz());
+
+      boolean isVisualState = Utils.getPrefBoolean(mContext, C.PREFERENCE_VISUAL_STATE);
+      setVisualizerState(isVisualState);
+
       mJustStarted = false;
     }
 
@@ -549,6 +520,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     setPlayToggleButtonState(mApi.audio_state);
     setRecordAudioState(mApi.audio_record_state);
     updateSignalStretch(mApi.getRssi());
+    if (mVisualizerEnabled && mVisualizerLastAudioSessionId != mApi.getAudioSessionId()) {
+      setVisualizerState(true);
+    }
 
     if (mApi.audio_output.equals(C.AUDIO_OUTPUT_SPEAKER)) {
       mViewAudioOut.setImageResource(R.drawable.ic_speaker);
@@ -841,38 +815,4 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     return value; // No error
   }
 
-
-  private void loadPreferenceVisualState() {
-    String pref = com_uti.prefs_get(mContext, "visual_state", "");
-    if (!pref.isEmpty()) {
-      setVisualState(pref);
-    }
-  }
-
-  private String setVisualState(String state) {
-    log("GUI: setVisualState(" + state + ")");
-    if (state.equalsIgnoreCase("Start")) {
-      mVisualizerDisabled = false;
-
-      int audio_sessid = com_uti.int_get(mApi.audio_sessid);
-      if (audio_sessid > 0)
-        do_gui_vis_start(audio_sessid);
-    } else {
-      mVisualizerDisabled = true;
-
-      gui_vis_stop();
-    }
-    return state; // No error
-  }
-
-  public void onClickView(View view) {
-
-    int id = view.getId();
-    switch (id) {
-      case R.id.cb_visu:
-        boolean is = ((CheckBox) view).isChecked();
-        visualizer_state_set(is ? "Start" : "stop");
-        break;
-    }
-  }
 }

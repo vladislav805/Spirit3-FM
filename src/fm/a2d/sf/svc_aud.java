@@ -211,12 +211,6 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
   }
 
   // Command handlers:
-
-  public String audio_sessid_get() { // Handle audio session changes
-    return mApi.audio_sessid;
-  }
-
-
   // Player and overall audio state control: (public's now via mApi)
 
   public String audio_state_set(String desired_state) {                // Called only by MainService:audio_state_set() & MainService:audio_start()
@@ -717,7 +711,7 @@ if (intent != null)
       return -1;
     }
 
-    audiorecorder_read_start();
+    startReadAudioRecorder();
 
     pcm_read_thread_active = true;
     pcm_read_thread = new Thread(pcm_read_runnable, "pcm_read");
@@ -734,7 +728,7 @@ if (intent != null)
     pcm_read_thread_active = false;
     pcm_read_thread.interrupt();
 
-    audiorecorder_read_stop();
+    stopReadAudioRecorder();
 
     if (mRecorderSource <= 8) {
       dai_set(false);
@@ -1045,25 +1039,17 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
 */
 
 
-  private boolean audiorecorder_read_stop() {
-    m_audiorecord_reading = false;
-    if (mAudioRecorder == null)
-      return (false);
-    mAudioRecorder.stop();
-    mAudioRecorder.release();
-    mAudioRecorder = null;
-    return (true);
-  }
-
-  private boolean audiorecorder_read_start() {
+  private void startReadAudioRecorder() {
     try {
-      mAudioRecorder = audio_record_get();
+      mAudioRecorder = getAudioRecorder();
 
       if (mAudioRecorder != null) {
         //java.lang.IllegalStateException: startRecording() called on an uninitialized AudioRecord.
         mAudioRecorder.startRecording();
         log("getChannelConfiguration=" + mAudioRecorder.getChannelConfiguration() + "; getChannelCount=" + mAudioRecorder.getChannelCount());
-        m_audio_session_id = mAudioRecorder.getAudioSessionId();
+
+        mApi.setAudioSessionId(mAudioRecorder.getAudioSessionId());
+
         m_audiorecord_reading = true;
       } else {
         log("mAudioRecorder == null !!");
@@ -1071,10 +1057,18 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
       }
     } catch (Exception e) {
       e.printStackTrace();
-      return false;
+    }
+  }
+
+  private void stopReadAudioRecorder() {
+    m_audiorecord_reading = false;
+    if (mAudioRecorder == null) {
+      return;
     }
 
-    return true;
+    mAudioRecorder.stop();
+    mAudioRecorder.release();
+    mAudioRecorder = null;
   }
 
   private int fetchPreferredAudioSource() {
@@ -1082,7 +1076,7 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
   }
 
   @SuppressWarnings("DanglingJavadoc")
-  private AudioRecord audio_record_get() {
+  private AudioRecord getAudioRecorder() {
     /**
      * DEFAULT              пашет, качественный микрофон, тихий
      * MIC                  пашет, качественный микрофон
@@ -1094,23 +1088,20 @@ VOICE_COMMUNICATION 7       11  (Microphone audio source tuned for voice communi
      * VOICE_COMMUNICATION  пашет, микрофон говно, но очень чувствительный
      * REMOTE_SUBMIX        не пашет
      */
-    int src = fetchPreferredAudioSource();
-    //for (int cnt_src : m_srcs) { // For all sources...
-      // Тут был src==11, который проверял файл /mnt/sdcard/sf/rec_src
-
+    int audioSource = fetchPreferredAudioSource();
     short audioFormat = AudioFormat.ENCODING_PCM_16BIT;
     short channelConfig = AudioFormat.CHANNEL_IN_STEREO; // AUDIO_CHANNEL_IN_FRONT_BACK?
 
     try {
       int bufferSize = AudioRecord.getMinBufferSize(mSampleRate, channelConfig, audioFormat);
-      log("src=" + src + "; rate=" + mSampleRate + "; audioFormat: " + audioFormat + "; channelConfig: " + channelConfig + "; bufferSize: " + bufferSize);
-      AudioRecord recorder = new AudioRecord(src, mSampleRate, channelConfig, audioFormat, m_hw_size);
+      log("src=" + audioSource + "; rate=" + mSampleRate + "; audioFormat: " + audioFormat + "; channelConfig: " + channelConfig + "; bufferSize: " + bufferSize);
+      AudioRecord recorder = new AudioRecord(audioSource, mSampleRate, channelConfig, audioFormat, m_hw_size);
       if (recorder.getState() == AudioRecord.STATE_INITIALIZED) { // If works, then done
-        mRecorderSource = src;
+        mRecorderSource = audioSource;
         return recorder;
       }
     } catch (Exception e) {
-      log("audio_record_get: exception: " + e);
+      log("getAudioRecorder: exception: " + e);
     }
 
     //}

@@ -707,6 +707,8 @@ Evo 4G LTE  jewel
 
   private static DatagramSocket ds = null;
 
+  private static volatile boolean isBusy = false;
+
   /**
    * Отправка команды нативной программе через сокеты
    * @param cmd_len длина команды
@@ -727,11 +729,22 @@ Evo 4G LTE  jewel
       //log("Before sem++ cmd: " + cmd + "  res_len: " + res_len + "  rx_tmo: " + rx_tmo);
     }
 
-    dg_s2d_cmd_sem++;
+    /*dg_s2d_cmd_sem++;
     while (dg_s2d_cmd_sem != 1) {
       dg_s2d_cmd_sem--;
       com_uti.ms_sleep(1);
       dg_s2d_cmd_sem++;
+    }*/
+
+
+    log("dg_s2d_cmd: is busy = " + isBusy + "; cmd=" + new String(cmd_buf));
+    while (isBusy) {
+      log("dg_s2d_cmd: IN LOOP is busy cmd=" + new String(cmd_buf));
+      com_uti.ms_sleep(10);
+    }
+    log("dg_s2d_cmd: is busy = " + isBusy + "; after while cmd=" + new String(cmd_buf));
+    if (rx_tmo != RADIO_NOP_TIMEOUT) {
+      isBusy = true;
     }
 
     try {
@@ -757,8 +770,9 @@ Evo 4G LTE  jewel
       //log("After  receive() cmd: " + cmd);
 
       byte[] receivedBuffer = dps.getData();
-
       len = dps.getLength();
+
+      isBusy = false;
 
       if (dg_s2d_log) {
         log("After getLength() cmd: " + cmd + "  len: " + len);
@@ -779,11 +793,13 @@ Evo 4G LTE  jewel
       if (rx_tmo != RADIO_NOP_TIMEOUT) {
         log("s2d_cmd: java.net.SocketTimeoutException: rx_tmo: " + rx_tmo + "  cmd: " + cmd);
       }
+      isBusy = false;
     } catch (Throwable e) {
       log("s2d_cmd [exception]: type=" + e + "; rx_tmo=" + rx_tmo + "; cmd='" + cmd + "'");
       e.printStackTrace();
+      isBusy = false;
     }
-    dg_s2d_cmd_sem--;
+    //dg_s2d_cmd_sem--;
     return len;
   }
 
@@ -833,7 +849,7 @@ Evo 4G LTE  jewel
 
     int rx_timeout = 3000;
 
-    if (command.equalsIgnoreCase("s tuner_state start")) {
+    if (command.equals("s tuner_state start")) {
       rx_timeout = 15000;
     } else if (command.equals("s radio_nop start")) {
       rx_timeout = RADIO_NOP_TIMEOUT; // Always fails so make it short

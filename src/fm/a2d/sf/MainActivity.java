@@ -121,7 +121,7 @@ public class MainActivity extends Activity {
         }
 
         if (mApi != null && m_gui != null) {
-          mApi.radio_update(intent);
+          mApi.updateInfo(intent);
           m_gui.onReceivedUpdates(intent);
         }
       }

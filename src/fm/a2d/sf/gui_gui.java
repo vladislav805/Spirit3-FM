@@ -519,10 +519,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   private boolean mJustStarted = true;
 
-  public void onRestartTuner() {
-    mJustStarted = true;
-  }
-
   // Radio API Callback:
   public void onReceivedUpdates(Intent intent) {
     // Audio Session ID:
@@ -735,15 +731,15 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
         break;*/
 
       case R.id.iv_play_toggle:
-        mApi.key_set(C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
+        Utils.sendIntent(mContext, C.AUDIO_STATE, C.AUDIO_STATE_TOGGLE);
         break;
 
       case R.id.iv_record:
-        mApi.key_set(C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
+        Utils.sendIntent(mContext, C.RECORD_STATE, C.RECORD_STATE_TOGGLE);
         break;
 
       case R.id.iv_audio_out: //-> m_iv_out ???? / TODO: Speaker/headset  NOT USED NOW
-        mApi.key_set(C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_TOGGLE);
+        Utils.sendIntent(mContext, C.AUDIO_OUTPUT, C.AUDIO_OUTPUT_TOGGLE);
         break;
 
       case R.id.tv_freq:
@@ -751,19 +747,19 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
         break;
 
       case R.id.iv_seekdn:
-        mApi.key_set(C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
+        Utils.sendIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_DOWN);
         break;
 
       case R.id.iv_seekup:
-        mApi.key_set(C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
+        Utils.sendIntent(mContext, C.TUNER_SCAN_STATE, C.TUNER_SCAN_UP);
         break;
 
       case R.id.iv_prev:
-        mApi.key_set(C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_DOWN);
+        Utils.sendIntent(mContext, C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_DOWN);
         break;
 
       case R.id.iv_next:
-        mApi.key_set(C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_UP);
+        Utils.sendIntent(mContext, C.TUNER_FREQUENCY, C.TUNER_FREQUENCY_UP);
         break;
     }
   }
@@ -839,22 +835,9 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
 
   }
 
-
-  private String tuner_stereo_load_prefs() {
-    return com_uti.prefs_get(mContext, "tuner_stereo", "");
-  }
-
-  private String audio_stereo_load_prefs() {
-    return com_uti.prefs_get(mContext, "audio_stereo", "");
-  }
-
-  private String audio_output_load_prefs() {
-    return com_uti.prefs_get(mContext, C.AUDIO_OUTPUT, "");
-  }
-
   private String audio_output_set_nonvolatile(String value) {  // Called only by speaker/headset checkbox change
     log("DEPRECATED: audio_output_set_nonvolatile / value: " + value);
-    mApi.key_set(C.AUDIO_OUTPUT, value);
+    Utils.sendIntent(mContext, C.AUDIO_OUTPUT, value);
     return value; // No error
   }
 
@@ -864,12 +847,6 @@ public class gui_gui implements View.OnClickListener, View.OnLongClickListener {
     if (!pref.isEmpty()) {
       setVisualState(pref);
     }
-  }
-
-  private String visual_state_set_nonvolatile(String state) {
-    String ret = setVisualState(state);
-    com_uti.prefs_set(mContext, "visual_state", state);
-    return (ret);
   }
 
   private String setVisualState(String state) {

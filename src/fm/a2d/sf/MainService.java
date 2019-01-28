@@ -70,7 +70,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
       mNotificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 
-      notif_state_set(true);
+      setNotificationState(true);
 
       if (mApi == null) {
         mApi = new com_api(this); // Instantiate Common API class
@@ -95,7 +95,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
   @Override
   public void onDestroy() {
-    notif_state_set(false);
+    setNotificationState(false);
     //mContext.unregisterReceiver(mReceiver);
 
     super.onDestroy();
@@ -174,11 +174,6 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         com_uti.prefs_set(mContext, "tuner_stereo", val);
       }
 
-      val = extras.getString("tuner_extra_cmd", "");
-      if (!val.isEmpty()) {
-        mTunerAPI.setTunerValue("tuner_extra_cmd", val);
-      }
-
       val = extras.getString("tuner_rds_af_state", "");
       if (!val.isEmpty()) {
         tuner_rds_af_state_set(val);
@@ -227,8 +222,8 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   // For state and status updates:
   private void displays_update() { // Update all "displays"
     // Update widgets, apps, etc. and get resulting Intent
-    mApi.radio_update(sendRadioStatus()); // Get current data in Radio API using Intent (To update all dynamic/external data)
-    notif_radio_update(); // Update notification shade
+    mApi.updateInfo(sendRadioStatus()); // Get current data in Radio API using Intent (To update all dynamic/external data)
+    updateNotification(); // Update notification shade
   }
 
 
@@ -259,16 +254,13 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
       }
 
       intent.putExtra(C.TUNER_FREQUENCY, mApi.getIntFrequencyKHz());
+      intent.putExtra(C.TUNER_RSSI, mApi.getRssi());
 
-      //intent.putExtra ("tuner_stereo",       mTunerAPI.getTunerValue ("tuner_stereo"));
-      //intent.putExtra ("tuner_thresh",       mTunerAPI.getTunerValue ("tuner_thresh"));
-      //intent.putExtra ("tuner_scan_state",   mTunerAPI.getTunerValue ("tuner_scan_state"));
-      //intent.putExtra ("tuner_extra_cmd",    mTunerAPI.getTunerValue ("tuner_extra_cmd"));
-      //intent.putExtra ("tuner_extra_resp",   mTunerAPI.getTunerValue ("tuner_extra_resp"));
-
-      intent.putExtra("tuner_rssi", mApi.getRssi());
-      //intent.putExtra ("tuner_qual",         mTunerAPI.getTunerValue ("tuner_qual"));
-      intent.putExtra("tuner_most",         "stereo");      //mTunerAPI.getTunerValue ("tuner_most"));
+      //intent.putExtra ("tuner_stereo", mTunerAPI.getTunerValue ("tuner_stereo"));
+      //intent.putExtra ("tuner_thresh", mTunerAPI.getTunerValue ("tuner_thresh"));
+      //intent.putExtra ("tuner_scan_state", mTunerAPI.getTunerValue ("tuner_scan_state"));
+      //intent.putExtra ("tuner_qual", mTunerAPI.getTunerValue ("tuner_qual"));
+      intent.putExtra("tuner_most", "stereo");      //mTunerAPI.getTunerValue ("tuner_most"));
     }
     try {
       mContext.sendBroadcast(intent); // Send Broadcast with all info
@@ -283,14 +275,16 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     log("audio_state_set(" + state + ")");
 
     if (state.equals(C.AUDIO_STATE_TOGGLE)) { // TOGGLE:
-      state = mApi.audio_state.equals(C.AUDIO_STATE_START) ? C.AUDIO_STATE_PAUSE :  C.AUDIO_STATE_START;
+      state = mApi.audio_state.equals(C.AUDIO_STATE_START) ? C.AUDIO_STATE_PAUSE : C.AUDIO_STATE_START;
       log("audio_state_set(" + state + ") <= after replace toggle");
     }
 
 
     if (state.equals(C.AUDIO_STATE_START)) { // If Audio Start...
       log("set audio_state=start");
-      if (!mApi.audio_state.equals(C.AUDIO_STATE_START)) { // If audio not started (Could be stopped or paused)
+
+      // wft null is occurred
+      if (mApi.audio_state == null || !mApi.audio_state.equals(C.AUDIO_STATE_START)) { // If audio not started (Could be stopped or paused)
         String stereo = Utils.getPrefString(mContext, "audio_stereo", "stereo");
         mAudioAPI.audio_stereo_set(stereo); // Set audio stereo from prefs, before audio is started
 
@@ -310,8 +304,8 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   }
 
   // Callback called by svc_aud: audio_start(), audio_stop(), audio_pause()
-  public void cb_audio_state(String audio_state) { // Audio state changed callback from svc_aud
-    log("cb_audio_state(" + audio_state + ")");
+  public void onUpdateAudioState(String audio_state) { // Audio state changed callback from svc_aud
+    log("onUpdateAudioState(" + audio_state + ")");
 
     switch (audio_state) {
       case C.AUDIO_STATE_START:
@@ -439,8 +433,8 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   // Tuner API callbacks:
 
   // Single Tuner Sub-MainService callback expands to other functions:
-  public void cb_tuner_key(String key, String val) {
-    log("cb_tuner_key / key=" + key + "; val=" + val);
+  public void onUpdateTunerKey(String key, String val) {
+    log("onUpdateTunerKey / key=" + key + "; val=" + val);
 
     if (com_uti.device == com_uti.DEV_QCV && mAudioAPI.audio_blank_get()) { // If we need to kickstart audio...
       log("!!!!!!!!!!!!!!!!!!!!!!!!! Kickstarting stalled audio !!!!!!!!!!!!!!!!!!!!!!!!!!");
@@ -457,9 +451,9 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         cb_tuner_state(val);
       else if (key.equals(C.TUNER_FREQUENCY))
         cb_tuner_freq(val);
-      else if (key.equalsIgnoreCase ("tuner_rssi"))
+      else if (key.equals(C.TUNER_RSSI))
         cb_tuner_rssi (val);
-      else if (key.equalsIgnoreCase ("tuner_qual"))
+      else if (key.equalsIgnoreCase("tuner_qual"))
         cb_tuner_qual (val);
     }
   }
@@ -492,23 +486,23 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 
 
   // Remote control client, for lockscreen and BT AVRCP:
-  private void remote_state_set (boolean state) { // Called only by cb_audio_state w/ state=true for start, false for stop
+  private void remote_state_set (boolean state) { // Called only by onUpdateAudioState w/ state=true for start, false for stop
     // empty
   }
 
   // Notification shade
-  private void notif_radio_update () { // Called only by displays_update() which is called only by cb_* callbacks
+  private void updateNotification() { // Called only by displays_update() which is called only by cb_* callbacks
     if (mApi.audio_state.equalsIgnoreCase(C.AUDIO_STATE_START)) { // If audio started...
       if (mNeedStartForeground) {
         mNeedStartForeground = false;
-        log("notif_radio_update: startForeground");
+        log("updateNotification: startForeground");
         showNotificationAndStartForeground(true);
       } else {
         showNotificationAndStartForeground(false);
       }
     } else {
       mNeedStartForeground = true;
-      //notif_state_set (false);
+      //setNotificationState (false);
       //stopForeground (true);  // !! Need FG for lockscreen play !! So can't unset foreground when paused,,,   Only in onDestroy
 //stopForeground (false);   // !!!! ???? Can stopForeground but keep active notification ??
     }
@@ -516,8 +510,8 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
  
   // Start/stop service = foreground, FM Notification in status bar, Expanded message in "Notifications" window.
   // Called only by onCreate w/ state = true and onDestroy w/ state = false
-  private void notif_state_set (boolean state) {
-    log("notif_state_set: state=" + state);
+  private void setNotificationState(boolean state) {
+    log("setNotificationState(): state=" + state);
 
     // Notifications off, go to idle non-foreground state
     if (!state) {
@@ -540,18 +534,18 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         .setContentIntent(pendingMain)
         .setPriority(Notification.PRIORITY_HIGH)
         .setOngoing(true);
-
-    switch (Utils.getPrefInt(this, C.NOTIFICATION_TYPE)) {
+/*
+    switch (Utils.getPrefString(this, C.NOTIFICATION_TYPE, null)) {
 
       case C.NOTIFICATION_TYPE_CUSTOM:
         createCustomNotification(notify, pendingMain);
         break;
 
       case C.NOTIFICATION_TYPE_CLASSIC:
-      default:
+      default:*/
         createClassicNotification(notify);
-        break;
-    }
+        /*break;
+    }*/
 
 
     mNotification = notify.build();

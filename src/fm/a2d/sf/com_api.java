@@ -45,9 +45,6 @@ public class com_api {
   public String tuner_thresh = "";             // RW CFG api Values:   Seek/scan RSSI threshold
   public String tuner_scan_state = "stop";     // RW ... set States:   down, up, scan, stop
 
-  public String tuner_extra_cmd = "";          // RW ... set Values:   Extra command
-  public String tuner_extra_resp = "";         // ro ... ... Values:   Extra command response
-
   public int tuner_rssi = 0;//999";        // ro ... ... Values:   RSSI: 0 - 1000
   public String tuner_qual = "";//SN 99";      // ro ... ... Values:   SN 99, SN 30
   public String tuner_most = "";//Mono";       // ro ... ... Values:   mono, stereo, 1, 2, blend, ... ?      1.5 ?
@@ -89,16 +86,9 @@ public class com_api {
     log("Presets loaded");
   }
 
-
-  /** @deprecated  */
-  public void key_set(String key, String val) {
-    log("Set [" + key + "] = '" + val + "'");
-    Utils.sendIntent(mContext, key, val);
-  }
-
   private static final String DEFAULT_DETECT = "default_detect";
 
-  public void radio_update(Intent intent) {
+  public void updateInfo(Intent intent) {
     Bundle extras = intent.getExtras();
 
     if (extras == null) {
@@ -126,40 +116,46 @@ public class com_api {
       tuner_state = new_tuner_state;
 
 
-    String new_tuner_stereo = extras.getString("tuner_stereo", DEFAULT_DETECT);
-    String new_tuner_thresh = extras.getString("tuner_thresh", DEFAULT_DETECT);
-    String new_tuner_scan_state = extras.getString(C.TUNER_SCAN_STATE, DEFAULT_DETECT);
+
+
+
 
 
     int new_tuner_freq = extras.getInt(C.TUNER_FREQUENCY, 0);
-    if (new_tuner_freq != 0)
+    if (new_tuner_freq != 0) {
       int_tuner_freq = new_tuner_freq;
+    }
 
-
-    if (!new_tuner_stereo.equalsIgnoreCase(DEFAULT_DETECT))
+    String new_tuner_stereo = extras.getString("tuner_stereo", null);
+    if (new_tuner_stereo != null) {
       tuner_stereo = new_tuner_stereo;
-    if (!new_tuner_thresh.equalsIgnoreCase(DEFAULT_DETECT))
+    }
+
+    String new_tuner_thresh = extras.getString("tuner_thresh", null);
+    if (new_tuner_thresh != null) {
       tuner_thresh = new_tuner_thresh;
-    if (!new_tuner_scan_state.equalsIgnoreCase(DEFAULT_DETECT))
+    }
+
+    String new_tuner_scan_state = extras.getString(C.TUNER_SCAN_STATE, null);
+    if (new_tuner_scan_state != null) {
       tuner_scan_state = new_tuner_scan_state;
+    }
 
 
-    String new_tuner_extra_cmd = extras.getString("tuner_extra_cmd", DEFAULT_DETECT);
-    String new_tuner_extra_resp = extras.getString("tuner_extra_resp", DEFAULT_DETECT);
-    if (!new_tuner_extra_cmd.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_extra_cmd = new_tuner_extra_cmd;
-    if (!new_tuner_extra_resp.equalsIgnoreCase(DEFAULT_DETECT))
-      tuner_extra_resp = new_tuner_extra_resp;
-
-    int rssi = extras.getInt("tuner_rssi", -1);
-    String new_tuner_qual = extras.getString("tuner_qual", DEFAULT_DETECT);
-    String new_tuner_most = extras.getString("tuner_most", DEFAULT_DETECT);
-    if (rssi != -1)
+    int rssi = extras.getInt(C.TUNER_RSSI, -1);
+    if (rssi != -1) {
       tuner_rssi = rssi;
-    if (!new_tuner_qual.equalsIgnoreCase(DEFAULT_DETECT))
+    }
+
+    String new_tuner_qual = extras.getString("tuner_qual", null);
+    if (new_tuner_qual != null) {
       tuner_qual = new_tuner_qual;
-    if (!new_tuner_most.equalsIgnoreCase(DEFAULT_DETECT))
+    }
+
+    String new_tuner_most = extras.getString("tuner_most", null);
+    if (new_tuner_most != null) {
       tuner_most = new_tuner_most;
+    }
   }
 
   public static PendingIntent createPendingIntent(Context context, String key, String val) {

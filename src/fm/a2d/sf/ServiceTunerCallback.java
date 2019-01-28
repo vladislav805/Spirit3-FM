@@ -1,11 +1,8 @@
-
-    // Tuner Callbacks
-
 package fm.a2d.sf;
 
 public interface ServiceTunerCallback {
 
-  public abstract void cb_tuner_key          (String key, String val);
+  public abstract void onUpdateTunerKey(String key, String val);
 
 /*  Callbacks are possible for changes to each of these:
 // Essential:
@@ -37,7 +34,5 @@ public interface ServiceTunerCallback {
 
   //tuner_rds_ptyn              // Use pt callback
 
-// API specific:
-  tuner_extra_resp  // via tuner_extra_cmdZ
 */
 }

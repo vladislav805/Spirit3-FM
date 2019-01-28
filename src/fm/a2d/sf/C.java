@@ -54,8 +54,8 @@ public class C {
   public static final int PRESET_NAME_MAX_LENGTH = 12;
 
   public static final String NOTIFICATION_TYPE = "notification_type";
-  public static final int NOTIFICATION_TYPE_CLASSIC = 0;
-  public static final int NOTIFICATION_TYPE_CUSTOM = 1;
+  public static final String NOTIFICATION_TYPE_CLASSIC = "classic";
+  public static final String NOTIFICATION_TYPE_CUSTOM = "custom";
 
   public static final String DEFAULT_PREFERENCES = "sf_prefs";
 
@@ -70,4 +70,5 @@ public class C {
   public static final String TUNER_RESTART = "tuner_restart";
   public static final int DEFAULT_SAMPLE_RATE = 44100;
   public static final String TUNER_KILL = "kill_tuner";
+  public static final String TUNER_RSSI = "tuner_rssi";
 }

@@ -277,7 +277,7 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 
     mApi.audio_state = C.AUDIO_STATE_START;
     if (m_svc_acb != null) {
-      m_svc_acb.cb_audio_state(mApi.audio_state);
+      m_svc_acb.onUpdateAudioState(mApi.audio_state);
     }
     // audio_sessid_get(); // Update audio_sessid
   }
@@ -299,7 +299,7 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
     mApi.audio_state = C.AUDIO_STATE_PAUSE;
 
     if (m_svc_acb != null) {
-      m_svc_acb.cb_audio_state(mApi.audio_state); // CAN_DUCK
+      m_svc_acb.onUpdateAudioState(mApi.audio_state); // CAN_DUCK
     }
     // audio_sessid_get(); // Update audio_sessid
   }
@@ -325,7 +325,7 @@ public class svc_aud implements AudioManager.OnAudioFocusChangeListener {
 
     mApi.audio_state = C.AUDIO_STATE_STOP;
     if (m_svc_acb != null)
-      m_svc_acb.cb_audio_state(mApi.audio_state);
+      m_svc_acb.onUpdateAudioState(mApi.audio_state);
     requestForFocus(false);
 
     if (mHeadsetPlugged) {

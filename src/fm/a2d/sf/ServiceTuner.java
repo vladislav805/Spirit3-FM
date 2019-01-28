@@ -138,7 +138,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
         break;
     }
 
-    mTuner.cb_tuner_key(C.TUNER_STATE, mApi.tuner_state);
+    mTuner.onUpdateTunerKey(C.TUNER_STATE, mApi.tuner_state);
   }
 
   private void start() {
@@ -210,7 +210,7 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
       int tuner_freq = Utils.parseInt(com_uti.s2d_get(C.TUNER_FREQUENCY));
 
       // RSSI:
-      mApi.tuner_rssi = Utils.parseInt(com_uti.s2d_get("tuner_rssi"));
+      mApi.tuner_rssi = Utils.parseInt(com_uti.s2d_get(C.TUNER_RSSI));
 
       // MOST:
       mApi.tuner_most = com_uti.s2d_get("tuner_most");
@@ -220,19 +220,19 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
         if (last_poll_freq != mApi.int_tuner_freq) {
           last_poll_freq = mApi.int_tuner_freq;
-          mTuner.cb_tuner_key(C.TUNER_FREQUENCY, String.valueOf(tuner_freq)); // Inform change
+          mTuner.onUpdateTunerKey(C.TUNER_FREQUENCY, String.valueOf(tuner_freq)); // Inform change
         }
       }
 
 
       if (last_poll_rssi != mApi.tuner_rssi) {
         last_poll_rssi = mApi.tuner_rssi;
-        mTuner.cb_tuner_key("tuner_rssi", String.valueOf(mApi.tuner_rssi)); // Inform change
+        mTuner.onUpdateTunerKey(C.TUNER_RSSI, String.valueOf(mApi.tuner_rssi)); // Inform change
       }
 
 
       if (!last_poll_most.equals(mApi.tuner_most)) {
-        mTuner.cb_tuner_key("tuner_most", last_poll_most = mApi.tuner_most); // Inform change
+        mTuner.onUpdateTunerKey("tuner_most", last_poll_most = mApi.tuner_most); // Inform change
       }
     }
   }

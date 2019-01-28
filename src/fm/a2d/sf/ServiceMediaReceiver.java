@@ -33,11 +33,11 @@ public class ServiceMediaReceiver extends BroadcastReceiver {
         return;
       }
 //      if (action.equalsIgnoreCase ("fm.a2d.sf.result.get")) {
-//        radio_update (context, intent);
+//        updateInfo (context, intent);
 //        return;
 //      }
 
-      // radio_update above must happen before state checking to see if media button events can be sent to MainService
+      // updateInfo above must happen before state checking to see if media button events can be sent to MainService
       /*if (MainActivity.mApi.tuner_state.equalsIgnoreCase("stop")) {
         com_uti.logd("tuner_state == stop, no action");
         return;

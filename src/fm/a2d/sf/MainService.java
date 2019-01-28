@@ -534,19 +534,13 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         .setContentIntent(pendingMain)
         .setPriority(Notification.PRIORITY_HIGH)
         .setOngoing(true);
-/*
-    switch (Utils.getPrefString(this, C.NOTIFICATION_TYPE, null)) {
 
-      case C.NOTIFICATION_TYPE_CUSTOM:
-        createCustomNotification(notify, pendingMain);
-        break;
-
-      case C.NOTIFICATION_TYPE_CLASSIC:
-      default:*/
-        createClassicNotification(notify);
-        /*break;
-    }*/
-
+    boolean isCustom = Utils.getPrefBoolean(this, C.NOTIFICATION_TYPE, false);
+    if (!isCustom) {
+      createClassicNotification(notify);
+    } else {
+      createCustomNotification(notify, pendingMain);
+    }
 
     mNotification = notify.build();
 
@@ -560,47 +554,48 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
   private boolean mNotificationColorRecordBlinkState = false;
 
   private void createClassicNotification(Notification.Builder notify) {
+    if (mApi == null) {
+      return;
+    }
 
-    if (mApi != null) {
-      boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
-      String labelToggle = getString(mApi.isTunerStarted()
-          ? R.string.notification_button_pause
-          : R.string.notification_button_play
-      );
-      String labelRecord = getString(isRecord
-          ? R.string.notification_button_record_stop
-          : R.string.notification_button_record_start
-      );
+    boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
+    String labelToggle = getString(mApi.isTunerStarted()
+        ? R.string.notification_button_pause
+        : R.string.notification_button_play
+    );
+    String labelRecord = getString(isRecord
+        ? R.string.notification_button_record_stop
+        : R.string.notification_button_record_start
+    );
 
-      String recordText = isRecord ? getString(R.string.notification_text_recording) : "";
+    String recordText = isRecord ? getString(R.string.notification_text_recording) : "";
 
-      if (isRecord && mAudioAPI.getRecorder() != null) {
-        recordText += " " + Utils.getTimeStringBySeconds(mAudioAPI.getRecorder().getCurrentDuration());
+    if (isRecord && mAudioAPI.getRecorder() != null) {
+      recordText += " " + Utils.getTimeStringBySeconds(mAudioAPI.getRecorder().getCurrentDuration());
+    }
+
+    String name = mApi.getPresetNameByFrequency(mApi.getIntFrequencyKHz());
+    String freq = String.format(Locale.ENGLISH, "%.1fMHz%s", mApi.getIntFrequencyKHz() / 1000f, recordText);
+
+    notify
+        .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
+        .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
+        .addAction(R.drawable.ic_record, labelRecord, pendingRecord)
+        .setVisibility(Notification.VISIBILITY_PUBLIC)
+        .setContentTitle(getString(R.string.application_name))
+        .setContentText(freq)
+        .setShowWhen(false);
+
+    if (name != null) {
+      notify.setContentInfo(name);
+    }
+
+    if (isRecord) {
+      if (mNotificationColorRecordBlinkState) {
+        notify.setColor(0xffff0000);
+        notify.setSmallIcon(R.drawable.ic_recording);
       }
-
-      String name = mApi.getPresetNameByFrequency(mApi.getIntFrequencyKHz());
-      String freq = String.format(Locale.ENGLISH, "%.1fMHz%s", mApi.getIntFrequencyKHz() / 1000f, recordText);
-
-      notify
-          .addAction(R.drawable.ic_pause, labelToggle, pendingToggle)
-          .addAction(R.drawable.ic_stop, getString(R.string.notification_button_stop), pendingKill)
-          .addAction(R.drawable.ic_record, labelRecord, pendingRecord)
-          .setVisibility(Notification.VISIBILITY_PUBLIC)
-          .setContentTitle(getString(R.string.application_name))
-          .setContentText(freq)
-          .setShowWhen(false);
-
-      if (name != null) {
-        notify.setContentInfo(name);
-      }
-
-      if (isRecord) {
-        if (mNotificationColorRecordBlinkState) {
-          notify.setColor(0xffff0000);
-          notify.setSmallIcon(R.drawable.ic_recording);
-        }
-        mNotificationColorRecordBlinkState = !mNotificationColorRecordBlinkState;
-      }
+      mNotificationColorRecordBlinkState = !mNotificationColorRecordBlinkState;
     }
   }
 
@@ -610,10 +605,14 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     if (mApi != null) {
       boolean isRecord = mApi.audio_record_state.equals(C.RECORD_STATE_START);
       layout.setImageViewResource(R.id.notification_record, !isRecord ? R.drawable.ic_record : R.drawable.ic_record_press);
-      layout.setTextViewText(R.id.notification_frequency, String.format(Locale.ENGLISH, "%.1f", mApi.getIntFrequencyKHz() / 1000f));
+
+      String name = mApi.getPresetNameByFrequency(mApi.getIntFrequencyKHz());
+      String freq = String.format(Locale.ENGLISH, "%.1f", mApi.getIntFrequencyKHz() / 1000f);
+
+      layout.setTextViewText(R.id.notification_frequency, freq);
+      layout.setTextViewText(R.id.notification_name, name != null ? name : getString(R.string.mhz));
     }
 
-    layout.setOnClickPendingIntent(R.id.notification_icon, pendingMain);
     layout.setOnClickPendingIntent(R.id.notification_frequency, pendingMain);
     layout.setOnClickPendingIntent(R.id.notification_pause, pendingKill);
     layout.setOnClickPendingIntent(R.id.notification_record, pendingRecord);

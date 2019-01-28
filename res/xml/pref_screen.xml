@@ -31,6 +31,11 @@
         android:defaultValue="true"
         android:title="@string/preference_application_auto_start"
         android:summary="@string/preference_application_auto_start_summary" />
+    <SwitchPreference
+        android:key="pref_notification_custom"
+        android:defaultValue="false"
+        android:title="@string/preference_application_custom_notification_title"
+        android:summary="@string/preference_application_custom_notification_summary" />
   </PreferenceCategory>
 
   <PreferenceCategory

@@ -53,9 +53,7 @@ public class C {
 
   public static final int PRESET_NAME_MAX_LENGTH = 12;
 
-  public static final String NOTIFICATION_TYPE = "notification_type";
-  public static final String NOTIFICATION_TYPE_CLASSIC = "classic";
-  public static final String NOTIFICATION_TYPE_CUSTOM = "custom";
+  public static final String NOTIFICATION_TYPE = "pref_notification_custom";
 
   public static final String DEFAULT_PREFERENCES = "sf_prefs";
 

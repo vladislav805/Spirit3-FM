@@ -39,16 +39,12 @@
   <string name="preset_rename_title">Rename preset</string>
   <string name="toast_frequency_changed">Frequency changed to %.1f MHz</string>
   <string name="toast_frequency_invalid">Invalid frequency</string>
-  <string name="pref_write_logs_toast">In the next run Spirit 3 will write logs</string>
-  <string name="pref_write_logs_started">Logging started</string>
   <string name="logcat_send_logs">Send logs</string>
   <string name="preference_summary_version" translatable="false">v%1$s (build %2$d)</string>
   <string name="frequency_invalid_format">Invalid format of frequency</string>
   <string name="pref_restart_title">Need restart</string>
   <string name="pref_restart_message">You\'ve modified preferences, that need restart tuner. Please, turn off tuner and turn on it again.</string>
   <string name="pref_restart_ok">OK</string>
-  <string name="pref_restart_no">No, later</string>
-  <string name="pref_restarting">Now the application will restart ITSELF. Nothing to do manually.</string>
   <string name="preference_title">Preferences</string>
   <string name="preference_tuner">Tuner</string>
   <string name="preference_tuner_stereo_title">Tuner stereo</string>
@@ -69,5 +65,9 @@
   <string name="preference_about_github_summary">Modification are open source project</string>
   <string name="preference_about_github_link"
       translatable="false">https://github.com/vladislav805/Spirit3-FM</string>
+  <string name="mhz"
+      translatable="false">MHz</string>
+  <string name="preference_application_custom_notification_title">Custom notification</string>
+  <string name="preference_application_custom_notification_summary">Custom notification has more features for control</string>
 
 </resources>

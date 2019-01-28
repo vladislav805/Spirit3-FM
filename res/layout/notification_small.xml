@@ -5,22 +5,32 @@
     android:background="@color/main_background"
     android:layout_width="match_parent"
     android:layout_height="64dp">
-  <ImageView
-      android:id="@+id/notification_icon"
-      android:tint="@color/primary_blue"
-      android:layout_width="60dp"
+  <LinearLayout
+      android:orientation="vertical"
+      android:layout_width="120dp"
       android:layout_height="match_parent"
-      android:paddingStart="16dp"
-      android:src="@drawable/ic_radio" />
-  <TextView
-      android:id="@+id/notification_frequency"
-      android:textSize="18sp"
-      android:gravity="center"
-      android:maxLines="1"
-      android:textColor="@color/primary_blue"
-      android:layout_width="70dp"
-      android:layout_height="match_parent"
-      android:text="&lt; ? &gt;" />
+      android:weightSum="100">
+    <TextView
+        android:id="@+id/notification_frequency"
+        android:textSize="20sp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/primary_blue"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="60"
+        android:text="&lt; ? &gt;" />
+    <TextView
+        android:id="@+id/notification_name"
+        android:textSize="14sp"
+        android:gravity="center"
+        android:maxLines="1"
+        android:textColor="@color/primary_blue"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="40"
+        android:text="MHz" />
+  </LinearLayout>
   <LinearLayout
       android:orientation="horizontal"
       android:layout_width="0dp"

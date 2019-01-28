@@ -22,7 +22,15 @@ import java.io.File;
 @SuppressWarnings({"deprecation", "FieldCanBeLocal", "SameParameterValue"})
 public class PrefActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener, Preference.OnPreferenceClickListener {
 
-  private boolean mModified = false;
+  private String[] mKeysForRestartTuner = {"tuner_most", "audio_sample_rate", "pref_audio_source"};
+  private final String[] mPrefsWithListener = {
+      "pref_start_native_service",
+      "pref_version",
+      "pref_kill_native_service",
+      "pref_debug_info",
+      "pref_force_tuner_state",
+      "pref_force_audio_state"
+  };
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -52,16 +60,10 @@ public class PrefActivity extends PreferenceActivity implements SharedPreference
     getSharedPreferences(C.DEFAULT_PREFERENCES, MODE_PRIVATE).registerOnSharedPreferenceChangeListener(this);
   }
 
-  private String[] mKeysForRestartTuner = {"tuner_most", "audio_sample_rate", "pref_audio_source"};
-
   public void onSharedPreferenceChanged(SharedPreferences prefs, String key) {
-    if (mModified) {
-      return;
-    }
 
     for (String k : mKeysForRestartTuner) {
       if (key.equals(k)) {
-        mModified = true;
         setResult(RESULT_OK);
         break;
       }
@@ -83,17 +85,8 @@ public class PrefActivity extends PreferenceActivity implements SharedPreference
     return super.onOptionsItemSelected(item);
   }
 
-  private final String[] mIdsListener = {
-      "pref_start_native_service",
-      "pref_version",
-      "pref_kill_native_service",
-      "pref_debug_info",
-      "pref_force_tuner_state",
-      "pref_force_audio_state"
-  };
-
   private void showDeviceInfo() {
-    for (String key : mIdsListener) {
+    for (String key : mPrefsWithListener) {
       findPreference(key).setOnPreferenceClickListener(this);
     }
   }

@@ -109,6 +109,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ? | ZTE Nubia Z7 Mini | ? | ? | 801 | 8974AA |
 | □ | ZTE Nubia Z11 Mini S | ? | ? | 617 | 8952 |
 | ☑ | AGM A8 | AOSP | ? | 410 | 8916 |
+| ☑ | Samsung Galaxy S4 Mini I9192 | ? | ? | 400 | 8230AB |
 | ☑ | Samsung Galaxy S4 Mini I9195 | ? | 9.0 | 400 | 8230AB |
 | ☑ | Lenovo Vibe K5 Plus | CyanogenMod 12.1 | 5.1 | 616 | 8939v2 |
 | □ | Lenovo K5 | PACROM 6.0.1 | 6.1 | 616 | 8939v2 |

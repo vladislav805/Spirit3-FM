@@ -104,6 +104,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | Xiaomi Redmi 5 Plus | ? | 8.1 | 625 | 8953 |
 | ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 | S4 Plus | 8230 |
+| □ | Sony Xperia Z Ultra C6833 | Resurrection Remix 5.8.3 | 7.1.2 | 800 | 8974 |
 | □ | YotaPhone 2 | AOSP | 6.0.1 | 801 | 8974 |
 | ? | ZTE Nubia Z7 Mini | ? | ? | 801 | 8974AA |
 | □ | ZTE Nubia Z11 Mini S | ? | ? | 617 | 8952 |

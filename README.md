@@ -104,6 +104,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | Xiaomi Redmi 5 Plus | ? | 8.1 | 625 | 8953 |
 | ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 | S4 Plus | 8230 |
+| □ | Sony ZL | LineageOS 14.1 | 6.0 | S4 Pro | 8064 |
 | □ | Sony Xperia Z Ultra C6833 | Resurrection Remix 5.8.3 | 7.1.2 | 800 | 8974 |
 | □ | YotaPhone 2 | AOSP | 6.0.1 | 801 | 8974 |
 | ? | ZTE Nubia Z7 Mini | ? | ? | 801 | 8974AA |
@@ -113,6 +114,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Samsung Galaxy S4 Mini I9195 | ? | 9.0 | 400 | 8230AB |
 | ☑ | Lenovo Vibe K5 Plus | CyanogenMod 12.1 | 5.1 | 616 | 8939v2 |
 | □ | Lenovo K5 | PACROM 6.0.1 | 6.1 | 616 | 8939v2 |
+| x | LeEco Le Max 2 | Cuoco92 5.9.028s | 6.0 | 820 | 8996 |
 
 | Иконка | Описание |
 |:------:| -------- |
@@ -127,7 +129,8 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
       
 ## Известные проблемы
 * Snapdragon 636 и 801, кажется, не поддерживается полностью (используют не /dev/radio0, а выпиленный способ от BCH; Texas Instruments).
-* На ZTE Nubia Z11 Mini S хрипит, при выключении стоковое радио работает через динамик. 
+* На ZTE Nubia Z11 Mini S хрипит, при выключении стоковое радио работает через динамик;
+* Sony ZL хрипит.
 
 
 ## Feedback

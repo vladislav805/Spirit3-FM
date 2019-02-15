@@ -10,6 +10,8 @@
     <item>6 - VOICE_RECOGNITION</item>
     <item>7 - VOICE_COMMUNICATION</item>
     <item>8 - REMOTE_SUBMIX</item>
+    <item>1998 - RADIO_TUNER</item>
+    <item>1999 - HOTWORD</item>
   </string-array>
   <string-array name="pref_audio_source_values">
     <item>0</item>
@@ -21,5 +23,7 @@
     <item>6</item>
     <item>7</item>
     <item>8</item>
+    <item>1998</item>
+    <item>1999</item>
   </string-array>
 </resources>

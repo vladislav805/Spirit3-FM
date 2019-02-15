@@ -50,7 +50,7 @@ public class PrefActivity extends PreferenceActivity implements SharedPreference
 
     try {
       String versionName = getPackageManager().getPackageInfo(getPackageName(), 0).versionName;
-      findPreference("pref_version").setSummary(getString(R.string.preference_summary_version, versionName, C.BUILD));
+      findPreference("pref_version").setSummary(getString(R.string.preference_summary_version, versionName, C.BUILD, C.DEBUG ? ";debug version" : ""));
     } catch (PackageManager.NameNotFoundException e) {
       e.printStackTrace();
     }

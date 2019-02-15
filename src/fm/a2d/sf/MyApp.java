@@ -36,7 +36,7 @@ public class MyApp extends Application {
 
       // create log folder
       if (!logDirectory.exists()) {
-        mkdirs = mkdirs || logDirectory.mkdir();
+        mkdirs = mkdirs && logDirectory.mkdir();
       }
 
       if (!mkdirs) {

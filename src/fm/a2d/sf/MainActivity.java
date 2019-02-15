@@ -9,8 +9,10 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.media.AudioManager;
 import android.os.Bundle;
+import android.view.Gravity;
 import android.view.View;
 import android.widget.TextView;
+import android.widget.Toast;
 import fm.a2d.sf.helper.L;
 
 public class MainActivity extends Activity {
@@ -46,6 +48,12 @@ public class MainActivity extends Activity {
 
     gui_start();
     initBroadcastListener();
+
+    if (C.DEBUG) {
+      Toast t = Toast.makeText(this, R.string.toast_debug_mode, Toast.LENGTH_LONG);
+      t.setGravity(Gravity.CENTER, 0, 0);
+      t.show();
+    }
 
     log("activity done");
   }

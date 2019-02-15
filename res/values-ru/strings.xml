@@ -57,4 +57,5 @@
   <string name="preference_tuner_stereo_title">Включение стерео звука на уровне железа</string>
   <string name="preference_application_custom_notification_title">Кастомное уведомление</string>
   <string name="preference_application_custom_notification_summary">Нестандартное уведомление с бОльшим количеством функций</string>
+  <string name="toast_debug_mode">ВНИМАНИЕ! Это отладочная версия! Крайне не рекомендуется использовать ее как повседневную, поскольку она может "убить" память потому что постоянно пишутся логи. Используйте эту сбору только для разовых проверок и записи логов!</string>
 </resources>

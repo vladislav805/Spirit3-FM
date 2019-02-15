@@ -39,7 +39,7 @@
   <string name="toast_frequency_changed">Frequency changed to %.1f MHz</string>
   <string name="toast_frequency_invalid">Invalid frequency</string>
   <string name="logcat_send_logs">Send logs</string>
-  <string name="preference_summary_version" translatable="false">v%1$s (build %2$d)</string>
+  <string name="preference_summary_version" translatable="false">v%1$s (build %2$d%3$s)</string>
   <string name="frequency_invalid_format">Invalid format of frequency</string>
   <string name="pref_restart_title">Need restart</string>
   <string name="pref_restart_message">You\'ve modified preferences, that need restart tuner. Please, turn off tuner and turn on it again.</string>
@@ -69,5 +69,6 @@
   <string name="preference_application_custom_notification_title">Custom notification</string>
   <string name="preference_application_custom_notification_summary">Custom notification has more features for control</string>
   <string name="preference_application_visualizer_title">Visualizer</string>
+  <string name="toast_debug_mode">WARNING! This is a debug version! It is strongly not recommended to use it as a usual application, as it can "kill" the memory, because the logs are constantly recorded. Use this collection only for one-time checks and logging!</string>
 
 </resources>

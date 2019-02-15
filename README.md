@@ -5,6 +5,12 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
+#### build 20190215 (3.0.11)
+* Добавление в источники аудио TUNER_RADIO (1998) и HOTWORD (1999);
+* Добавление стандартного ActionBar, удаление шапки приложения;
+* Перенос всей логики GUI из класса gui_gui в MainActivity;
+* Добавление ручного сбора logcat.
+
 #### build 20190128 (3.0.10)
 * Исправление критической ошибки версии 3.0.9a;
 * Восстановление в настройках кастомного уведомления + улучшение самого уведомления;

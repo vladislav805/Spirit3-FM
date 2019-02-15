@@ -6,7 +6,7 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20190128;
+  public static final int BUILD = 20190215;
   public static volatile boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";

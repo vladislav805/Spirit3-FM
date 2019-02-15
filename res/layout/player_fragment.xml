@@ -6,122 +6,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     xmlns:android="http://schemas.android.com/apk/res/android">
 
-<!-- Top display area: record button/indicator top left, volume (speaker image) top right, PS, RT -->
-  <LinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="@dimen/header_height"
-      android:layout_gravity="center"
-      android:orientation="horizontal">
-
-<!-- RSSI -->
-    <LinearLayout
-        android:layout_marginStart="@dimen/header_horizontal_margin"
-        android:layout_marginEnd="@dimen/header_horizontal_margin"
-        android:orientation="horizontal"
-        android:layout_weight="3"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        tools:ignore="UseCompoundDrawables">
-      <ImageView
-          android:id="@+id/iv_signal"
-          android:src="@drawable/ic_signal_off"
-          android:layout_marginEnd="@dimen/header_horizontal_margin"
-          android:layout_gravity="center_vertical"
-          android:layout_width="@dimen/header_icons_size"
-          android:layout_height="@dimen/header_icons_size"
-          android:contentDescription="@string/header_cd_rssi" />
-      <TextView
-          android:id="@+id/tv_rssi"
-          android:contentDescription="@string/header_cd_rssi"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:text="@string/header_rssi_default"
-          android:textSize="@dimen/header_rssi_text_size"
-          android:textStyle="normal"
-          android:textColor="@color/header_grey"
-          android:fontFamily="monospace"
-          android:gravity="center_vertical|center_horizontal"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:maxLines="1" />
-    </LinearLayout>
-
-<!-- PS -->
-    <TextView
-        android:id="@+id/tv_ps"
-        android:contentDescription="@string/header_rds_ps"
-        android:text="@string/application_name"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:textColor="#ffffffff"
-        android:gravity="center"
-        android:layout_width="0dip"
-        android:layout_height="match_parent"
-        android:maxLines="1"
-        android:shadowColor="#ff000000"
-        android:shadowDy="1.0"
-        android:layout_weight="8" />
-
-    <LinearLayout
-        android:layout_marginStart="@dimen/header_horizontal_margin"
-        android:layout_marginEnd="@dimen/header_horizontal_margin"
-        android:orientation="horizontal"
-        android:gravity="center_vertical|end"
-        android:layout_weight="3"
-        android:layout_width="0dp"
-        android:layout_height="match_parent">
-<!-- Volume & Mute/unmute display -->
-      <ImageView
-          android:id="@+id/iv_audio_out"
-          android:contentDescription="@string/header_volume"
-          android:visibility="visible"
-          android:src="@drawable/ic_speaker"
-          android:focusable="true"
-          android:clickable="true"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:scaleType="center" />
-
-<!-- Stereo -->
-      <TextView
-          android:id="@+id/tv_most"
-          android:visibility="gone"
-          android:contentDescription="@string/header_stereo"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          android:textSize="12sp"
-          android:textStyle="normal"
-          android:textColor="#ffa3a3a3"
-          android:gravity="center_vertical|center_horizontal"
-          android:layout_gravity="center_vertical|center_horizontal"
-          android:maxLines="1" />
-
-<!-- Record -->
-      <LinearLayout
-          android:orientation="horizontal"
-          android:gravity="center_vertical|end"
-          android:layout_width="wrap_content"
-          android:layout_height="match_parent"
-          tools:ignore="UseCompoundDrawables">
-<!-- Record time -->
-        <TextView
-            android:visibility="gone"
-            android:id="@+id/tv_record_duration"
-            android:textColor="#DA3B3B"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent" />
-<!-- Record -->
-        <ImageView
-            android:id="@+id/iv_record"
-            android:contentDescription="@string/header_record"
-            android:focusable="true"
-            android:clickable="true"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:src="@drawable/sel_record" />
-      </LinearLayout>
-    </LinearLayout>
-  </LinearLayout>
-
 <!-- Middle display area: text frequency -->
   <LinearLayout
       android:layout_marginTop="@dimen/seek_frequency_margin_vertical"
@@ -175,18 +59,51 @@
         android:src="@drawable/ic_frequency_next" />
   </LinearLayout>
 
-<!-- Current station name -->
-  <TextView
-      android:id="@+id/curr_name_station"
-      android:visibility="visible"
-      android:textAlignment="center"
-      android:textSize="@dimen/station_name_text_size"
-      android:textColor="@color/primary_blue_shadow"
-      android:gravity="center"
-      android:layout_marginBottom="@dimen/seek_frequency_margin_vertical"
-      android:layout_gravity="center_vertical"
+  <LinearLayout
+      android:orientation="horizontal"
       android:layout_width="match_parent"
-      android:layout_height="@dimen/station_name_height" />
+      android:layout_height="wrap_content">
+    <LinearLayout
+        android:layout_marginStart="@dimen/header_horizontal_margin"
+        android:layout_marginEnd="@dimen/header_horizontal_margin"
+        android:orientation="horizontal"
+        android:layout_width="70dp"
+        android:layout_height="match_parent"
+        tools:ignore="UseCompoundDrawables">
+      <ImageView
+          android:id="@+id/iv_signal"
+          android:src="@drawable/ic_signal_off"
+          android:layout_marginEnd="@dimen/header_horizontal_margin"
+          android:layout_gravity="center_vertical"
+          android:layout_width="@dimen/header_icons_size"
+          android:layout_height="@dimen/header_icons_size"
+          android:contentDescription="@string/header_cd_rssi" />
+      <TextView
+          android:id="@+id/tv_rssi"
+          android:contentDescription="@string/header_cd_rssi"
+          android:layout_width="wrap_content"
+          android:layout_height="match_parent"
+          android:text="@string/header_rssi_default"
+          android:textSize="@dimen/header_rssi_text_size"
+          android:textStyle="normal"
+          android:textColor="@color/header_grey"
+          android:fontFamily="monospace"
+          android:gravity="center_vertical|center_horizontal"
+          android:layout_gravity="center_vertical|center_horizontal"
+          android:maxLines="1" />
+    </LinearLayout>
+<!-- Current station name -->
+    <TextView
+        android:id="@+id/curr_name_station"
+        android:textAlignment="center"
+        android:textSize="@dimen/station_name_text_size"
+        android:textColor="@color/primary_blue_shadow"
+        android:layout_marginEnd="70dp"
+        android:layout_gravity="center_vertical|center_horizontal"
+        android:gravity="center_vertical|center_horizontal"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/station_name_height" />
+  </LinearLayout>
 
 <!-- Seek frequency -->
   <HorizontalScrollView

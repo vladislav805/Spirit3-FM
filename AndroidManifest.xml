@@ -3,8 +3,8 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="fm.a2d.sf"
-    android:versionCode="30010"
-    android:versionName="3.0.10" >
+    android:versionCode="30011"
+    android:versionName="3.0.11" >
 
   <uses-sdk android:minSdkVersion="21" android:targetSdkVersion="21" tools:ignore="OldTargetApi"/>
 
@@ -43,7 +43,6 @@
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
     </activity>
-    <activity android:name=".LogCatActivity"/>
     <activity
         android:label="@string/preference_title"
         android:theme="@android:style/Theme.Material"

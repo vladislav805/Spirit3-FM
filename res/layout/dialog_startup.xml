@@ -19,6 +19,14 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content" />
   <TextView
+      android:id="@+id/dialog_startup_debug"
+      android:text="@string/toast_debug_mode"
+      android:visibility="gone"
+      android:layout_margin="8dp"
+      android:textColor="@color/red"
+      android:layout_width="match_parent"
+      android:layout_height="wrap_content"/>
+  <TextView
       android:id="@+id/dialog_startup_build"
       android:layout_marginTop="@dimen/dialog_startup_margin_ani_text"
       android:textSize="12sp"

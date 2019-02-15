@@ -7,7 +7,7 @@ package fm.a2d.sf;
 public class C {
 
   public static final int BUILD = 20190128;
-  public static final boolean DEBUG = false;
+  public static volatile boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
   public static final String GUI_START_COUNT = "radio_gui_start_count";

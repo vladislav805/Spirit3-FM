@@ -17,6 +17,10 @@ public class MyApp extends Application {
   public void onCreate() {
     super.onCreate();
 
+    if (isManualEnableDebug()) {
+      C.DEBUG = true;
+    }
+
     initLogCatWriter();
   }
 
@@ -56,6 +60,10 @@ public class MyApp extends Application {
   /* Checks if external storage is available for read and write */
   private boolean isExternalStorageWritable() {
     return Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
+  }
+
+  private boolean isManualEnableDebug() {
+    return new File(Environment.getExternalStorageDirectory() + "/Spirit3/enable_debug").exists();
   }
 
 }

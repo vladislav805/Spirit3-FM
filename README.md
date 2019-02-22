@@ -121,6 +121,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Lenovo Vibe K5 Plus | CyanogenMod 12.1 | 5.1 | 616 | 8939v2 |
 | □ | Lenovo K5 | PACROM 6.0.1 | 6.1 | 616 | 8939v2 |
 | x | LeEco Le Max 2 | Cuoco92 5.9.028s | 6.0 | 820 | 8996 |
+| ☑ | Asus ZE552KL | AOSP | 6.0.1 | 625 | 8953 |
 
 | Иконка | Описание |
 |:------:| -------- |

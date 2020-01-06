@@ -49,7 +49,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 * Добавлена страница с настройками и отладочной информацией (открывается долгим зажатием по частоте).
 
 #### build 20180907 (3.0.3)
-* Появился и начал работать переключатель наушники/динамики (ура); 
+* Появился и начал работать переключатель наушники/динамики (ура);
 * Главный экран претерпел небольшие изменения:
     * Убран визуализатор (временно);
     * Кнопки сдвига на -0.1MHz и +0.1MHz передвинуты на строку с текущей частотой;
@@ -94,12 +94,12 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
     * Огромное количество графики заменено на вектор;
     * Обновлен стартовый экран;
     * Увеличено количество пресетов, теперь они динамически создаются;
-    * Заменен шрифт частоты на главном экране, при нажатии на нее, открывается окно с текущей частотой; 
+    * Заменен шрифт частоты на главном экране, при нажатии на нее, открывается окно с текущей частотой;
 * Изменен формат RSSI (колеблется между 0-64) + иконка качества сигнала.
 
 ## Официально работает
 
-| ? | Устройство | ОС | Версия ОС | QSD | MSM |  
+| ? | Устройство | ОС | Версия ОС | QSD | MSM |
 |:-:| ---------- | -- |:-------------:|:---:|:---:|
 | ☑ | Xiaomi Mi A1 | AOSP | 7.1.2 | 625 | 8953 |
 | ☑ | Xiaomi Mi A1 | AOSP | 8.1 | 625 | 8953 |
@@ -107,6 +107,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Xiaomi Mi Max | MIUI ? | 7.x | 650 | 8956 |
 | ☑ | Xiaomi Mi A2 Lite \[magisk\] | AOSP | 8.1 | 625 | 8953 |
 | ☑ | Xiaomi Redmi Note 4 (Mido) | MIUI 9.0 | ? | 625 | 8953 |
+| ☑ | Xiaomi Redmi 4 Prime | MIUIpro 10 9.3.28v | ? | 625 | 8953 |
 | ? | Xiaomi Redmi Note 4X | ? | ? | 625 | 8953 |
 | ☑ | Xiaomi Redmi 5 Plus | ? | 8.1 | 625 | 8953 |
 | ☑ | Sony Xperia L | CyanogenMod 12.1 | 5.1 | S4 Plus | 8230 |
@@ -125,6 +126,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 | ☑ | Asus ZE552KL | AOSP | 6.0.1 | 625 | 8953 |
 | ☑ | Motorola Moto Z2 Play | LineageOS 15.1 | 8.1 | 626 | 8953 Pro |
 | ☑ | Motorola Moto X Play | LineageOS 14.1 | 7.1 | 615 | 8939 |
+| x | Honor 8C | EMUI 8.2 | ? | 632 | ? |
 
 | Иконка | Описание |
 |:------:| -------- |
@@ -136,7 +138,7 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 
 ## 4PDA
 Все релизы и установочные файлы публикуются на 4pda: [пост в теме форума](http://4pda.ru/forum/index.php?showtopic=543819&view=findpost&p=76841416). Для скачивания apk требуется авторизация (иначе 404).
-      
+
 ## Известные проблемы
 * Snapdragon 636 и 801, кажется, не поддерживается полностью (используют не /dev/radio0, а выпиленный способ от BCH; Texas Instruments).
 * На ZTE Nubia Z11 Mini S хрипит, при выключении стоковое радио работает через динамик;
@@ -162,12 +164,12 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
   adb logcat > log.txt
   ```
   Для остановки сбора (клавиша по умолчанию) -- Ctrl+C
-  LogCat: 
+  LogCat:
   Если скрины, то чтобы не скринить всё подряд -- фильтрация по следующим тегам (без кавычек):
     * `s2tnr_qcv`
     * `sfcom`
     * `s2d......`
-    
+
 ## Contributions
 * Author: [Mike Reid](https://github.com/mikereidis) RIP ![Rest in peace](https://cs5-3.4pda.to/11327050.gif) (c) 2010-2015
 * Modification: [Vladislav Veluga](https://github.com/vladislav805) (c) 2018

@@ -581,7 +581,7 @@ char * space_trim(char * str) {
 }
 
 char * itostereo(int stereo) {
-  return stereo ? "Stereo" : "Mono";
+  return stereo ? "stereo" : "mono";
 }
 
 void cb_tnr_stereo(int stereo) {
@@ -738,31 +738,35 @@ int tuner_init() {
     return native_alsa_cmd(2, key, value);
   }
 
-  static int sys_run (char * cmd) {
-    int ret = system (cmd);                                             // !! Binaries like ssd that write to stdout cause C system() to crash !
-    logd ("sys_run ret: %d  cmd: \"%s\"", ret, cmd);
-    return (ret);
-  }
+static int sys_run(char* cmd) {
+  int ret = system(cmd); // !! Binaries like ssd that write to stdout cause C system() to crash !
+  logd("sys_run ret: %d; cmd: \"%s\"", ret, cmd);
+  return ret;
+}
 
-  static char sys_cmd [32768] = {0};
-  static int sys_commit () {
-    int ret = sys_run (sys_cmd);                                        // Run
-    sys_cmd [0] = 0;                                                    // Done, so zero
-    return (ret);
+static char sys_cmd[32768] = {0};
+
+static int sys_commit() {
+  int ret = sys_run(sys_cmd); // Run
+  sys_cmd[0] = 0;             // Done, so zero
+  return ret;
+}
+
+// Additive single string w/ commit version
+static int cached_sys_run(char* new_cmd) {
+  char cmd[512] = {0};
+  if (strlen(sys_cmd) == 0) { // If first command since commit
+    snprintf(cmd, sizeof(cmd), "%s", new_cmd);
+  } else {
+    snprintf(cmd, sizeof(cmd), " ; %s", new_cmd);
   }
-  static int cached_sys_run (char * new_cmd) {                          // Additive single string w/ commit version
-    char cmd [512] = {0};
-    if (strlen (sys_cmd) == 0)                                          // If first command since commit
-      snprintf (cmd, sizeof (cmd), "%s", new_cmd);
-    else
-      snprintf (cmd, sizeof (cmd), " ; %s", new_cmd);
-    strncat (sys_cmd, cmd, sizeof (sys_cmd));
-    int ret = sys_commit ();                                            // Commit every command now, due to GS3/Note problems
-    return (ret);
-  }
+  strncat(sys_cmd, cmd, sizeof(sys_cmd));
+  int ret = sys_commit(); // Commit every command now, due to GS3/Note problems
+  return (ret);
+}
 
 
-  static char * codec_reg          = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
+static char * codec_reg          = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
 
   
 
@@ -842,7 +846,7 @@ int dev_digital_input_off() {
 }
 
 int chmod_need = 1;
-char * set_radio_dai_state(char * dai_state) {
+char* set_radio_dai_state(char* dai_state) {
   if (!strncasecmp(dai_state, "start", 5)) {
     logd("dai Start: %d", dev_digital_input_on());
   } else if (!strncasecmp(dai_state, "stop", 4)) {
@@ -853,14 +857,14 @@ char * set_radio_dai_state(char * dai_state) {
   return dai_state;
 }
 
-int server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
-  s2d_cmd_log = !!file_get ("/mnt/sdcard/sf/s2d_log");
+int server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* res_buf, int res_max) {
+  s2d_cmd_log = !!file_get("/mnt/sdcard/sf/s2d_log");
 
   if (s2d_cmd_log) {
     logd ("server_work_func cmd_len: %d  cmd_buf: \"%s\"", cmd_len, cmd_buf);
   }
 
-  int res_len = tuner_server_work_func (cmd_buf, cmd_len, res_buf, res_max);
+  int res_len = tuner_server_work_func(cmd_buf, cmd_len, res_buf, res_max);
 
   if (s2d_cmd_log) {
     logd ("res_len: %d  res_buf: \"%s\"", res_len, res_buf);
@@ -870,13 +874,13 @@ int server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_b
 }
 
 
-int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
+int tuner_server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* res_buf, int res_max) {
   int terminate = 0;
 
   int ret = 0;
   char key[DEF_BUF] = {0};
   size_t klen = 0;
-  char * ckey = &cmd_buf[2];    // Command/compare key
+  char* ckey = &cmd_buf[2]; // Command/compare key
 
   if (cmd_buf == NULL) {
     loge ("!!!!!!!!!!!!");
@@ -897,8 +901,8 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
      * `s key value`
      * val = address of "key" ; add klen later when determined
      */
-    char * val = &cmd_buf[3];
-    char cval [DEF_BUF] = {0};  // Compare value filled in when testing each possible value, for defined states
+    char* val = &cmd_buf[3];
+    char cval[DEF_BUF] = {0}; // Compare value filled in when testing each possible value, for defined states
     size_t clen = 0;
 
     if (strcpy(key, "tuner_band") && (klen = strlen (key)) && !strncmp(ckey, key, klen)) { // Tuner Band USED TO HAVE TO be set before Tuner State Start
@@ -908,20 +912,20 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
       } else if (strcpy(cval, "US") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // US
         freq_inc = 200;
       } else {
-        cval [0] = 0;
+        cval[0] = 0;
       }
       if (cval[0]) {
         strncpy(curr_tuner_band, cval, sizeof(curr_tuner_band));
         //logd ("set_band: %d", tnr_funcs->set_band (NULL, atoi (val + klen)));         freq_inc used in tuner start
         if (freq_inc < 200) {
-          tnr_funcs->send_extra_command (NULL, "990", NULL, NULL);
+          tnr_funcs->send_extra_command(NULL, "990", NULL, NULL);
         } else {
-          tnr_funcs->send_extra_command (NULL, "991", NULL, NULL);
+          tnr_funcs->send_extra_command(NULL, "991", NULL, NULL);
         }
       }
     } else if (strcpy(key, "tuner_state") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) { // Tuner State
       val += klen;
-      if (strcpy(cval, "Start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
+      if (strcpy(cval, "start") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) { // Start
         ret = 0;
         if (tuner_initialized == 0) {
           ret = tuner_init();
@@ -934,7 +938,7 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
 
         if (ret == 0) {
           // Start receive: Enable API, power on chip, start rx_thread
-          logd("rx_start: %d", ret = tnr_funcs->rx_start (NULL, g_cbp, 87500, 108000, 106100, freq_inc));
+          logd("rx_start: %d", ret = tnr_funcs->rx_start(NULL, g_cbp, 87500, 108000, 106100, freq_inc));
         }
 
         if (ret != 0) {
@@ -957,11 +961,11 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
     } else if (strcpy(key, "tuner_scan_state") && (klen = strlen (key)) && !strncmp(ckey, key, klen)) { // Tuner Scan State
       val += klen;
       if (strcpy(cval, "up") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
-        logd ("scan: %d", ret = tnr_funcs->scan(NULL, 1));
+        logd("scan: %d", ret = tnr_funcs->scan(NULL, 1));
       } else if (strcpy(cval, "down") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
-        logd ("scan: %d", ret = tnr_funcs->scan(NULL, 0));
+        logd("scan: %d", ret = tnr_funcs->scan(NULL, 0));
       } else if (strcpy(cval, "stop") && (clen = strlen(cval)) && !strncasecmp(val, cval, clen)) {
-        logd ("stop_scan: %d", ret = tnr_funcs->stop_scan(NULL));
+        logd("stop_scan: %d", ret = tnr_funcs->stop_scan(NULL));
       } else {
         cval[0] = 0;
       }
@@ -1014,7 +1018,7 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
       val += klen;
       logd("set_frequency: %d", tnr_funcs->set_frequency(NULL, atoi(val)));
       curr_tuner_freq_int = atoi(val);
-      strncpy (curr_tuner_freq, val, sizeof(curr_tuner_freq));
+      strncpy(curr_tuner_freq, val, sizeof(curr_tuner_freq));
     } else if (strcpy(key, "tuner_thresh") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       val += klen;
       logd("set_threshold: %d", tnr_funcs->set_threshold(NULL, atoi(val)));
@@ -1116,16 +1120,16 @@ int tuner_server_work_func(unsigned char * cmd_buf, int cmd_len, unsigned char *
 
 
 
-  int s2d_cmd (int cmd_len, char * cmd_buf, int res_len, char * res_buf) {
-    res_len = client_cmd (cmd_buf, cmd_len, res_buf, res_len);      // Send cmd_buf and get response to res_buf
-    if (res_len > 0 && res_len <= DEF_BUF) {
-      memcpy (cmd_buf, res_buf, res_len);
-      return (res_len);
-    }
-    cmd_buf [0] = '7';
-    cmd_buf [1] = 0;
-    return (2);
+int s2d_cmd(int cmd_len, char* cmd_buf, int res_len, char* res_buf) {
+  res_len = client_cmd(cmd_buf, cmd_len, res_buf, res_len); // Send cmd_buf and get response to res_buf
+  if (res_len > 0 && res_len <= DEF_BUF) {
+    memcpy(cmd_buf, res_buf, res_len);
+    return res_len;
   }
+  cmd_buf[0] = '7';
+  cmd_buf[1] = 0;
+  return 2;
+}
 
   //#include <readline/readline.h>
   //#include <readline/history.h>

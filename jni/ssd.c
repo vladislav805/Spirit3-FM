@@ -112,12 +112,14 @@ prebuilt/ndk/android-ndk-r4/platforms/android-8/arch-x86/usr/include/linux/msm_a
     } while (err < 0 && errno == EINTR);*/
   }
 
-  int ms_sleep (int ms) {
-    if (ms > 10)
-      loge ("ms_sleep ms: %d", ms);
-    usleep (ms * 1000);                                             // ?? Use nanosleep to avoid SIGALRM ??
-    return (0);
+int ms_sleep (int ms) {
+  if (ms > 10) {
+    loge("ms_sleep ms: %d", ms);
   }
+
+  usleep(ms * 1000); // ?? Use nanosleep to avoid SIGALRM ??
+  return 0;
+}
 
 
 

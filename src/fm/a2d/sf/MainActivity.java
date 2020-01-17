@@ -49,6 +49,7 @@ public class MainActivity extends Activity implements View.OnClickListener, View
   private TextView mViewRSSI = null;
   private TextView mViewFrequency = null;
   private TextView mViewName = null;
+  private TextView mViewPS = null;
 
   // ImageView Buttons:
   private ImageView mViewSeekUp = null;
@@ -183,6 +184,7 @@ public class MainActivity extends Activity implements View.OnClickListener, View
     mVisualizerView = (VisualizerView) findViewById(R.id.gui_vis);
 
     mViewName = (TextView) findViewById(R.id.curr_name_station);
+    mViewPS = (TextView) findViewById(R.id.curr_rds_ps);
 
     setupPresets();
 
@@ -436,6 +438,7 @@ public class MainActivity extends Activity implements View.OnClickListener, View
         mViewSeekDown,
         mViewSignal,
         mViewName,
+        mViewPS,
         mViewSeekFrequency,
         mViewRSSI
     };
@@ -668,6 +671,7 @@ public class MainActivity extends Activity implements View.OnClickListener, View
       onFrequencyChanged(mLastFrequency / 1000f);
     }
 
+    mViewPS.setText(intent.getStringExtra(C.TUNER_RDS_PS));
 
     updateUIViewsByPowerState(mApi.isTunerStarted());
     setPlayToggleButtonState(mApi.audio_state);

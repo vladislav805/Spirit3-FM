@@ -55,6 +55,9 @@ public class com_api {
   public String tuner_qual = "";//SN 99";      // ro ... ... Values:   SN 99, SN 30
   public String tuner_most = "";//Mono";       // ro ... ... Values:   mono, stereo, 1, 2, blend, ... ?      1.5 ?
 
+  public String rds_ps = ""; // PS
+  //public String rds_rt = ""; // RT
+
   private static void log(String s) {
     L.w(L.T.API, s);
   }

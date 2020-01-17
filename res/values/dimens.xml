@@ -14,6 +14,7 @@
 
   <dimen name="station_name_height">26dp</dimen>
   <dimen name="station_name_text_size">20sp</dimen>
+  <dimen name="rds_ps_size">16sp</dimen>
 
   <dimen name="seek_frequency_margin_vertical">10dp</dimen>
   <dimen name="seek_frequency_margin_horizontal">8dp</dimen>

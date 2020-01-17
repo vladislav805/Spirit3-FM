@@ -1,5 +1,4 @@
-
-    // FM Chip non-specific generic code, #include'd in tnr_bch.cpp, tnr_ssl.cpp, tnr_qcv.cpp
+// FM Chip non-specific generic code, #include'd in tnr_bch.cpp, tnr_ssl.cpp, tnr_qcv.cpp
 
 #include <dlfcn.h>
 #include <string.h>
@@ -21,47 +20,61 @@
 #include <android/log.h>
 #include "jni.h"
 
+
 #include "inc/android_fmradio.h"
+#define loge(...) fm_log_print(ANDROID_LOG_ERROR, LOGTAG,__VA_ARGS__)
+#define logd(...) fm_log_print(ANDROID_LOG_DEBUG, LOGTAG,__VA_ARGS__)
+int fm_log_print(int prio, const char* tag, const char* fmt, ...);
+void chip_imp_get_rds_ps(char* dst);
+void chip_imp_get_rds_rt(char* dst);
+
+// FM Chip specific functions in this code called from generic plug.c code:
+
+int chip_lock_val = 0;
+char* curr_lock_cmd = "none";
 
 
-  #define  loge(...)  fm_log_print(ANDROID_LOG_ERROR, LOGTAG,__VA_ARGS__)
-  #define  logd(...)  fm_log_print(ANDROID_LOG_DEBUG, LOGTAG,__VA_ARGS__)
-  int fm_log_print (int prio, const char * tag, const char * fmt, ...);
+int chip_lock_get(char* cmd) {
 
-    // FM Chip specific functions in this code called from generic plug.c code:
-
-  int chip_lock_val = 0;
-  char * curr_lock_cmd = "none";
-  int chip_lock_get (char * cmd) {
 #ifdef EVT_LOCK_BYPASS
-    return (0);
+    return 0;
 #endif
 
-    int retries = 0;
-    int max_msecs = 3030;
-    int sleep_ms = 101; // 10
-    while (retries ++ < max_msecs / sleep_ms) {
-      chip_lock_val ++;
-      if (chip_lock_val == 1) {
-        curr_lock_cmd = cmd;
-        return (0);
-      }
-      chip_lock_val --;
-      if (chip_lock_val < 0)
-        chip_lock_val = 0;
-      loge ("sleep_ms: %d  retries: %d  cmd: %s  curr_lock_cmd: %s", sleep_ms, retries, cmd, curr_lock_cmd);
-      ms_sleep (sleep_ms);
+  int retries = 0;
+  int max_msecs = 3030;
+  int sleep_ms = 101; // 10
+
+  while (retries++ < max_msecs / sleep_ms) {
+    chip_lock_val++;
+
+    if (chip_lock_val == 1) {
+      curr_lock_cmd = cmd;
+      return 0;
     }
-    loge ("chip_lock_get retries exhausted");
-    return (-1);
-  }
-  int chip_lock_ret () {
-    if (chip_lock_val > 0)
-      chip_lock_val --;
-    if (chip_lock_val < 0)
+
+    chip_lock_val--;
+    if (chip_lock_val < 0) {
       chip_lock_val = 0;
-    return (0);
+    }
+
+    loge("sleep_ms: %d  retries: %d  cmd: %s  curr_lock_cmd: %s", sleep_ms, retries, cmd, curr_lock_cmd);
+    ms_sleep(sleep_ms);
   }
+
+  loge("chip_lock_get retries exhausted");
+  return -1;
+}
+
+int chip_lock_ret() {
+  if (chip_lock_val > 0) {
+    chip_lock_val--;
+  }
+
+  if (chip_lock_val < 0) {
+    chip_lock_val = 0;
+  }
+  return 0;
+}
 
 /*
     // API start/stop
@@ -215,7 +228,6 @@
   }
 
 
-
     // Generic utilities:
 
   const char * copyright = "Copyright (c) 2011-2014 Michael A. Reid. All rights reserved.";
@@ -236,7 +248,7 @@
       return (-1);
 
     va_list ap;
-    va_start ( ap, fmt ); 
+    va_start ( ap, fmt );
 
     if (log_handle == NULL) {
       log_handle = dlopen ("liblog.so", RTLD_LAZY);
@@ -418,7 +430,7 @@ int need_pi_chngd       = 0;
 int need_pt_chngd       = 0;
 int need_ps_chngd       = 0;
 int need_rt_chngd       = 0;
-
+//extern char curr_tuner_rds_ps[];
 
 int curr_freq_val     =  88500;
 int curr_freq_lo      =  87500;
@@ -531,6 +543,7 @@ int curr_pwr = 1;
 int low_pwr_mode = 0;
 int pre2_stro_sig = 0;
 
+struct fmradio_rds_bundle_t* rds = NULL;
 
 // Event getter:
 int evt_get(int just_poll) { // Called only from af_switch() w/ just_poll=1 or rx_thread() w/ just_poll=0
@@ -546,6 +559,10 @@ int evt_get(int just_poll) { // Called only from af_switch() w/ just_poll=1 or r
   }
 
   int curr_s = ms_get() / 1000;
+
+  if (rds == NULL) {
+    rds = malloc(sizeof(struct fmradio_rds_bundle_t));
+  }
 
   if (!low_pwr_mode) { // If normal / not low power mode w/ no RDS...
     // stro_get() before events_process() to avoid si4709 problem ?
@@ -616,15 +633,21 @@ int evt_get(int just_poll) { // Called only from af_switch() w/ just_poll=1 or r
     need_ps_chngd = 0;
     evt = 5;
 
+    chip_imp_get_rds_ps(rds->psn);
+
   } else if (need_rt_chngd) {
     evt_dbg && logd ("evt_get need_rt_chngd");
 
     need_rt_chngd = 0;
     evt = 6;
 
+    chip_imp_get_rds_rt(rds->rt);
+
   } else {
     evt_dbg && logd("evt_get no event");
   }
+
+  on_rds_data_found(rds, 0);
 
   return evt;
 }

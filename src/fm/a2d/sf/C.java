@@ -6,7 +6,7 @@ package fm.a2d.sf;
 @SuppressWarnings("WeakerAccess")
 public class C {
 
-  public static final int BUILD = 20190215;
+  public static final int BUILD = 20200117;
   public static volatile boolean DEBUG = false;
 
   public static final String GUI_START_FIRST_TIME = "radio_gui_first_time";
@@ -23,6 +23,8 @@ public class C {
   public static final String TUNER_FREQUENCY = "tuner_freq";
   public static final String TUNER_FREQUENCY_UP = "up";
   public static final String TUNER_FREQUENCY_DOWN = "down";
+
+  public static final String TUNER_RDS_PS = "tuner_rds_ps";
 
   public static final String AUDIO_STATE = "audio_state";
   public static final String AUDIO_STATE_STARTING = "starting";

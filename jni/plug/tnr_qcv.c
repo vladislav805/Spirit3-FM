@@ -22,7 +22,6 @@
 #include "inc/android_fmradio.h"
 #include "plug.c"
 
-
 #define EVT_LOCK_BYPASS // Locking causes problems at beginning due to blocking iris_buf_get()
 
 #define loge(...)  fm_log_print(ANDROID_LOG_ERROR, LOGTAG,__VA_ARGS__)
@@ -34,6 +33,7 @@ int ms_sleep(int ms);
 
 int fm_log_print(int prio, const char * tag, const char * fmt, ...);
 int __system_property_set(const char *key, const char *value);
+int chip_imp_events_process();
 
 extern int extra_log;// = 0;
 
@@ -68,8 +68,6 @@ extern int curr_freq_hi;
 
 // #define V4L2_CAP_DEVICE_CAPS            0x80000000  /* sets device capabilities field */
 
-
-  #include <sys/system_properties.h>
 
 int sys_run(char * cmd) {
   int ret = system(cmd);
@@ -327,7 +325,7 @@ int buf_display(char * buf, int size) {
 /**
  * Получение буфера на ???
  */
-int iris_buf_get(char * buf, int buf_len, int type) {
+/*int iris_buf_get(char * buf, int buf_len, int type) {
   int ret = 0;
 
   struct v4l2_requestbuffers reqbuf;
@@ -349,7 +347,7 @@ int iris_buf_get(char * buf, int buf_len, int type) {
   }
 
   return v4l2_buf.bytesused;
-}
+}*/
 
 
 #define MISC_BUF_SIZE    128
@@ -393,6 +391,8 @@ extern int need_pi_chngd; // 0;
 extern int need_pt_chngd; // 0;
 extern int need_ps_chngd; // 0;
 extern int need_rt_chngd; // 0;
+char curr_tuner_rds_ps[16];
+char curr_tuner_rds_rt[96];
 
 // Confirmed PS: When a new Current PS matches Candidate PS, the candidate is considered confirmed and copied here where the App can retrieve it.
 extern char conf_ps[9];// ="        ";
@@ -401,7 +401,6 @@ extern char conf_ps[9];// ="        ";
 extern char conf_rt[65];// ="                                                                ";
 
 int curr_stereo = 0;
-int iris_rds_ok_dbg = 1;
 
 
 /**
@@ -492,7 +491,6 @@ int chip_tuner_get() {
   }
 
   logd("chip_tuner_get VIDIOC_G_TUNER success: capability: 0x%x; rxsubchans: %d; audmode: %d; signal: %d", v4l_tuner.capability,  v4l_tuner.rxsubchans, v4l_tuner.audmode, v4l_tuner.signal);
-  logd("chip_tuner_get VIDIOC_G_TUNER rds support: %d", v4l_tuner.capability & V4L2_TUNER_CAP_RDS_CONTROLS);
 
   return ret;
 }
@@ -521,6 +519,145 @@ int v4l_antenna = 0;
 #define V4L2_CID_FM_TX_CLASS        (V4L2_CTRL_CLASS_FM_TX | 1)
 #define V4L2_CID_TUNE_POWER_LEVEL   (V4L2_CID_FM_TX_CLASS_BASE + 113)
 
+
+int rds_setup() {
+  int ret = -1;
+  struct v4l2_control control;
+  char soc_type[256] = {0};
+
+  ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_RDSON, 1);
+
+	if (ret < 0) {
+		logd("rds_setup Failed to set RDS on = %d", ret);
+		return -1;
+	}
+
+	control.id = V4L2_CID_PRIVATE_IRIS_RDSGROUP_PROC;
+	ret = ioctl(dev_hndl, VIDIOC_G_CTRL, &control);
+	if (ret < 0) {
+		logd("rds_setup Failed to set RDS group = %d", ret);
+		return -1;
+	}
+
+	int rdsMask = 23;
+	int rds_group_mask = (int) control.value;
+	int psAllVal = rdsMask & (1 << 4);
+
+	loge("rds_setup RdsOptions: %x", rdsMask);
+	rds_group_mask &= 0xC7; // 199
+
+	rds_group_mask |= ((rdsMask & 0x07) << 3); // 255
+
+	ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_RDSGROUP_PROC, rds_group_mask); // 255
+	if (ret < 0) {
+		loge("rds_setup Failed to set RDS on = %d", ret);
+		return -1;
+	}
+
+  logd("qcom soc before");
+  __system_property_get("qcom.bluetooth.soc", soc_type);
+  logd("qcom soc after = %s", soc_type);
+
+	if (strcmp(soc_type, "rome") == 0) {
+		ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_RDSGROUP_MASK, 1);
+		if (ret < 0) {
+			loge("rds_setup Failed to set RDS GRP MASK");
+			return -1;
+		}
+		ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_RDSD_BUF, 1);
+		if (ret < 0) {
+			loge("rds_setup Failed to set RDS BUF");
+			return -1;
+		}
+	} else {
+		ret = chip_ctrl_set(V4L2_CID_PRIVATE_IRIS_PSALL, psAllVal >> 4);
+		if (ret < 0) {
+			loge("rds_setup EnableReceiver Failed to set RDS on = %d", ret);
+			return -1;
+		}
+	}
+	logd("rds_setup successfully");
+	return 0;
+}
+
+pthread_t fm_interrupt_thread;
+
+int read_data_from_v4l2(const int* buf, int index) {
+	int err;
+
+	struct v4l2_buffer v4l2_buf;
+	memset(&v4l2_buf, 0, sizeof(v4l2_buf));
+
+	v4l2_buf.index = index;
+	v4l2_buf.type = V4L2_BUF_TYPE_PRIVATE;
+	v4l2_buf.memory = V4L2_MEMORY_USERPTR;
+	v4l2_buf.m.userptr = (unsigned long) buf;
+	v4l2_buf.length = 128;
+	err = ioctl(dev_hndl, VIDIOC_DQBUF, &v4l2_buf);
+
+	if (err < 0) {
+		printf("ioctl failed with error = %d\n", err);
+		return -1;
+	}
+
+	return v4l2_buf.bytesused;
+}
+
+/**
+ * interrupt_thread
+ * Thread to perform a continous read on the radio handle for events
+ * @return NIL
+ */
+void* interrupt_thread(void *ptr) {
+	logd("Starting FM event listener");
+
+
+	while (1) {
+    chip_imp_events_process();
+    ms_sleep(500);
+
+		/*for (i = 0; i < bytesread; i++) {
+			int event_buf = buf[i];
+
+			switch (event_buf) {*/
+        /*case TAVARUA_EVT_NEW_RT_RDS:
+          print("Received RT\n");
+          ret = extract_radio_text();
+          send_interruption_info(EVT_UPDATE_RT, fm_global_params.radio_text);
+          break;*/
+
+        /*case IRIS_EVT_NEW_PS_RDS:
+          logd("Received PS");
+          ret = extract_program_service();
+          send_interruption_info(EVT_UPDATE_PS, fm_global_params.pgm_services);
+          break;*/
+
+        /*case TAVARUA_EVT_STEREO:
+          print("Received Stereo Mode\n");
+          fm_global_params.stype = FM_RX_STEREO;
+          send_interruption_info(EVT_STEREO, "1");
+          break;
+
+        case TAVARUA_EVT_MONO:
+          print("Received Mono Mode\n");
+          fm_global_params.stype = FM_RX_MONO;
+          send_interruption_info(EVT_STEREO, "0");
+          break;
+
+        case TAVARUA_EVT_NEW_SRCH_LIST:
+          print("Received new search list\n");
+          stationList(fd_radio);
+          break;
+
+        case TAVARUA_EVT_NEW_AF_LIST:
+          print("Received new AF List\n");
+          break;*/
+      //}
+		//}
+	}
+	loge("FM listener thread exited");
+	return NULL;
+}
 
 /**
  * Включение чипа
@@ -614,6 +751,9 @@ int chip_imp_pwr_on(int pwr_rds) {
   }
 // здесь была инициализация RDS, судя по дезассеблеру
   band_setup();
+
+  rds_setup();
+  pthread_create(&fm_interrupt_thread, NULL, interrupt_thread, NULL);
 
   logd("chip_imp_pwr_on done");
 
@@ -872,7 +1012,67 @@ enum iris_evt_t {
 };
 
 
-  int chip_imp_events_process (unsigned char * rds_grpd) {
+
+int extract_program_service() {
+  char buf[64] = {0};
+  int ret;
+  ret = read_data_from_v4l2(buf, BUF_PS_RDS);
+  if (ret < 0) {
+    return -1;
+  }
+  int num_of_ps = (int) (buf[0] & 0x0F);
+  int ps_services_len = ((int) ((num_of_ps * 8) + 5)) - 5;
+
+  int pgm_id = (((buf[2] & 0xFF) << 8) | (buf[3] & 0xFF));
+  int pgm_type = (int) (buf[1] & 0x1F);
+
+  char ps[96];
+  memset(ps, 0x0, 96);
+  memcpy(ps, &buf[5], ps_services_len);
+  ps[ps_services_len] = '\0';
+
+  if (strcmp(curr_tuner_rds_ps, ps) != 0) {
+    need_ps_chngd = 1;
+  }
+
+  memcpy(curr_tuner_rds_ps, ps, ps_services_len);
+  return 0;
+}
+
+int extract_radio_text() {
+  int buf[128];
+
+  int bytesread = read_data_from_v4l2(buf, BUF_RT_RDS);
+  if (bytesread < 0) {
+    return -1;
+  }
+
+  int radiotext_size = (int) (buf[0] & 0xFF);
+  char rt[97];
+  memset(rt, 0x0, 97);
+  memcpy(rt, &buf[5], radiotext_size);
+  //rt[radiotext_size] = '\0';
+  logd("RadioText: %s", rt);
+
+  if (strcmp(curr_tuner_rds_rt, rt) != 0) {
+    need_rt_chngd = 1;
+  }
+
+  memcpy(curr_tuner_rds_rt, rt, radiotext_size);
+
+  return 0;
+}
+
+void chip_imp_get_rds_ps(char* dst) {
+  memcpy(dst, curr_tuner_rds_ps, strlen(curr_tuner_rds_ps));
+}
+
+void chip_imp_get_rds_rt(char* dst) {
+  memcpy(dst, curr_tuner_rds_rt, strlen(curr_tuner_rds_rt));
+}
+
+
+  int chip_imp_events_process () {
     int ret = 0;
 logd("============ CHIP IMP EVENTS PROCESS ===============");
     //logd ("chip_imp_events_process before iris_rds_buf_handle (BUF_RT_RDS)");
@@ -899,23 +1099,27 @@ logd("============ CHIP IMP EVENTS PROCESS ===============");
     //return (-1);                                                        // No RDS; Already called rds_group_process(), possibly multiple times.
 
 
-    char misc_buf [MISC_BUF_SIZE];
-    memset(misc_buf, 0, sizeof (misc_buf));
+    char misc_buf[MISC_BUF_SIZE];
+    memset(misc_buf, 0, sizeof(misc_buf));
 logd ("chip_imp_events_process before iris_buf_get()");
-    ret = iris_buf_get (misc_buf, sizeof (misc_buf), BUF_EVENTS);   // Get events...
+    ret = read_data_from_v4l2(misc_buf, BUF_EVENTS);   // Get events...
     if (ret < 0) {
       loge ("chip_imp_events_process EVENTS errno: %d", errno);
       return (-1);                                                      // No RDS; Already called rds_group_process(), possibly multiple times.
     }
-logd ("chip_imp_events_process EVENTS success: %d", ret);
-buf_display (misc_buf, ret);
-    int event = misc_buf [0];
+logd ("chip_imp_events_process EVENTS success: %d (event %d)", ret, misc_buf[0]);
+//buf_display (misc_buf, ret);
+    int event = misc_buf[0];
     switch (event) {
       case IRIS_EVT_RADIO_READY:    // 0
         logd ("Got IRIS_EVT_RADIO_READY");
         break;
       case IRIS_EVT_TUNE_SUCC:      // 1
         logd ("Got IRIS_EVT_TUNE_SUCC");
+        strcpy(curr_tuner_rds_ps, "\0");
+        strcpy(curr_tuner_rds_rt, "\0");
+        need_ps_chngd = 1;
+        need_rt_chngd = 1;
         break;
       case IRIS_EVT_SEEK_COMPLETE:
         logd ("Got IRIS_EVT_SEEK_COMPLETE");
@@ -928,9 +1132,11 @@ buf_display (misc_buf, ret);
         break;
       case IRIS_EVT_NEW_RT_RDS:
 logd ("Got IRIS_EVT_NEW_RT_RDS");
+        //extract_radio_text();
         break;
       case IRIS_EVT_NEW_PS_RDS:
 logd ("Got IRIS_EVT_NEW_PS_RDS");
+        extract_program_service();
         break;
       case IRIS_EVT_ERROR:
         logd ("Got IRIS_EVT_ERROR");
@@ -985,7 +1191,7 @@ logd ("Got IRIS_EVT_NEW_PS_RDS");
         break;
     }
 
-    return (-1);                                                        // No RDS; Already called rds_group_process(), possibly multiple times.
+    return (-1); // No RDS; Already called rds_group_process(), possibly multiple times.
   }
 
 // Seek:

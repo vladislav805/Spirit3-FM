@@ -2,6 +2,7 @@ package fm.a2d.sf;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.Log;
 import fm.a2d.sf.helper.L;
 import fm.a2d.sf.helper.Utils;
 
@@ -214,6 +215,18 @@ com_uti.logd ("FREQ CODE freq: " + freq + "  hci: " + hci + "  port: " + port);
 
       // MOST:
       mApi.tuner_most = com_uti.s2d_get("tuner_most");
+
+      // PS:
+      String ps = com_uti.s2d_get("rds_ps");
+      //String rt = com_uti.s2d_get("rds_rt");
+
+      Log.e("PTH_PS", "ps = " + ps + "; cache = " + mApi.rds_ps + "; equals = " + ps.equals(mApi.rds_ps));
+
+      if (!ps.equals(mApi.rds_ps)) {
+        mApi.rds_ps = ps;
+
+        mTuner.onUpdateTunerKey(C.TUNER_RDS_PS, mApi.rds_ps);
+      }
 
       if (tuner_freq >= 65000) {
         mApi.int_tuner_freq = tuner_freq;

@@ -236,6 +236,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
     intent.putExtra(C.AUDIO_OUTPUT, mApi.audio_output);
     intent.putExtra("audio_stereo", mApi.audio_stereo);
     intent.putExtra(C.RECORD_STATE, mApi.audio_record_state);
+    intent.putExtra(C.TUNER_RDS_PS, mApi.rds_ps);
 
     if (mTunerAPI == null) {
       intent.putExtra(C.TUNER_STATE, C.TUNER_STATE_STOP);
@@ -452,6 +453,9 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         cb_tuner_rssi (val);
       else if (key.equalsIgnoreCase("tuner_qual"))
         cb_tuner_qual (val);
+      else if (key.equals(C.TUNER_RDS_PS)) {
+        displays_update();
+      }
     }
   }
 
@@ -504,7 +508,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
 //stopForeground (false);   // !!!! ???? Can stopForeground but keep active notification ??
     }
   }
- 
+
   // Start/stop service = foreground, FM Notification in status bar, Expanded message in "Notifications" window.
   // Called only by onCreate w/ state = true and onDestroy w/ state = false
   private void setNotificationState(boolean state) {
@@ -580,7 +584,7 @@ public class MainService extends Service implements ServiceTunerCallback, Servic
         .addAction(R.drawable.ic_record, labelRecord, pendingRecord)
         .setVisibility(Notification.VISIBILITY_PUBLIC)
         .setContentTitle(getString(R.string.application_name))
-        .setContentText(freq)
+        .setContentText(freq + (mApi.rds_ps.isEmpty() ? "" : " | " + mApi.rds_ps))
         .setShowWhen(false);
 
     if (name != null) {

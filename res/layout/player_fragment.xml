@@ -105,6 +105,17 @@
         android:layout_height="@dimen/station_name_height" />
   </LinearLayout>
 
+  <TextView
+      android:id="@+id/curr_rds_ps"
+      android:textAlignment="center"
+      android:textSize="@dimen/rds_ps_size"
+      android:textColor="@color/primary_blue_shadow"
+      android:layout_marginTop="10dp"
+      android:layout_gravity="center_vertical|center_horizontal"
+      android:gravity="center_vertical|center_horizontal"
+      android:layout_width="match_parent"
+      android:layout_height="@dimen/station_name_height" />
+
 <!-- Seek frequency -->
   <HorizontalScrollView
       android:id="@+id/seek_scroll_frequency"

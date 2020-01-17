@@ -53,7 +53,7 @@
 
   /* RDS */
   #define RDS_MAX_AFS 25
-  #define RDS_PSN_MAX_LENGTH 8
+  #define RDS_PSN_MAX_LENGTH 16
   #define RDS_RT_MAX_LENGTH 64
   #define RDS_CT_MAX_LENGTH 14
   #define RDS_PTYN_MAX_LENGTH 8

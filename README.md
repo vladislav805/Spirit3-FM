@@ -5,6 +5,10 @@ Fork of [mikereidis/spirit2_free](https://github.com/mikereidis/spirit2_free) on
 ![Screen of notification](https://raw.githubusercontent.com/vladislav805/Spirit3-FM/master/docs_images/screen-record.png)
 
 ## Changelog
+#### build 20200117 (3.0.12)
+Нестабильный билд
+* Добавление поддержки RDS (пока что базового - только PS).
+
 #### build 20190215 (3.0.11)
 * Добавление в источники аудио TUNER_RADIO (1998) и HOTWORD (1999);
 * Добавление стандартного ActionBar, удаление шапки приложения;

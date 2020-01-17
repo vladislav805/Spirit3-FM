@@ -15,75 +15,70 @@
 #include <pthread.h>
 #include <android/log.h>
 #include <stdarg.h>
+#include <zconf.h>
 
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wpointer-sign"
 #define DEF_BUF 512    // Raised from 256 so we can add headers to 255-256 byte buffers
 
 
 int s2d_cmd_log = 1;//0;
 
-unsigned char logtag [16] = "s2l......";   // Default "s2l" = JNI library
+unsigned char logtag[16] = "s2l......";   // Default "s2l" = JNI library
 
-const char * copyright = "Copyright (c) 2011-2014 Michael A. Reid. All rights reserved.";
+const char* copyright = "Copyright (c) 2011-2014 Michael A. Reid. All rights reserved.";
 
+#define loge(...) fm_log_print(ANDROID_LOG_ERROR, logtag, __VA_ARGS__)
+#define logd(...) fm_log_print(ANDROID_LOG_DEBUG, logtag, __VA_ARGS__)
 
-#define  loge(...)  fm_log_print(ANDROID_LOG_ERROR,logtag,__VA_ARGS__)
-#define  logd(...)  fm_log_print(ANDROID_LOG_DEBUG,logtag,__VA_ARGS__)
+int tuner_server_work_func(char* cmd_buf, int cmd_len, char* res_buf, int res_max);
+int server_work_func(char* cmd_buf, int cmd_len, char* res_buf, int res_max);
 
 int no_log = 0;
-void * log_hndl = NULL;
+void* log_hndl = NULL;
 
-int (* do_log) (int prio, const char * tag, const char * fmt, va_list ap);
+int (*do_log)(int prio, const char* tag, const char* fmt, va_list ap);
 
-int fm_log_print (int prio, const char * tag, const char * fmt, ...) {
-
-  if (no_log)
+int fm_log_print(int prio, const char* tag, const char* fmt, ...) {
+  if (no_log) {
     return -1;
+  }
 
   va_list ap;
-  va_start (ap, fmt);
+  va_start(ap, fmt);
 
   if (log_hndl == NULL) {
-    log_hndl = dlopen ("liblog.so", RTLD_LAZY);
+    log_hndl = dlopen("liblog.so", RTLD_LAZY);
     if (log_hndl == NULL) {
-      no_log = 1;                                                     // Don't try again
-      return (-1);
+      no_log = 1; // Don't try again
+      return -1;
     }
-    do_log = dlsym (log_hndl, "__android_log_vprint");
+
+    do_log = dlsym(log_hndl, "__android_log_vprint");
+
     if (do_log == NULL) {
-      no_log = 1;                                                     // Don't try again
-      return (-1);
+      no_log = 1; // Don't try again
+      return -1;
     }
   }
-  do_log (prio, tag, fmt, ap);
-  return (0);
+
+  do_log(prio, tag, fmt, ap);
+  return 0;
 }
 
-  void alt_usleep (uint32_t us) {
-    struct timespec delay;
-    int err;
-    //if (us == 0)
-    //  return;
-    delay.tv_sec = us / 1000000;
-    delay.tv_nsec = 1000 * 1000 * (us % 1000000);
-    // usleep can't be used because it uses SIGALRM
-    do {
-      err = nanosleep(&delay, &delay);
-    } while (err < 0 && errno == EINTR);
+int ms_sleep(int ms) {
+  if (ms > 10) {
+    loge ("ms_sleep ms: %d", ms);
   }
+  usleep(ms * 1000); // ?? Use nanosleep to avoid SIGALRM ??
+  return 0;
+}
 
-  int ms_sleep (int ms) {
-    if (ms > 10)
-      loge ("ms_sleep ms: %d", ms);
-    usleep (ms * 1000);                                             // ?? Use nanosleep to avoid SIGALRM ??
-    return (0);
-  }
-
-  int file_get (const char * file) {                                    // Return 1 if file, or directory, or device node etc. exists
-    struct stat sb;
-    if (stat (file, & sb) == 0)                                         // If file exists...
-      return (1);                                                       // Return 1
-    return (0);                                                         // Else if no file return 0
-  }
+// Return 1 if file, or directory, or device node etc. exists
+int file_get(const char* file) {
+  struct stat sb;
+  return (stat(file, &sb) == 0);
+}
 
 
   char prop_buf    [DEF_BUF] = "";
@@ -95,36 +90,18 @@ int fm_log_print (int prio, const char * tag, const char * fmt, ...) {
 
 int curr_radio_device_int = -1;
 
-#define DEV_UNK -1
-#define DEV_GEN 0
-#define DEV_GS1 1
-#define DEV_GS2 2
-#define DEV_GS3 3
 #define DEV_QCV 4
-#define DEV_ONE 5
-#define DEV_LG2 6
-#define DEV_XZ2 7
-#define DEV_SDR 8
+
 
 // STE API support:
 #include "plug/inc/android_fmradio.h"
 
-static bool lib_name_get (char * lib_name, size_t max_size) {
-  switch (curr_radio_device_int) {
-    case DEV_GEN: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_gen.so", max_size); return true;
-    case DEV_SDR: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_sdr.so", max_size); return true;
-    case DEV_GS1: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_ssl.so", max_size); return true;
-    case DEV_GS2: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_ssl.so", max_size); return true;
-    case DEV_GS3: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_ssl.so", max_size); return true;
-    case DEV_QCV: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_qcv.so", max_size); return true;
-    case DEV_ONE: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_bch.so", max_size); return true;
-    case DEV_LG2: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_bch.so", max_size); return true;
-    case DEV_XZ2: strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_bch.so", max_size); return true;
-  }
-  return (false);
+static bool lib_name_get (char* lib_name, size_t max_size) {
+  strncpy(lib_name, "/data/data/fm.a2d.sf/lib/libs2t_qcv.so", max_size);
+  return true;
 }
 
-void * lib_fd;
+void* lib_fd;
 struct fmradio_vendor_methods_t * tnr_funcs;
 
 bool lib_load() {
@@ -217,7 +194,7 @@ int sock_rx_tmo_set(int fd, int tmo) { // tmo = timeout in milliseconds
   }
   return 0;
 }
-  
+
 
 // IPC API
 int client_cmd(unsigned char * cmd_buf, int cmd_len, unsigned char * res_buf, int res_max) {
@@ -568,18 +545,6 @@ char * itoa(int val) {
   return cval;
 }
 
-char * space_trim(char * str) {
-  char * end;
-  // Trim trailing space
-  end = str + strlen (str) - 1;
-  while (end > str && isspace(*end)) {
-    end--;
-  }
-  // Write new null terminator
-  *(end + 1) = 0;
-  return str;
-}
-
 char * itostereo(int stereo) {
   return stereo ? "stereo" : "mono";
 }
@@ -627,7 +592,7 @@ void cb_tnr_rds(struct fmradio_rds_bundle_t * rb, int freq) {
     cb_tuner_change("tuner_rds_ps", rb->psn);
   }
 
-  logd("Radiotext: \"%s\"", rb->rt);
+  //logd("Radiotext: \"%s\"", rb->rt);
   //    space_trim (rb->rt);
   //logd ("Radiotext: \"%s\"", rb->rt);
   if (strncmp(curr_tuner_rds_rt, rb->rt, sizeof(curr_tuner_rds_rt))) {
@@ -752,24 +717,6 @@ static int sys_commit() {
   return ret;
 }
 
-// Additive single string w/ commit version
-static int cached_sys_run(char* new_cmd) {
-  char cmd[512] = {0};
-  if (strlen(sys_cmd) == 0) { // If first command since commit
-    snprintf(cmd, sizeof(cmd), "%s", new_cmd);
-  } else {
-    snprintf(cmd, sizeof(cmd), " ; %s", new_cmd);
-  }
-  strncat(sys_cmd, cmd, sizeof(sys_cmd));
-  int ret = sys_commit(); // Commit every command now, due to GS3/Note problems
-  return (ret);
-}
-
-
-static char * codec_reg          = "/sys/kernel/debug/asoc/T0_WM1811/wm8994-codec/codec_reg";
-
-  
-
 
 // AFE_PCM_TX ???
 // https://stackoverflow.com/questions/21024851/redirecting-audio-creating-alternate-sound-paths-in-android
@@ -830,22 +777,13 @@ int qcv_digital_input_off() {
 }
 
 int dev_digital_input_on() {
-  switch (curr_radio_device_int) {
-    case DEV_QCV:
-      return qcv_digital_input_on();
-  }
-  return -1;
+  return qcv_digital_input_on();
 }
 
 int dev_digital_input_off() {
-  switch (curr_radio_device_int) {
-    case DEV_QCV:
-      return qcv_digital_input_off ();
-  }
-  return -1;
+  return qcv_digital_input_off();
 }
 
-int chmod_need = 1;
 char* set_radio_dai_state(char* dai_state) {
   if (!strncasecmp(dai_state, "start", 5)) {
     logd("dai Start: %d", dev_digital_input_on());
@@ -857,7 +795,7 @@ char* set_radio_dai_state(char* dai_state) {
   return dai_state;
 }
 
-int server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* res_buf, int res_max) {
+int server_work_func(char* cmd_buf, int cmd_len, char* res_buf, int res_max) {
   s2d_cmd_log = !!file_get("/mnt/sdcard/sf/s2d_log");
 
   if (s2d_cmd_log) {
@@ -874,7 +812,7 @@ int server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* res_buf
 }
 
 
-int tuner_server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* res_buf, int res_max) {
+int tuner_server_work_func(char* cmd_buf, int cmd_len, char* res_buf, int res_max) {
   int terminate = 0;
 
   int ret = 0;
@@ -1082,9 +1020,9 @@ int tuner_server_work_func(unsigned char* cmd_buf, int cmd_len, unsigned char* r
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_pi);
     } else if (strcpy(key, "tuner_rds_pt") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_pt);
-    } else if (strcpy(key, "tuner_rds_ps") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
+    } else if (strcpy(key, "rds_ps") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_ps);
-    } else if (strcpy(key, "tuner_rds_rt") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
+    } else if (strcpy(key, "rds_rt") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       snprintf(res_buf, res_max -1, "%s", curr_tuner_rds_rt);
     } else if (strcpy(key, "test_data") && (klen = strlen(key)) && !strncmp(ckey, key, klen)) {
       char* st = (char*) malloc(500);
@@ -1231,3 +1169,4 @@ int main(int argc, char ** argv) {
   logd("main done");
   return 0;
 }
+#pragma clang diagnostic pop
